@@ -204,11 +204,11 @@ Run time (40 cores):
 
 **Gene Ontology (GO) Analysis**
 
- (https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/CHG_Genes_GO.svg)
+ ![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/CHG_Genes_GO.svg)
 
 **KEGG Pathway Enrichment Test**
 
- (https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/Promoters.KEGG.svg)
+ ![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/Promoters.KEGG.svg)
 
 ## Output Files tree
 
