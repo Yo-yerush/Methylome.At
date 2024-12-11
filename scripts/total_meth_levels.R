@@ -1,0 +1,132 @@
+total_meth_levels <- function(rep_var1, rep_var2, var1, var2) {
+  
+  # heterochromatin as GRanges object
+  heterochromatin_ranges <- GRanges(
+    seqnames = rep_var1@seqnames@values,
+    ranges = IRanges(
+      start = c(12500000, 1250000, 11000000, 1666667, 9444444),
+      end = c(17500000, 7500000, 16250000, 7000000, 15000000)
+    )
+  )
+  # Subset the GRanges object to keep only hetero/eu chromatin
+  hetero.chromatin_ranges_var1 <- subsetByOverlaps(rep_var1, heterochromatin_ranges)
+  hetero.chromatin_ranges_var2 <- subsetByOverlaps(rep_var2, heterochromatin_ranges)
+  eu.chromatin_ranges_var1 <- subsetByOverlaps(rep_var1, heterochromatin_ranges, invert = T)
+  eu.chromatin_ranges_var2 <- subsetByOverlaps(rep_var2, heterochromatin_ranges, invert = T)
+  
+  #############################################################
+total_meth_levels_fun <- function(rep_var1_f, rep_var2_f, var1_f, var2_f, plot_title) {
+  ############ edit and add ratio (methylated / total) column 
+  # var1
+  meth_ratio_var1 = rep_var1_f
+  meth_ratio_var1$readsT1 = (meth_ratio_var1$readsM1/meth_ratio_var1$readsN1)*100
+  meth_ratio_var1$readsT2 = (meth_ratio_var1$readsM2/meth_ratio_var1$readsN2)*100
+  if (length(grep("readsM3",names(meth_ratio_var1@elementMetadata))) == 1) {
+    meth_ratio_var1$readsT3 = (meth_ratio_var1$readsM3/meth_ratio_var1$readsN3)*100
+    var1_t3 = T
+  } else {var1_t3 = F}
+  
+  # var2
+  meth_ratio_var2 = rep_var2_f
+  meth_ratio_var2$readsT1 = (meth_ratio_var2$readsM1/meth_ratio_var2$readsN1)*100
+  meth_ratio_var2$readsT2 = (meth_ratio_var2$readsM2/meth_ratio_var2$readsN2)*100
+  if (length(grep("readsM3",names(meth_ratio_var2@elementMetadata))) == 1) {
+    meth_ratio_var2$readsT3 = (meth_ratio_var2$readsM3/meth_ratio_var2$readsN3)*100
+    var2_t3 = T
+  } else {var2_t3 = F}
+  
+  
+  ############ average for all ration separately 
+  # var1
+  var1_total_CG = meth_ratio_var1[which(meth_ratio_var1$context == "CG")]
+  var1_total_CHG = meth_ratio_var1[which(meth_ratio_var1$context == "CHG")]
+  var1_total_CHH = meth_ratio_var1[which(meth_ratio_var1$context == "CHH")]
+  if (var1_t3) {
+    var1_CG = c(mean(var1_total_CG@elementMetadata$readsT1, na.rm = T),
+                mean(var1_total_CG@elementMetadata$readsT2, na.rm = T),
+                mean(var1_total_CG@elementMetadata$readsT3, na.rm = T))
+    var1_CHG = c(mean(var1_total_CHG@elementMetadata$readsT1, na.rm = T),
+                 mean(var1_total_CHG@elementMetadata$readsT2, na.rm = T),
+                 mean(var1_total_CHG@elementMetadata$readsT3, na.rm = T))
+    var1_CHH = c(mean(var1_total_CHH@elementMetadata$readsT1, na.rm = T),
+                 mean(var1_total_CHH@elementMetadata$readsT2, na.rm = T),
+                 mean(var1_total_CHH@elementMetadata$readsT3, na.rm = T))
+  } else {
+    var1_CG = c(mean(var1_total_CG@elementMetadata$readsT1, na.rm = T),
+                mean(var1_total_CG@elementMetadata$readsT2, na.rm = T))
+    var1_CHG = c(mean(var1_total_CHG@elementMetadata$readsT1, na.rm = T),
+                 mean(var1_total_CHG@elementMetadata$readsT2, na.rm = T))
+    var1_CHH = c(mean(var1_total_CHH@elementMetadata$readsT1, na.rm = T),
+                 mean(var1_total_CHH@elementMetadata$readsT2, na.rm = T))
+  }
+  
+  # var2
+  var2_total_CG = meth_ratio_var2[which(meth_ratio_var2$context == "CG")]
+  var2_total_CHG = meth_ratio_var2[which(meth_ratio_var2$context == "CHG")]
+  var2_total_CHH = meth_ratio_var2[which(meth_ratio_var2$context == "CHH")]
+  if (var2_t3) {
+    var2_CG = c(mean(var2_total_CG@elementMetadata$readsT1, na.rm = T),
+                mean(var2_total_CG@elementMetadata$readsT2, na.rm = T),
+                mean(var2_total_CG@elementMetadata$readsT3, na.rm = T))
+    var2_CHG = c(mean(var2_total_CHG@elementMetadata$readsT1, na.rm = T),
+                 mean(var2_total_CHG@elementMetadata$readsT2, na.rm = T),
+                 mean(var2_total_CHG@elementMetadata$readsT3, na.rm = T))
+    var2_CHH = c(mean(var2_total_CHH@elementMetadata$readsT1, na.rm = T),
+                 mean(var2_total_CHH@elementMetadata$readsT2, na.rm = T),
+                 mean(var2_total_CHH@elementMetadata$readsT3, na.rm = T))
+  } else {
+    var2_CG = c(mean(var2_total_CG@elementMetadata$readsT1, na.rm = T),
+                mean(var2_total_CG@elementMetadata$readsT2, na.rm = T))
+    var2_CHG = c(mean(var2_total_CHG@elementMetadata$readsT1, na.rm = T),
+                 mean(var2_total_CHG@elementMetadata$readsT2, na.rm = T))
+    var2_CHH = c(mean(var2_total_CHH@elementMetadata$readsT1, na.rm = T),
+                 mean(var2_total_CHH@elementMetadata$readsT2, na.rm = T))
+  }
+  
+  
+  meth_plot_df = data.frame(type = rep(c("CG", "CHG", "CHH"),2),
+                            treatment = c(rep(var1,3), rep(var2,3)),
+                            levels = c(mean(var1_CG),mean(var1_CHG),mean(var1_CHH),
+                                       mean(var2_CG),mean(var2_CHG),mean(var2_CHH)),
+                            SD = c(sd(var1_CG),sd(var1_CHG),sd(var1_CHH),
+                                   sd(var2_CG),sd(var2_CHG),sd(var2_CHH)))
+  
+  # plot
+  level_order = c(var1_f,var2_f)
+  y_max_plot = max(meth_plot_df$levels)*1.1
+  if (nchar(var1) > 6 | nchar(var2) > 6) {leg_horiz=0.75} else {leg_horiz=0.9} # legend position
+  g1 <- ggplot(data = meth_plot_df, aes(x = type, y = levels, fill = factor(treatment,level=level_order))) +
+    geom_bar(stat = "identity", position = position_dodge(), colour="black") +
+    geom_errorbar(aes(ymax = levels + SD, ymin = levels - SD), position = position_dodge(width = 0.9), width = 0.2) +
+    scale_fill_manual(values=alpha(c("gray88","gray22"),0.8)) +
+    theme_classic() +
+    theme(plot.margin = unit(c(1, 1, 4, 1), "lines"),
+          #title = element_text(size = 9, face="bold"),
+          axis.title.x = element_blank(),
+          #axis.text.x = element_blank(),
+          axis.title.y = element_text(size = 12, face="bold", margin = margin(t = 0, r = 10, b = 0, l = 0)),
+          axis.text.x = element_text(hjust = 0.5, vjust = 0.5, size = 12, face="bold"),
+          axis.text.y = element_text(size = 10, face="bold"),
+          axis.line.x = element_line(linewidth = 1.1),
+          axis.line.y = element_line(linewidth = 1.1),
+          axis.ticks = element_line(linewidth = 1.1) , 
+          axis.ticks.length = unit(0.01, "cm"),
+          legend.position = c(leg_horiz, 0.9),
+          legend.title = element_blank(),
+          legend.text = element_text(size = 9, face = "bold")) + 
+    labs(y = "5-mC%", title = gsub("_"," ",plot_title)) +
+    #geom_jitter(color="steelblue4", size=1, alpha=0.9, width = 0.18) +
+    scale_y_continuous(expand = c(0,0), limits = c(0,y_max_plot)) 
+  
+  svg(file = paste0(plot_title,"_",var2_f,"_vs_",var1_f,".svg"), width = 2.5, height = 4.2, family = "serif")
+  plot(g1)
+  dev.off()
+  
+  write.csv(meth_plot_df, paste0(plot_title,"_",var2_f,"_vs_",var1_f,".csv"), row.names = F)
+}
+  #############################################################
+  
+total_meth_levels_fun(rep_var1, rep_var2, var1, var2, "Whole_Genome") # all genom
+total_meth_levels_fun(hetero.chromatin_ranges_var1, hetero.chromatin_ranges_var2, var1, var2, "Heterochromatin_region") # heterochromatin
+total_meth_levels_fun(eu.chromatin_ranges_var1, eu.chromatin_ranges_var2, var1, var2, "Euchromatin_region") # euchromatin
+}
