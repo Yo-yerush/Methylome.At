@@ -168,7 +168,7 @@ Run time (40 cores):
 
 #### **Total Methylation Levels**
 
- (https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/Whole_Genome.svg)
+ ![yo](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/Whole_Genome.svg)
  (https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/Heterochromatin_region.svg)
  (https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/Euchromatin_region.svg)
 
