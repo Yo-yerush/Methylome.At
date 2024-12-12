@@ -25,7 +25,7 @@ Methylome.At will produce 10 analysis and each analysis contains CG, CHG and CHH
 * Linux Environment
 * [Conda](https://docs.conda.io/en/latest/miniconda.html) ([download](https://repo.anaconda.com/archive/Anaconda3-2024.10-1-Linux-x86_64.sh))
 * CPU: No special restrictions, but it is recommended to work with more than 10 cores for improved efficiency.
-### using local R environment
+#### using local R environment
 * [R](https://cran.r-project.org/bin/linux/ubuntu/fullREADME.html)>=4.3
 * [RCurl](https://cran.r-project.org/web/packages/RCurl/index.html)
 * [textshaping](https://github.com/r-lib/textshaping)
@@ -147,7 +147,7 @@ Optional arguments:
   --bin_size_features           Bin-size (set only for 'Gene_features' analysis!) [default: 10]
   --annotation_file             Genome Annotation file [default: Methylome.At annotations file (TAIR10 based)]
   --TEs_file                    Transposable Elements file [default: TAIR10 'Transposable Elements' annotations]
-  --Methylome_At_path           Path to 'Methylome.At' directory [default: /home/yoyerush/yo/test_111224/Methylome.At]
+  --Methylome_At_path           Path to 'Methylome.At' directory [default: PATH/TO/Methylome.At]
 
 ```
 
@@ -164,51 +164,60 @@ Run time (40 cores):
 
 *all the results taken from [paper]()
 
-**Total Methylation Levels**
+#
 
- ![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/Whole_Genome.svg)
- ![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/Heterochromatin_region.svg)
- ![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/Euchromatin_region.svg)
+#### **Total Methylation Levels**
 
+ (https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/Whole_Genome.svg)
+ (https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/Heterochromatin_region.svg)
+ (https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/Euchromatin_region.svg)
 
-**Methylation Distribution**
+#
 
- ![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/ChrPlot_CHG.svg)
- ![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/ChrPlot_difference_CHG.svg)
+#### **Methylation Distribution**
 
+ (https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/ChrPlot_CHG.svg)
+ (https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/ChrPlot_difference_CHG.svg)
 
-**Gene Body and Transposable Elements Meta-plots**
+#
 
- ![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/TEs_CHG_metaPlot.svg)
- ![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/Genes_CHG_metaPlot.svg)
- ![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/Genes_features_CHG_metaPlot.svg)
+#### **Gene Body and Transposable Elements Meta-plots**
 
-**DMRs direction (Gain or Loss)**
+ (https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/TEs_CHG_metaPlot.svg)
+ (https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/Genes_CHG_metaPlot.svg)
+ (https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/Genes_features_CHG_metaPlot.svg)
 
-![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/pie_CHH_gainORloss.svg)
-![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/ratio.distribution_CHH_gainORloss.svg)
+#
 
-**DMRs Distribution Mapping**
+#### **DMRs direction (Gain or Loss)**
 
- ![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/ChrPlot_DMRs_CHG.svg)
+(https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/CHH_gainORloss.svg)
 
- ![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/DMRs_Density.svg)
+#
 
+#### **DMRs Distribution Mapping**
 
-**Genome Annotation for DMRs**
+ (https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/ChrPlot_DMRs_CHG.svg)
 
- ![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/CHG_genom_annotations.svg)
- ![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/legend_genom_annotations.svg)
- ![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/CHG_TE.vs.ProteinCodingGenes.svg)
- ![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/CHG_TE_Super_Family.svg)
+ (https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/DMRs_Density.svg)
 
-**Gene Ontology (GO) Analysis**
+#
 
- ![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/CHG_Genes_GO.svg)
+#### **Genome Annotation for DMRs**
 
-**KEGG Pathway Enrichment Test**
+ (https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/CHG_genom_annotations.svg)
 
- ![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/Promoters.KEGG.svg)
+#
+
+#### **Gene Ontology (GO) Analysis**
+
+ (https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/CHG_Genes_GO.svg)
+
+#
+
+#### **KEGG Pathway Enrichment Test**
+
+ (https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/Promoters.KEGG.svg)
 
 ## Output Files tree
 
@@ -220,89 +229,28 @@ Run time (40 cores):
 
 > GO_TYPE = BP (biological process), MF (molecular function), CC (cellular component)
 
-#### short:
+####  short output tree:
 ```
 mto1_vs_wt
- ¦--ChrPlot_CX
- ¦--ChrPlot_DMRs       
  ¦--conversion_rate.csv
  ¦--DMRs_CNTX_mto1_vs_wt.csv
  ¦--DMRs_Density_mto1_vs_wt.svg
- ¦--gain_OR_loss
- ¦--genome_annotation
- ¦   ¦--CNTX
+ ¦--ChrPlot_CX/
+ ¦--ChrPlot_DMRs/      
+ ¦--gain_OR_loss/
+ ¦--genome_annotation/
+ ¦   ¦--CNTX/
+ ¦   ¦--CX_annotation/
  ¦   ¦--CNTX_genom_annotations.svg
- ¦   ¦--CX_annotation
- ¦   °--TEs_addiotionnal_results
- ¦--GO & KEGG analysis
- ¦   ¦--CNTX
- ¦   ¦   °--FEATURE
+ ¦   °--TEs_addiotionnal_results/
+ ¦--GO & KEGG analysis/
+ ¦   ¦--CNTX/
+ ¦   ¦   °--FEATURE/
  ¦   °--CNTX_FEATURE.svg
- ¦--metaPlots
- ¦   ¦--TEs/Genes/Gene_features
+ ¦--metaPlots/
+ ¦   ¦--TEs/Genes/Gene_features/
  ¦   ¦   ¦--metaPlot_tables/
  ¦   ¦   °--CNTX_metaPlot.svg
- °--methylation_levels
+ °--methylation_levels/
 ```
-#### long:
-```
-mto1_vs_wt
- ¦--ChrPlot_CX
- ¦   ¦--ChrPlot_CNTX_mto1_vs_wt.svg
- ¦   °--ChrPlot_difference_CNTX_mto1_vs_wt.svg
- ¦--ChrPlot_DMRs
- ¦   °--ChrPlot_DMRs_CNTX_mto1_vs_wt.svg          
- ¦--conversion_rate.csv
- ¦--DMRs_CNTX_mto1_vs_wt.csv
- ¦--DMRs_Density_mto1_vs_wt.svg
- ¦--gain_OR_loss
- ¦   ¦--pie_CNTX_gainORloss.svg
- ¦   °--ratio.distribution_CNTX_gainORloss.svg
- ¦--genome_annotation
- ¦   ¦--CNTX
- ¦   ¦   °--FEATURE_CNTX_genom_annotations.csv
- ¦   ¦--CNTX_genom_annotations.svg
- ¦   ¦--CX_annotation
- ¦   ¦   °--CNTX_CX_annotation.csv
- ¦   °--TEs_addiotionnal_results
- ¦       ¦--CNTX_TE.vs.ProteinCodingGenes.svg
- ¦       ¦--CNTX_TE_Super_Family.svg
- ¦       °--CNTX_TE_Super_Family_Freq.csv
- ¦--GO_analysis
- ¦   ¦--CNTX
- ¦   ¦   °--FEATURE
- ¦   ¦       ¦--GO_TYPE.gain.topGO.csv
- ¦   ¦       ¦--GO_TYPE.loss.topGO.csv
- ¦   ¦       ¦--GO_TYPE_gain_weight01.pdf
- ¦   ¦       °--GO_TYPE_loss_weight01.pdf
- ¦   °--CNTX_FEATURE_GO.svg
- ¦--KEGG_pathway
- ¦   ¦--CNTX
- ¦   ¦   °--FEATURE
- ¦   ¦       ¦--gain.KEGG.csv
- ¦   ¦       °--loss.KEGG.csv
- ¦   °--FEATURE.KEGG.svg
- ¦--metaPlots
- ¦   ¦--TEs
- ¦   ¦   ¦--metaPlot_tables
- ¦   ¦   ¦   ¦--mto1.CNTX.STREAM.csv
- ¦   ¦   ¦   °--wt.CNTX.STREAM.csv
- ¦   ¦   °--TEs_CNTX_metaPlot.svg
- ¦   ¦--Genes
- ¦   ¦   ¦--metaPlot_tables
- ¦   ¦   ¦   ¦--mto1.CNTX.STREAM.csv
- ¦   ¦   ¦   °--wt.CNTX.STREAM.csv
- ¦   ¦   °--Genes_CNTX_metaPlot.svg
- ¦   ¦--Gene_features
- ¦   ¦   ¦--metaPlot_tables
- ¦   ¦   ¦   ¦--mto1.CNTX.STREAM.csv
- ¦   ¦   ¦   °--wt.CNTX.STREAM.csv
- ¦   ¦   °--Gene_features_CNTX_metaPlot.svg
- °--methylation_levels
-     ¦--Euchromatin_region.csv
-     ¦--Euchromatin_region.svg
-     ¦--Heterochromatin_region.csv
-     ¦--Heterochromatin_region.svg
-     ¦--Whole_Genome.csv                   
-     °--Whole_Genome.svg
-```
+* [long version of the output tree file](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/output_tree.txt)
