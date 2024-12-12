@@ -168,56 +168,56 @@ Run time (40 cores):
 
 #### **Total Methylation Levels**
 
- ![yo](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/Whole_Genome.svg)
- (https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/Heterochromatin_region.svg)
- (https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/Euchromatin_region.svg)
+ ![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/Whole_Genome.svg)
+ ![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/Heterochromatin_region.svg)
+ ![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/Euchromatin_region.svg)
 
 #
 
 #### **Methylation Distribution**
 
- (https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/ChrPlot_CHG.svg)
- (https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/ChrPlot_difference_CHG.svg)
+ ![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/ChrPlot_CHG.svg)
+ ![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/ChrPlot_difference_CHG.svg)
 
 #
 
 #### **Gene Body and Transposable Elements Meta-plots**
 
- (https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/TEs_CHG_metaPlot.svg)
- (https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/Genes_CHG_metaPlot.svg)
- (https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/Genes_features_CHG_metaPlot.svg)
+ ![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/TEs_CHG_metaPlot.svg)
+ ![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/Genes_CHG_metaPlot.svg)
+ ![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/Genes_features_CHG_metaPlot.svg)
 
 #
 
 #### **DMRs direction (Gain or Loss)**
 
-(https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/CHH_gainORloss.svg)
+![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/CHH_gainORloss.svg)
 
 #
 
 #### **DMRs Distribution Mapping**
 
- (https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/ChrPlot_DMRs_CHG.svg)
+ ![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/ChrPlot_DMRs_CHG.svg)
 
- (https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/DMRs_Density.svg)
+ ![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/DMRs_Density.svg)
 
 #
 
 #### **Genome Annotation for DMRs**
 
- (https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/CHG_genom_annotations.svg)
+ ![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/CHG_genom_annotations.svg)
 
 #
 
 #### **Gene Ontology (GO) Analysis**
 
- (https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/CHG_Genes_GO.svg)
+ ![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/CHG_Genes_GO.svg)
 
 #
 
 #### **KEGG Pathway Enrichment Test**
 
- (https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/Promoters.KEGG.svg)
+ ![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/Promoters.KEGG.svg)
 
 ## Output Files tree
 
