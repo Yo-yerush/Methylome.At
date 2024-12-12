@@ -198,7 +198,6 @@ Run time (40 cores):
 #### **DMRs Distribution Mapping**
 
  ![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/ChrPlot_DMRs_CHG.svg)
-
  ![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/DMRs_Density.svg)
 
 #
