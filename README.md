@@ -20,15 +20,16 @@ Methylome.At will produce 10 analysis and each analysis contains CG, CHG and CHH
 * KEGG Pathway Enrichment Test
 * BedGraph Files Generation for DMRs
 
-# <a name="SystemRequirements"></a>System Requirements
+# System Requirements
 #### Using Conda environment
 * Linux Environment
 * [Conda](https://docs.conda.io/en/latest/miniconda.html) ([download](https://repo.anaconda.com/archive/Anaconda3-2024.10-1-Linux-x86_64.sh))
+* [Whiptail](https://linux.die.net/man/1/whiptail) (for UI tutorial)
 * CPU: No special restrictions, but it is recommended to work with more than 10 cores for improved efficiency.
 #### using local R environment
-* [R](https://cran.r-project.org/bin/linux/ubuntu/fullREADME.html)>=4.3
+* [R](https://cran.r-project.org/bin/linux/ubuntu/fullREADME.html) (≥ 4.4.0)
 * [RCurl](https://cran.r-project.org/web/packages/RCurl/index.html)
-* [textshaping](https://github.com/r-lib/textshaping)
+* [textshaping](https://github.com/r-lib/textshaping) (≥ 0.4.1)
 * R packages (install 'install_R_packages.R' script)
  ```
 dplyr
@@ -49,28 +50,37 @@ GenomicFeatures
 plyranges
  ```
 
-
 # Installation
-1. Download the source code.
+#### 1. Download the source code.
   ```
 git clone https://github.com/Yo-yerush/Methylome.At.git
-cd PATH/TO/Methylome.At/
   ```
-2. Setup [conda](https://docs.conda.io/en/latest/miniconda.html) environment and install all R packages
+#### 2. Setup [conda](https://docs.conda.io/en/latest/miniconda.html) environment and install all R packages.
 * using build-in setup script:
 ```
-./setup_env.sh
+chmod +x ./Methylome.At/setup_env.sh
+./Methylome.At/setup_env.sh
 ```
 * or manually:
 ```
+cd ./Methylome.At
 conda create --name Methylome.At_env
 conda activate Methylome.At_env
-conda install -c conda-forge r-base r-curl r-rcurl r-textshaping
+conda install -c conda-forge r-base=4.4.2 r-curl r-rcurl r-devtools zlib r-textshaping harfbuzz fribidi freetype libpng pkg-config libxml2 r-xml
 Rscript scripts/install_R_packages.R
 ```
+
 # Input files
-1. CX_report file is post-alignment data the output of [Bismark](https://www.bioinformatics.babraham.ac.uk/projects/bismark/).
-> CX_report
+#### 1. Samples table file ([example](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/sample_table_example.txt))
+
+****tab-delimited***, no header
+```
+treatment	PATH/TO/CX_report.txt
+```
+
+#### 2. '**CX_report**' file is an post-alignment methylation status for every cytosine in the genome, output from [Bismark](https://www.bioinformatics.babraham.ac.uk/projects/bismark/) program.
+##### Example:
+****tab-delimited***, no header. See [columns definition](https://support.illumina.com/help/BaseSpace_App_MethylSeq_help/Content/Vault/Informatics/Sequencing_Analysis/Apps/swSEQ_mAPP_MethylSeq_CytosineReport.htm).
 ```
 Chr1     3563    +       0       6       CHG     CCG
 Chr1     3564    +       5       2       CG      CGA
@@ -79,15 +89,12 @@ Chr1     3571    -       0       5       CHH     CAA
 Chr1     3577    +       1       5       CHH     CTA
 ```
 
-2. Samples table file ([example](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/sample_table_example.txt))
-
-****tab-delimited***, no header
+##### Convert 'CGmap' to 'CX_report' file:
 ```
-treatment	PATH/TO/CX_files/
+./scripts/cgmap_to_cx.sh
 ```
 
-
-3. Annotation and description files
+#### 3. Annotation and description files
 
 * By default, Methylome.At provides *gene annotation file* in GFF3 format, *transposable elements annotation file* in text file (provide by [TAIR10](https://www.arabidopsis.org/)), and a *description file* integrated from multiple databases.
 * users can alternativley use other *annotation files* (.gtf/.gff/.gff3) and *description file* (.csv/.txt)
@@ -97,15 +104,30 @@ gene_id Symbol	Short_description	Gene_description	Computational_description	AraC
 
 ```
 
-# Tutorial 
+# Run Methylome.At with UI
+Running this script will open a UI menu to run the **Methylome.At** main pipeline and the **MetaPlot** pipeline, allowing the user to change parameters as needed.
+```
+./Methylome.At_UI.sh
+```
 
-## Run Methylome.At
+# Run Methylome.At manually
+```
+cd PATH/TO/Methylome.At/
+```
+#### Main pipeline ('**Methylome.At**'):
+```
+./Methylome.At.sh PATH/TO/samples_table.txt
+```
+#### '**MetaPlots**' pipeline:
+```
+./Methylome.At_metaPlots.sh PATH/TO/samples_table.txt
+```
 
-**Usage:**
+#### Usage:
 ```
 $ ./Methylome.At.sh --help
 
-Usage: ./Methylome.At.sh --samples_file FILE [options]
+Usage: ./Methylome.At.sh [samples_file] [options]
 
 Required argument:
   --samples_file                Path to samples file [required]
@@ -127,13 +149,11 @@ Optional arguments:
   --Methylome_At_path           Path to Methylome.At [default: PATH/TO/Methylome.At]
 ```
 
-## Run Methylome.At for **metaPlots**
 
-**Usage:**
 ```
 $ ./Methylome.At_metaPlots.sh --help
 
-Usage: ./Methylome.At_metaPlots.sh --samples_file FILE [options]
+Usage: ./Methylome.At_metaPlots.sh [samples_file] [options]
 
 Required argument:
   --samples_file                Path to samples file [required]
