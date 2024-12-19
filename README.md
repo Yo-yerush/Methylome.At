@@ -55,7 +55,7 @@ plyranges
   ```
 git clone https://github.com/Yo-yerush/Methylome.At.git
   ```
-#### 2. Setup [conda](https://docs.conda.io/en/latest/miniconda.html) environment and install all R packages.
+#### 2. Setup [conda](https://docs.conda.io/en/latest/miniconda.html) environment and install all the packages.
 * using build-in setup script:
 ```
 chmod +x ./Methylome.At/setup_env.sh
