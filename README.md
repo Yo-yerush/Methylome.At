@@ -79,7 +79,6 @@ treatment	PATH/TO/CX_report.txt
 ```
 
 #### 2. '**CX_report**' file is an post-alignment methylation status for every cytosine in the genome, output from [Bismark](https://www.bioinformatics.babraham.ac.uk/projects/bismark/) program.
-##### Example:
 ****tab-delimited***, no header. See [columns definition](https://support.illumina.com/help/BaseSpace_App_MethylSeq_help/Content/Vault/Informatics/Sequencing_Analysis/Apps/swSEQ_mAPP_MethylSeq_CytosineReport.htm).
 ```
 Chr1     3563    +       0       6       CHG     CCG
