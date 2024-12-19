@@ -167,7 +167,7 @@ edit_script2_parameters() {
       "$SCRIPT2_Genes_n_TEs" "Analyze Genes and TEs metaPlot (TRUE/FALSE)" \
       "$SCRIPT2_Gene_features" "Analyze Gene Features metaPlot (TRUE/FALSE)" \
       "$SCRIPT2_minReadsPerCytosine" "Minimum reads per cytosine" \
-      "$SCRIPT2_metaPlot_random_genes" "Number of random genes ('all' = all)" \
+      "$SCRIPT2_metaPlot_random_genes" "Number of random genes (or [all])" \
       "$SCRIPT2_n_cores" "Number of cores" \
       "$SCRIPT2_bin_size_features" "Bin-size for Gene_features analysis" \
       "$SCRIPT2_annotation_file" "Path to genome annotation file" \
@@ -191,7 +191,7 @@ edit_script2_parameters() {
     elif [ "$OPTION" = "$SCRIPT2_minReadsPerCytosine" ]; then
       SCRIPT2_minReadsPerCytosine=$(whiptail --inputbox "Minimum reads per cytosine" 10 70 "$SCRIPT2_minReadsPerCytosine" 3>&1 1>&2 2>&3 || echo "$SCRIPT2_minReadsPerCytosine")
     elif [ "$OPTION" = "$SCRIPT2_metaPlot_random_genes" ]; then
-      SCRIPT2_metaPlot_random_genes=$(whiptail --inputbox "Number of random genes ('all' for all)" 10 70 "$SCRIPT2_metaPlot_random_genes" 3>&1 1>&2 2>&3 || echo "$SCRIPT2_metaPlot_random_genes")
+      SCRIPT2_metaPlot_random_genes=$(whiptail --inputbox "Number of random genes (or [all])" 10 70 "$SCRIPT2_metaPlot_random_genes" 3>&1 1>&2 2>&3 || echo "$SCRIPT2_metaPlot_random_genes")
     elif [ "$OPTION" = "$SCRIPT2_n_cores" ]; then
       SCRIPT2_n_cores=$(whiptail --inputbox "Number of cores" 10 70 "$SCRIPT2_n_cores" 3>&1 1>&2 2>&3 || echo "$SCRIPT2_n_cores")
     elif [ "$OPTION" = "$SCRIPT2_bin_size_features" ]; then
