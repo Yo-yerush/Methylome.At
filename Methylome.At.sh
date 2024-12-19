@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# First positional argument (without explicitly specifying flag)
-#samples_file="$1"
-#shift
 samples_file=""
 
 # Get the directory where the Bash script is located
@@ -28,7 +25,7 @@ KEGG_pathways=TRUE
 # Function to display help text
 usage() {
   echo ""
-  echo "Usage: $0 --samples_file FILE [options]"
+  echo "Usage: $0 [samples_file] [options]"
   echo ""
   echo "Required argument:"
   echo "  --samples_file                Path to samples file [required]"
@@ -51,6 +48,12 @@ usage() {
   echo ""
   exit 1
 }
+
+# Assign first positional argument to samples_file if it does not start with --
+if [[ -n "$1" && "$1" != --* ]]; then
+    samples_file="$1"
+    shift
+fi
 
 # Check if the first argument is 'help' or a help flag
 #if [[ "$1" == "-h" || "$1" == "--help" ]]; then

@@ -3,25 +3,17 @@
 # Initialize conda
 eval "$(conda shell.bash hook)"
 
+# Determine the directory of 'Methylome.At'
+script_dir=$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")
+cd "$script_dir"
+
 # Generate log file with a timestamp
 log_file="setup_env.log"
 echo "**  $(date +"%d-%m-%y %H:%M")" > "$log_file"
 echo "" >> "$log_file"
 
-# Check R version
-#R_version=$(R --version | head -n1 | awk '{print $3}')
-#if [[ "$R_version" < "4.4" ]]; then
-#echo "R version is '<4.4.0', install '4.4.2'" >> "$log_file"
-#    packages=("r-base=4.4.2" "r-curl" "r-rcurl" "r-devtools" "zlib" "r-textshaping" "harfbuzz" "fribidi" "freetype" "libpng" "pkg-config")
-#else
-#echo "R is already istalled (version '$R_version')" >> "$log_file"
-#    packages=("r-curl" "r-rcurl" "r-devtools" "zlib" "r-textshaping" "harfbuzz" "fribidi" "freetype" "libpng" "pkg-config") # "r-textshaping"
-#fi
-#echo "" >> "$log_file"
-
-packages=("r-curl" "r-rcurl" "r-devtools" "zlib" "r-textshaping" "harfbuzz" "fribidi" "freetype" "libpng" "pkg-config")
-
 # Create and activate the conda environment
+packages=("r-curl" "r-rcurl" "r-devtools" "zlib" "r-textshaping" "harfbuzz" "fribidi" "freetype" "libpng" "pkg-config" "libxml2" "r-xml")
 echo "Creating Conda environment..." >> "$log_file"
 if conda create --name Methylome.At_env -c conda-forge r-base=4.4.2 "${packages[@]}" -y && conda activate Methylome.At_env; then
     echo "Conda environment created and activated successfully." >> "$log_file"
@@ -54,10 +46,6 @@ echo "" >> "$log_file"
 # Run the R script to install additional R packages
 echo "Install R packages..." >> "$log_file"
 Rscript scripts/install_R_packages.R 2>> "$log_file"
-
-# Determine the directory of 'Methylome.At'
-$script_dir=$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")
-cd "$script_dir"
 
 # Permission
 chmod +x ./Methylome.At.sh

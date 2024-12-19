@@ -63,7 +63,7 @@ CHOICE=$(whiptail --title "Choose scripts to run" \
   --checklist "Select which pipeline(s) to run. Use SPACE to toggle selection, ENTER to confirm, ESC to cancle." \
   18 70 4 \
   "Methylome.At" "Run main methylome pipeline'" ON \
-  "metaPlots" "Run 'metaPlot' pipeline" OFF \
+  "MetaPlots" "Run 'metaPlot' pipeline" OFF \
   3>&1 1>&2 2>&3)
 
 # If user hits Cancel or ESC, exit
@@ -99,80 +99,63 @@ fi
 
 # A generic function to create a parameter menu for script1
 edit_script1_parameters() {
-  # Parameters stored in variables
-  # They are expected to be set before calling this function
+  # Parameters are expected to be set before calling this function
   while true; do
     OPTION=$(whiptail --title "'Methylome.At' Parameters" --menu "Select a parameter to change or proceed with current settings." 25 78 15 \
-      "Use these parameters" "Proceed with current settings." \
-      "minProportionDiff_CG: $SCRIPT1_minProportionDiff_CG" "Minimum proportion difference for CG" \
-      "minProportionDiff_CHG: $SCRIPT1_minProportionDiff_CHG" "Minimum proportion difference for CHG" \
-      "minProportionDiff_CHH: $SCRIPT1_minProportionDiff_CHH" "Minimum proportion difference for CHH" \
-      "binSize: $SCRIPT1_binSize" "DMRs bin size" \
-      "minCytosinesCount: $SCRIPT1_minCytosinesCount" "Minimum cytosines count" \
-      "minReadsPerCytosine: $SCRIPT1_minReadsPerCytosine" "Minimum reads per cytosine" \
-      "pValueThreshold: $SCRIPT1_pValueThreshold" "P-value threshold" \
-      "n_cores: $SCRIPT1_n_cores" "Number of cores" \
-      "GO_analysis: $SCRIPT1_GO_analysis" "Perform GO analysis (TRUE/FALSE)" \
-      "KEGG_pathways: $SCRIPT1_KEGG_pathways" "Perform KEGG pathways analysis (TRUE/FALSE)" \
-      "annotation_file: $SCRIPT1_annotation_file" "Path to annotation file" \
-      "description_file: $SCRIPT1_description_file" "Path to description file" \
-      "TEs_file: $SCRIPT1_TEs_file" "Path to Transposable Elements file" \
+      "Proceed." "Use current parameters" \
+      "$SCRIPT1_minProportionDiff_CG" "Minimum proportion difference for CG" \
+      "$SCRIPT1_minProportionDiff_CHG" "Minimum proportion difference for CHG" \
+      "$SCRIPT1_minProportionDiff_CHH" "Minimum proportion difference for CHH" \
+      "$SCRIPT1_binSize" "DMRs bin size" \
+      "$SCRIPT1_minCytosinesCount" "Minimum cytosines count" \
+      "$SCRIPT1_minReadsPerCytosine" "Minimum reads per cytosine" \
+      "$SCRIPT1_pValueThreshold" "P-value threshold" \
+      "$SCRIPT1_n_cores" "Number of cores" \
+      "$SCRIPT1_GO_analysis" "Perform GO analysis (TRUE/FALSE)" \
+      "$SCRIPT1_KEGG_pathways" "Perform KEGG pathways analysis (TRUE/FALSE)" \
+      "$SCRIPT1_annotation_file" "Path to annotation file" \
+      "$SCRIPT1_description_file" "Path to description file" \
+      "$SCRIPT1_TEs_file" "Path to Transposable Elements file" \
       3>&1 1>&2 2>&3)
 
     # Check if user cancelled
     [ $? -ne 0 ] && return 1
 
-case "$OPTION" in
-  "Use these parameters")
-    # User is done editing
-    break
-    ;;
-  minProportionDiff_CG*) 
-    SCRIPT1_minProportionDiff_CG=$(whiptail --inputbox "Minimum proportion difference for CG" 10 70 "$SCRIPT1_minProportionDiff_CG" 3>&1 1>&2 2>&3 || echo "$SCRIPT1_minProportionDiff_CG")
-    ;;
-  minProportionDiff_CHG*) 
-    SCRIPT1_minProportionDiff_CHG=$(whiptail --inputbox "Minimum proportion difference for CHG" 10 70 "$SCRIPT1_minProportionDiff_CHG" 3>&1 1>&2 2>&3 || echo "$SCRIPT1_minProportionDiff_CHG")
-    ;;
-  minProportionDiff_CHH*)
-    SCRIPT1_minProportionDiff_CHH=$(whiptail --inputbox "Minimum proportion difference for CHH" 10 70 "$SCRIPT1_minProportionDiff_CHH" 3>&1 1>&2 2>&3 || echo "$SCRIPT1_minProportionDiff_CHH")
-    ;;
-  binSize*)
-    SCRIPT1_binSize=$(whiptail --inputbox "DMRs bin size" 10 70 "$SCRIPT1_binSize" 3>&1 1>&2 2>&3 || echo "$SCRIPT1_binSize")
-    ;;
-  minCytosinesCount*)
-    SCRIPT1_minCytosinesCount=$(whiptail --inputbox "Minimum cytosines count" 10 70 "$SCRIPT1_minCytosinesCount" 3>&1 1>&2 2>&3 || echo "$SCRIPT1_minCytosinesCount")
-    ;;
-  minReadsPerCytosine*)
-    SCRIPT1_minReadsPerCytosine=$(whiptail --inputbox "Minimum reads per cytosine" 10 70 "$SCRIPT1_minReadsPerCytosine" 3>&1 1>&2 2>&3 || echo "$SCRIPT1_minReadsPerCytosine")
-    ;;
-  pValueThreshold*)
-    SCRIPT1_pValueThreshold=$(whiptail --inputbox "P-value threshold" 10 70 "$SCRIPT1_pValueThreshold" 3>&1 1>&2 2>&3 || echo "$SCRIPT1_pValueThreshold")
-    ;;
-  n_cores*)
-    SCRIPT1_n_cores=$(whiptail --inputbox "Number of cores" 10 70 "$SCRIPT1_n_cores" 3>&1 1>&2 2>&3 || echo "$SCRIPT1_n_cores")
-    ;;
-  GO_analysis*)
-    SCRIPT1_GO_analysis=$(whiptail --radiolist "Perform GO analysis?" 12 70 2 \
-      "TRUE" "Perform GO analysis" ON \
-      "FALSE" "Skip GO analysis" OFF \
-      3>&1 1>&2 2>&3 || echo "$SCRIPT1_GO_analysis")
-    ;;
-  KEGG_pathways*)
-    SCRIPT1_KEGG_pathways=$(whiptail --radiolist "Perform KEGG pathways analysis?" 12 70 2 \
-      "TRUE" "Perform KEGG pathways analysis" ON \
-      "FALSE" "Skip KEGG pathways analysis" OFF \
-      3>&1 1>&2 2>&3 || echo "$SCRIPT1_KEGG_pathways")
-    ;;
-  annotation_file*)
-    SCRIPT1_annotation_file=$(whiptail --inputbox "Path to annotation file" 10 70 "$SCRIPT1_annotation_file" 3>&1 1>&2 2>&3 || echo "$SCRIPT1_annotation_file")
-    ;;
-  description_file*)
-    SCRIPT1_description_file=$(whiptail --inputbox "Path to description file" 10 70 "$SCRIPT1_description_file" 3>&1 1>&2 2>&3 || echo "$SCRIPT1_description_file")
-    ;;
-  TEs_file*)
-    SCRIPT1_TEs_file=$(whiptail --inputbox "Path to Transposable Elements file" 10 70 "$SCRIPT1_TEs_file" 3>&1 1>&2 2>&3 || echo "$SCRIPT1_TEs_file")
-    ;;
-esac
+    if [ "$OPTION" = "Proceed." ]; then
+      break
+    elif [ "$OPTION" = "$SCRIPT1_minProportionDiff_CG" ]; then
+      SCRIPT1_minProportionDiff_CG=$(whiptail --inputbox "Minimum proportion difference for CG" 10 70 "$SCRIPT1_minProportionDiff_CG" 3>&1 1>&2 2>&3 || echo "$SCRIPT1_minProportionDiff_CG")
+    elif [ "$OPTION" = "$SCRIPT1_minProportionDiff_CHG" ]; then
+      SCRIPT1_minProportionDiff_CHG=$(whiptail --inputbox "Minimum proportion difference for CHG" 10 70 "$SCRIPT1_minProportionDiff_CHG" 3>&1 1>&2 2>&3 || echo "$SCRIPT1_minProportionDiff_CHG")
+    elif [ "$OPTION" = "$SCRIPT1_minProportionDiff_CHH" ]; then
+      SCRIPT1_minProportionDiff_CHH=$(whiptail --inputbox "Minimum proportion difference for CHH" 10 70 "$SCRIPT1_minProportionDiff_CHH" 3>&1 1>&2 2>&3 || echo "$SCRIPT1_minProportionDiff_CHH")
+    elif [ "$OPTION" = "$SCRIPT1_binSize" ]; then
+      SCRIPT1_binSize=$(whiptail --inputbox "DMRs bin size" 10 70 "$SCRIPT1_binSize" 3>&1 1>&2 2>&3 || echo "$SCRIPT1_binSize")
+    elif [ "$OPTION" = "$SCRIPT1_minCytosinesCount" ]; then
+      SCRIPT1_minCytosinesCount=$(whiptail --inputbox "Minimum cytosines count" 10 70 "$SCRIPT1_minCytosinesCount" 3>&1 1>&2 2>&3 || echo "$SCRIPT1_minCytosinesCount")
+    elif [ "$OPTION" = "$SCRIPT1_minReadsPerCytosine" ]; then
+      SCRIPT1_minReadsPerCytosine=$(whiptail --inputbox "Minimum reads per cytosine" 10 70 "$SCRIPT1_minReadsPerCytosine" 3>&1 1>&2 2>&3 || echo "$SCRIPT1_minReadsPerCytosine")
+    elif [ "$OPTION" = "$SCRIPT1_pValueThreshold" ]; then
+      SCRIPT1_pValueThreshold=$(whiptail --inputbox "P-value threshold" 10 70 "$SCRIPT1_pValueThreshold" 3>&1 1>&2 2>&3 || echo "$SCRIPT1_pValueThreshold")
+    elif [ "$OPTION" = "$SCRIPT1_n_cores" ]; then
+      SCRIPT1_n_cores=$(whiptail --inputbox "Number of cores" 10 70 "$SCRIPT1_n_cores" 3>&1 1>&2 2>&3 || echo "$SCRIPT1_n_cores")
+    elif [ "$OPTION" = "$SCRIPT1_GO_analysis" ]; then
+      SCRIPT1_GO_analysis=$(whiptail --radiolist "Perform GO analysis?" 12 70 2 \
+        "TRUE" "Perform GO analysis" ON \
+        "FALSE" "Skip GO analysis" OFF \
+        3>&1 1>&2 2>&3 || echo "$SCRIPT1_GO_analysis")
+    elif [ "$OPTION" = "$SCRIPT1_KEGG_pathways" ]; then
+      SCRIPT1_KEGG_pathways=$(whiptail --radiolist "Perform KEGG pathways analysis?" 12 70 2 \
+        "TRUE" "Perform KEGG pathways analysis" ON \
+        "FALSE" "Skip KEGG pathways analysis" OFF \
+        3>&1 1>&2 2>&3 || echo "$SCRIPT1_KEGG_pathways")
+    elif [ "$OPTION" = "$SCRIPT1_annotation_file" ]; then
+      SCRIPT1_annotation_file=$(whiptail --inputbox "Path to annotation file" 10 70 "$SCRIPT1_annotation_file" 3>&1 1>&2 2>&3 || echo "$SCRIPT1_annotation_file")
+    elif [ "$OPTION" = "$SCRIPT1_description_file" ]; then
+      SCRIPT1_description_file=$(whiptail --inputbox "Path to description file" 10 70 "$SCRIPT1_description_file" 3>&1 1>&2 2>&3 || echo "$SCRIPT1_description_file")
+    elif [ "$OPTION" = "$SCRIPT1_TEs_file" ]; then
+      SCRIPT1_TEs_file=$(whiptail --inputbox "Path to Transposable Elements file" 10 70 "$SCRIPT1_TEs_file" 3>&1 1>&2 2>&3 || echo "$SCRIPT1_TEs_file")
+    fi
   done
 }
 
@@ -180,56 +163,48 @@ esac
 edit_script2_parameters() {
   while true; do
     OPTION=$(whiptail --title "'MetaPlots' Parameters" --menu "Select a parameter to change or proceed with current settings." 25 78 12 \
-      "Use these parameters" "Proceed with current settings." \
-      "Genes_n_TEs ($SCRIPT2_Genes_n_TEs)" "Analyze Genes and TEs metaPlot (TRUE/FALSE)" \
-      "Gene_features ($SCRIPT2_Gene_features)" "Analyze Gene Features metaPlot (TRUE/FALSE)" \
-      "minReadsPerCytosine ($SCRIPT2_minReadsPerCytosine)" "Minimum reads per cytosine" \
-      "metaPlot_random_genes ($SCRIPT2_metaPlot_random_genes)" "Number of random genes ('all' = all)" \
-      "n_cores ($SCRIPT2_n_cores)" "Number of cores" \
-      "bin_size_features ($SCRIPT2_bin_size_features)" "Bin-size for Gene_features analysis" \
-      "annotation_file ($SCRIPT2_annotation_file)" "Path to genome annotation file" \
-      "TEs_file ($SCRIPT2_TEs_file)" "Path to Transposable Elements file" \
+      "Proceed." "Use current parameters" \
+      "$SCRIPT2_Genes_n_TEs" "Analyze Genes and TEs metaPlot (TRUE/FALSE)" \
+      "$SCRIPT2_Gene_features" "Analyze Gene Features metaPlot (TRUE/FALSE)" \
+      "$SCRIPT2_minReadsPerCytosine" "Minimum reads per cytosine" \
+      "$SCRIPT2_metaPlot_random_genes" "Number of random genes ('all' = all)" \
+      "$SCRIPT2_n_cores" "Number of cores" \
+      "$SCRIPT2_bin_size_features" "Bin-size for Gene_features analysis" \
+      "$SCRIPT2_annotation_file" "Path to genome annotation file" \
+      "$SCRIPT2_TEs_file" "Path to Transposable Elements file" \
       3>&1 1>&2 2>&3)
 
     [ $? -ne 0 ] && return 1
 
-    case "$OPTION" in
-  "Use these parameters")
-    break
-    ;;
-  Genes_n_TEs*)
-    SCRIPT2_Genes_n_TEs=$(whiptail --radiolist "Analyze Genes and TEs metaPlot?" 12 70 2 \
-      "TRUE" "Yes" ON \
-      "FALSE" "No" OFF \
-      3>&1 1>&2 2>&3 || echo "$SCRIPT2_Genes_n_TEs")
-    ;;
-  Gene_features*)
-    SCRIPT2_Gene_features=$(whiptail --radiolist "Analyze Gene Features metaPlot?" 12 70 2 \
-      "TRUE" "Yes" ON \
-      "FALSE" "No" OFF \
-      3>&1 1>&2 2>&3 || echo "$SCRIPT2_Gene_features")
-    ;;
-  minReadsPerCytosine*)
-    SCRIPT2_minReadsPerCytosine=$(whiptail --inputbox "Minimum reads per cytosine" 10 70 "$SCRIPT2_minReadsPerCytosine" 3>&1 1>&2 2>&3 || echo "$SCRIPT2_minReadsPerCytosine")
-    ;;
-  metaPlot_random_genes*)
-    SCRIPT2_metaPlot_random_genes=$(whiptail --inputbox "Number of random genes ('all' for all)" 10 70 "$SCRIPT2_metaPlot_random_genes" 3>&1 1>&2 2>&3 || echo "$SCRIPT2_metaPlot_random_genes")
-    ;;
-  n_cores*)
-    SCRIPT2_n_cores=$(whiptail --inputbox "Number of cores" 10 70 "$SCRIPT2_n_cores" 3>&1 1>&2 2>&3 || echo "$SCRIPT2_n_cores")
-    ;;
-  bin_size_features*)
-    SCRIPT2_bin_size_features=$(whiptail --inputbox "Bin-size for Gene_features analysis" 10 70 "$SCRIPT2_bin_size_features" 3>&1 1>&2 2>&3 || echo "$SCRIPT2_bin_size_features")
-    ;;
-  annotation_file*)
-    SCRIPT2_annotation_file=$(whiptail --inputbox "Path to genome annotation file" 10 70 "$SCRIPT2_annotation_file" 3>&1 1>&2 2>&3 || echo "$SCRIPT2_annotation_file")
-    ;;
-  TEs_file*)
-    SCRIPT2_TEs_file=$(whiptail --inputbox "Path to Transposable Elements file" 10 70 "$SCRIPT2_TEs_file" 3>&1 1>&2 2>&3 || echo "$SCRIPT2_TEs_file")
-    ;;
-esac
+    if [ "$OPTION" = "Proceed." ]; then
+      break
+    elif [ "$OPTION" = "$SCRIPT2_Genes_n_TEs" ]; then
+      SCRIPT2_Genes_n_TEs=$(whiptail --radiolist "Analyze Genes and TEs metaPlot?" 12 70 2 \
+        "TRUE" "Yes" ON \
+        "FALSE" "No" OFF \
+        3>&1 1>&2 2>&3 || echo "$SCRIPT2_Genes_n_TEs")
+    elif [ "$OPTION" = "$SCRIPT2_Gene_features" ]; then
+      SCRIPT2_Gene_features=$(whiptail --radiolist "Analyze Gene Features metaPlot?" 12 70 2 \
+        "TRUE" "Yes" ON \
+        "FALSE" "No" OFF \
+        3>&1 1>&2 2>&3 || echo "$SCRIPT2_Gene_features")
+    elif [ "$OPTION" = "$SCRIPT2_minReadsPerCytosine" ]; then
+      SCRIPT2_minReadsPerCytosine=$(whiptail --inputbox "Minimum reads per cytosine" 10 70 "$SCRIPT2_minReadsPerCytosine" 3>&1 1>&2 2>&3 || echo "$SCRIPT2_minReadsPerCytosine")
+    elif [ "$OPTION" = "$SCRIPT2_metaPlot_random_genes" ]; then
+      SCRIPT2_metaPlot_random_genes=$(whiptail --inputbox "Number of random genes ('all' for all)" 10 70 "$SCRIPT2_metaPlot_random_genes" 3>&1 1>&2 2>&3 || echo "$SCRIPT2_metaPlot_random_genes")
+    elif [ "$OPTION" = "$SCRIPT2_n_cores" ]; then
+      SCRIPT2_n_cores=$(whiptail --inputbox "Number of cores" 10 70 "$SCRIPT2_n_cores" 3>&1 1>&2 2>&3 || echo "$SCRIPT2_n_cores")
+    elif [ "$OPTION" = "$SCRIPT2_bin_size_features" ]; then
+      SCRIPT2_bin_size_features=$(whiptail --inputbox "Bin-size for Gene_features analysis" 10 70 "$SCRIPT2_bin_size_features" 3>&1 1>&2 2>&3 || echo "$SCRIPT2_bin_size_features")
+    elif [ "$OPTION" = "$SCRIPT2_annotation_file" ]; then
+      SCRIPT2_annotation_file=$(whiptail --inputbox "Path to genome annotation file" 10 70 "$SCRIPT2_annotation_file" 3>&1 1>&2 2>&3 || echo "$SCRIPT2_annotation_file")
+    elif [ "$OPTION" = "$SCRIPT2_TEs_file" ]; then
+      SCRIPT2_TEs_file=$(whiptail --inputbox "Path to Transposable Elements file" 10 70 "$SCRIPT2_TEs_file" 3>&1 1>&2 2>&3 || echo "$SCRIPT2_TEs_file")
+    fi
+
   done
 }
+
 
 ###################
 # Gather Methylome.At.sh
@@ -257,7 +232,7 @@ fi
 ###################
 # Gather Methylome.At_metaPlots.sh
 ###################
-if [[ " ${SELECTED_SCRIPTS[*]} " =~ "metaPlots" ]]; then
+if [[ " ${SELECTED_SCRIPTS[*]} " =~ "MetaPlots" ]]; then
     # Initialize parameters with defaults
     SCRIPT2_Genes_n_TEs="$SCRIPT2_DEFAULT_Genes_n_TEs"
     SCRIPT2_Gene_features="$SCRIPT2_DEFAULT_Gene_features"
@@ -281,7 +256,7 @@ chosen_message=""
 if [[ " ${SELECTED_SCRIPTS[*]} " =~ "Methylome.At" ]]; then
     chosen_message+="'Methylome.At' "
 fi
-if [[ " ${SELECTED_SCRIPTS[*]} " =~ "metaPlots" ]]; then
+if [[ " ${SELECTED_SCRIPTS[*]} " =~ "MetaPlots" ]]; then
     if [ -n "$chosen_message" ]; then
         chosen_message+="and "
     fi
@@ -320,7 +295,7 @@ if (whiptail --title "All done!" --yesno "You have chosen to run: $chosen_messag
   fi
 
   # Methylome.At_metaPlots.sh invocation
-  if [[ " ${SELECTED_SCRIPTS[*]} " =~ "metaPlots" ]]; then
+  if [[ " ${SELECTED_SCRIPTS[*]} " =~ "MetaPlots" ]]; then
     echo "Running Methylome.At_metaPlots.sh..."
     bash "$SCRIPT2_PATH" \
       --samples_file "$SAMPLES_FILE" \
@@ -334,7 +309,7 @@ if (whiptail --title "All done!" --yesno "You have chosen to run: $chosen_messag
       --TEs_file "$SCRIPT2_TEs_file"
   fi
 
-  echo "All done!"
+  #echo "All done!"
 else
   # User selected No, just exit without running
   echo "You chose not to run the scripts. Exiting."
