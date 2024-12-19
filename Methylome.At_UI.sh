@@ -106,7 +106,7 @@ edit_script1_parameters() {
       "$SCRIPT1_minProportionDiff_CG" "Minimum proportion difference for CG" \
       "$SCRIPT1_minProportionDiff_CHG" "Minimum proportion difference for CHG" \
       "$SCRIPT1_minProportionDiff_CHH" "Minimum proportion difference for CHH" \
-      "$SCRIPT1_binSize" "DMRs bin size" \
+      "$SCRIPT1_binSize" "Bin-size for DMRs" \
       "$SCRIPT1_minCytosinesCount" "Minimum cytosines count" \
       "$SCRIPT1_minReadsPerCytosine" "Minimum reads per cytosine" \
       "$SCRIPT1_pValueThreshold" "P-value threshold" \
@@ -130,7 +130,7 @@ edit_script1_parameters() {
     elif [ "$OPTION" = "$SCRIPT1_minProportionDiff_CHH" ]; then
       SCRIPT1_minProportionDiff_CHH=$(whiptail --inputbox "Minimum proportion difference for CHH" 10 70 "$SCRIPT1_minProportionDiff_CHH" 3>&1 1>&2 2>&3 || echo "$SCRIPT1_minProportionDiff_CHH")
     elif [ "$OPTION" = "$SCRIPT1_binSize" ]; then
-      SCRIPT1_binSize=$(whiptail --inputbox "DMRs bin size" 10 70 "$SCRIPT1_binSize" 3>&1 1>&2 2>&3 || echo "$SCRIPT1_binSize")
+      SCRIPT1_binSize=$(whiptail --inputbox "Bin-size for DMRs" 10 70 "$SCRIPT1_binSize" 3>&1 1>&2 2>&3 || echo "$SCRIPT1_binSize")
     elif [ "$OPTION" = "$SCRIPT1_minCytosinesCount" ]; then
       SCRIPT1_minCytosinesCount=$(whiptail --inputbox "Minimum cytosines count" 10 70 "$SCRIPT1_minCytosinesCount" 3>&1 1>&2 2>&3 || echo "$SCRIPT1_minCytosinesCount")
     elif [ "$OPTION" = "$SCRIPT1_minReadsPerCytosine" ]; then
