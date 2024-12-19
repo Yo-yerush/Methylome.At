@@ -54,16 +54,16 @@ plyranges
 #### 1. Download the source code.
   ```
 git clone https://github.com/Yo-yerush/Methylome.At.git
+cd ./Methylome.At
   ```
 #### 2. Setup [conda](https://docs.conda.io/en/latest/miniconda.html) environment and install all the packages.
 * using build-in setup script:
 ```
-chmod +x ./Methylome.At/setup_env.sh
-./Methylome.At/setup_env.sh
+chmod +x ./setup_env.sh
+./setup_env.sh
 ```
 * or manually:
 ```
-cd ./Methylome.At
 conda create --name Methylome.At_env
 conda activate Methylome.At_env
 conda install -c conda-forge r-base=4.4.2 r-curl r-rcurl r-devtools zlib r-textshaping harfbuzz fribidi freetype libpng pkg-config libxml2 r-xml
@@ -110,9 +110,6 @@ Running this script will open a UI menu to run the **Methylome.At** main pipelin
 ```
 
 # Run Methylome.At manually
-```
-cd PATH/TO/Methylome.At/
-```
 #### Main pipeline ('**Methylome.At**'):
 ```
 ./Methylome.At.sh PATH/TO/samples_table.txt
