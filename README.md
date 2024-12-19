@@ -112,11 +112,11 @@ Running this script will open a UI menu to run the **Methylome.At** main pipelin
 ```
 
 # Run Methylome.At manually
-#### Main pipeline ('**Methylome.At**'):
+#### Main pipeline (**Methylome.At**):
 ```
 ./Methylome.At.sh PATH/TO/samples_table.txt
 ```
-#### '**MetaPlots**' pipeline:
+#### **MetaPlots** pipeline:
 ```
 ./Methylome.At_metaPlots.sh PATH/TO/samples_table.txt
 ```
