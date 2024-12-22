@@ -21,16 +21,17 @@ Methylome.At will produce 10 analysis and each analysis contains CG, CHG and CHH
 * BedGraph Files Generation for DMRs
 
 # System Requirements
-#### Using Conda environment
-* Linux Environment
-* [Conda](https://docs.conda.io/en/latest/miniconda.html) ([download](https://repo.anaconda.com/archive/Anaconda3-2024.10-1-Linux-x86_64.sh))
-* [Whiptail](https://linux.die.net/man/1/whiptail) (for UI tutorial)
-* CPU: No special restrictions, but it is recommended to work with more than 10 cores for improved efficiency.
-#### using local R environment
-* [R](https://cran.r-project.org/bin/linux/ubuntu/fullREADME.html) (≥ 4.4.0)
-* [RCurl](https://cran.r-project.org/web/packages/RCurl/index.html)
-* [textshaping](https://github.com/r-lib/textshaping) (≥ 0.4.1)
-* R packages (install 'install_R_packages.R' script)
+* Using Conda environment
+* * Linux Environment
+* * [Conda](https://docs.conda.io/en/latest/miniconda.html) ([download](https://repo.anaconda.com/archive/Anaconda3-2024.10-1-Linux-x86_64.sh))
+* * [Whiptail](https://linux.die.net/man/1/whiptail) (for UI tutorial)
+* * CPU: No special restrictions, but it is recommended to work with more than 10 cores for improved efficiency.
+####
+* using local R environment
+* * [R](https://cran.r-project.org/bin/linux/ubuntu/fullREADME.html) (≥ 4.4.0)
+* * [RCurl](https://cran.r-project.org/web/packages/RCurl/index.html)
+* * [textshaping](https://github.com/r-lib/textshaping) (≥ 0.4.1)
+* * R packages (install 'install_R_packages.R' script)
  ```
 dplyr
 tidyr
@@ -64,7 +65,7 @@ cd ./Methylome.At
 chmod +x ./setup_env.sh
 ./setup_env.sh
 ```
-*Check the 'setup_env' log file to verify packages installation*
+#####  *Check the 'setup_env' log file to verify packages installation*
 
 ### 
 * or manually:
@@ -93,7 +94,7 @@ Chr1     3571    -       0       5       CHH     CAA
 Chr1     3577    +       1       5       CHH     CTA
 ```
 
-##### *Convert 'CGmap' to 'CX_report' file:*
+##### Convert 'CGmap' to 'CX_report' file:
 ```
 ./scripts/cgmap_to_cx.sh PATH/TO/input_file.CGmap PATH/TO/output_CX_report.txt
 ```
