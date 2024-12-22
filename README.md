@@ -62,6 +62,7 @@ cd ./Methylome.At
 * using build-in setup script:
 ```
 chmod +x ./setup_env.sh
+./setup_env.sh
 ```
 *Check the 'setup_env' log file to verify packages installation*
 
