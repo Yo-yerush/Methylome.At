@@ -78,13 +78,13 @@ Rscript scripts/install_R_packages.R
 # Input files
 #### 1. Samples table file ([example](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/sample_table_example.txt))
 
-****tab-delimited***, no header
+##### ****tab-delimited***, no header
 ```
 treatment	PATH/TO/CX_report.txt
 ```
 
 #### 2. '**CX_report**' file is an post-alignment methylation status for every cytosine in the genome, output from [Bismark](https://www.bioinformatics.babraham.ac.uk/projects/bismark/) program.
-****tab-delimited***, no header. See [columns definition](https://support.illumina.com/help/BaseSpace_App_MethylSeq_help/Content/Vault/Informatics/Sequencing_Analysis/Apps/swSEQ_mAPP_MethylSeq_CytosineReport.htm).
+##### ****tab-delimited***, no header. See [columns definition](https://support.illumina.com/help/BaseSpace_App_MethylSeq_help/Content/Vault/Informatics/Sequencing_Analysis/Apps/swSEQ_mAPP_MethylSeq_CytosineReport.htm).
 ```
 Chr1     3563    +       0       6       CHG     CCG
 Chr1     3564    +       5       2       CG      CGA
@@ -93,16 +93,16 @@ Chr1     3571    -       0       5       CHH     CAA
 Chr1     3577    +       1       5       CHH     CTA
 ```
 
-##### Convert 'CGmap' to 'CX_report' file:
+##### *Convert 'CGmap' to 'CX_report' file:*
 ```
-./scripts/cgmap_to_cx.sh
+./scripts/cgmap_to_cx.sh PATH/TO/input_file.CGmap PATH/TO/output_CX_report.txt
 ```
 
 #### 3. Annotation and description files
 
 * By default, Methylome.At provides *gene annotation file* in GFF3 format, *transposable elements annotation file* in text file (provide by [TAIR10](https://www.arabidopsis.org/)), and a *description file* integrated from multiple databases.
 * users can alternativley use other *annotation files* (.gtf/.gff/.gff3) and *description file* (.csv/.txt)
-> description file columns
+##### description file columns:
 ```
 gene_id Symbol	Short_description	Gene_description	Computational_description	AraCyc.Db	AraCyc.Name	gene_model_type	Protein.families	GO.biological.process	GO.cellular.component	GO.molecular.function	note	Derives_from	old_symbols	EC	KEGG_pathway	refseq_id	PMID
 
