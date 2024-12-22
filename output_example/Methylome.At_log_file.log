@@ -1,0 +1,132 @@
+**  26-09-24 21:55
+**  mto1 VS. wt
+
+load replicates data...
+Read 43080559 records
+Read 43080559 records
+Read 43080559 records
+Read 43080559 records
+Read 43080559 records
+join replicates data...
+load and join replicates data: successfully
+
+conversion rate (C->T) along the Chloroplast genome:
+wt: 99.49%
+wt: 99.39%
+mto1: 99.48%
+mto1: 99.5%
+mto1: 99.47%
+
+plot total methylation levels (5-mC%)
+generated ChrPlots to methylation levels
+
+import annotation file
+import Transposable Elements file
+import description file
+
+DMRs in CG context...
+	min difference in methylation proportion: 0.4
+	statistically significant DMRs: 2039
+	DMRs caller in CG context: done
+	pie chart (gain or loss): done
+	ratio distribution (gain or loss): done
+	generated ChrPlots for all DMRs: done
+	genome annotations for DMRs...
+		done: Genes (1499)
+		done: Promoters (900)
+		done: CDS (1305)
+		done: Introns (805)
+		done: fiveUTRs (26)
+		done: threeUTRs (112)
+		done: Transposable_Elements (265)
+		done: TEG (40)
+		done: pseudogene (22)
+	genome annotations for DMRs: done
+	saved all DMRs also as bedGragh files
+
+DMRs in CHG context...
+	min difference in methylation proportion: 0.2
+	statistically significant DMRs: 4679
+	DMRs caller in CHG context: done
+	pie chart (gain or loss): done
+	ratio distribution (gain or loss): done
+	generated ChrPlots for all DMRs: done
+	genome annotations for DMRs...
+		done: Genes (389)
+		done: Promoters (950)
+		done: CDS (287)
+		done: Introns (195)
+		done: fiveUTRs (20)
+		done: threeUTRs (19)
+		done: Transposable_Elements (3956)
+		done: TEG (2498)
+		done: pseudogene (86)
+	genome annotations for DMRs: done
+	saved all DMRs also as bedGragh files
+
+DMRs in CHH context...
+	min difference in methylation proportion: 0.1
+	statistically significant DMRs: 3594
+	DMRs caller in CHH context: done
+	pie chart (gain or loss): done
+	ratio distribution (gain or loss): done
+	generated ChrPlots for all DMRs: done
+	genome annotations for DMRs...
+		done: Genes (282)
+		done: Promoters (2239)
+		done: CDS (114)
+		done: Introns (175)
+		done: fiveUTRs (14)
+		done: threeUTRs (42)
+		done: Transposable_Elements (2933)
+		done: TEG (432)
+		done: pseudogene (31)
+	genome annotations for DMRs: done
+	saved all DMRs also as bedGragh files
+
+generated DMRs density plot for all contexts: fail
+
+GO analysis for annotated DMRs...
+	done: Genes
+	done: Promoters
+	done: CDS
+	done: Introns
+Error in GO plot: fiveUTRs-CHG-loss-CC
+	done: fiveUTRs
+	done: threeUTRs
+GO analysis for annotated DMRs: done
+
+KEGG pathways for annotated DMRs...
+create KEGG 'gene to pathway' dataset: successfully
+KEGG pathways for annotated DMRs...
+	done: Genes
+	done: Promoters
+	done: CDS
+	done: Introns
+	done: fiveUTRs
+	done: threeUTRs
+KEGG pathways for annotated DMRs: done
+
+**	mto1 vs wt: done
+
+
+**	27-09-2024 06:01
+**	time: 8.09 hours
+
+
+configuration:
+DMRs Min Proportion Diff CG: 0.4
+DMRs Min Proportion Diff CHG: 0.2
+DMRs Min Proportion Diff CHH: 0.1
+DMRs Bin size: 100
+DMRs Min Cytosines Count: 4
+DMRs Min Reads Per Cytosine: 6
+DMRs P-value Threshold: 0.05
+Number of Cores: 40
+GO Analysis: TRUE
+KEGG Pathways: TRUE
+Samples file: samples_table/samples_table_mto1.txt
+Annotation file: Methylome.At (TAIR10 based)
+Description file: Methylome.At
+Transposable Elements file: TAIR10
+Methylome_At_path: /home/PATH/TO/Methylome.At

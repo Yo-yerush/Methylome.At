@@ -13,9 +13,9 @@ echo "**  $(date +"%d-%m-%y %H:%M")" > "$log_file"
 echo "" >> "$log_file"
 
 # Create and activate the conda environment
-packages=("r-curl" "r-rcurl" "r-devtools" "zlib" "r-textshaping" "harfbuzz" "fribidi" "freetype" "libpng" "pkg-config" "libxml2" "r-xml")
+packages=("r-curl" "r-rcurl" "r-devtools" "zlib" "r-textshaping" "harfbuzz" "fribidi" "freetype" "libpng" "pkg-config" "libxml2" "r-xml" "bioconductor-rsamtools")
 echo "Creating Conda environment..." >> "$log_file"
-if conda create --name Methylome.At_env -c conda-forge r-base=4.4.2 "${packages[@]}" -y && conda activate Methylome.At_env; then
+if conda create --name Methylome.At_env -c conda-forge -c bioconda r-base=4.4.2 "${packages[@]}" -y && conda activate Methylome.At_env; then
     echo "Conda environment created and activated successfully." >> "$log_file"
     echo "Conda environment name: $CONDA_DEFAULT_ENV" >> "$log_file"
 else
@@ -25,7 +25,7 @@ fi
 
 echo "" >> "$log_file"
 
-# Check if R packages are installed from conda-forge
+# Check if packages are installed from conda-forge
 echo "Verifying that packages are installed from conda-forge..." >> "$log_file"
 error=0
 for pkg in "r-base" "${packages[@]}"; do
@@ -33,7 +33,7 @@ for pkg in "r-base" "${packages[@]}"; do
     pkg_info=$(conda list "$pkg")
     # Extract the channel from the package info
     channel=$(echo "$pkg_info" | awk '/^'"$pkg"'[[:space:]]/ {print $NF}')
-    if [ "$channel" == "conda-forge" ]; then
+    if [ "$channel" == "conda-forge|bioconda" ]; then
         echo "* installed $pkg: yes" >> "$log_file"
     else
         echo "* installed $pkg: no" >> "$log_file"

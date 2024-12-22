@@ -1,0 +1,40 @@
+**  23-10-24 16:10
+**  mto1 VS. wt
+
+load replicates data...
+Read 43080559 records
+Read 43080559 records
+Read 43080559 records
+Read 43080559 records
+Read 43080559 records
+load and pool replicates data: successfully
+
+import annotation file
+import Transposable Elements file
+
+generate metaPlot to protein-coding Genes...
+process average metaPlot to 10000 Protein Coding Genes
+
+generate metaPlot to Transposable Elements...
+process average metaPlot to 10000 Transposable Elements
+
+generate metaPlot to protein-coding Gene Features...
+process average metaPlot to 10000 Protein Coding Genes
+
+**	mto1 vs wt: done
+
+
+**	23-10-2024 20:42
+**	time: 4.51 hours
+
+configuration:
+Genes and TEs metaPlot: FALSE
+Gene Features metaPlot: TRUE
+Min Reads Per Cytosine: 6
+MetaPlot Random Genes: 20000
+Number of Cores: 40
+Bin-Size for 'Gene_features' analysis: 10
+Samples file: samples_table/samples_table_mto1.txt
+Annotation file: Methylome.At (TAIR10 based)
+Transposable Elements file: TAIR10
+Methylome_At_path: /home/PATH/TO/Methylome.At

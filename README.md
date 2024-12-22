@@ -62,13 +62,15 @@ cd ./Methylome.At
 * using build-in setup script:
 ```
 chmod +x ./setup_env.sh
-./setup_env.sh
 ```
+*Check the 'setup_env' log file to verify packages installation*
+
+### 
 * or manually:
 ```
 conda create --name Methylome.At_env
 conda activate Methylome.At_env
-conda install -c conda-forge r-base=4.4.2 r-curl r-rcurl r-devtools zlib r-textshaping harfbuzz fribidi freetype libpng pkg-config libxml2 r-xml
+conda install -c conda-forge -c bioconda r-base=4.4.2 r-curl r-rcurl r-devtools zlib r-textshaping harfbuzz fribidi freetype libpng pkg-config libxml2 r-xml bioconductor-rsamtools
 Rscript scripts/install_R_packages.R
 ```
 
@@ -169,13 +171,9 @@ Optional arguments:
 
 ```
 
-## .log file and run time
-An automated log file will be created during the process. ([example](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/log_file.log))
+## .log file
+An automated log file will be created during the process. see examples from [Methylome.At](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/Methylome.At_log_file.log) and [MetaPlots](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/MetaPlots_log_file.log) pipelines.
 
-Run time (40 cores): 
-> Methylome.At: 8.09 hours
-
-> Methylome.At_metaPlots: 4.51 hours
 
 ## Output Figures
 *each analysis also output the data as a table
