@@ -21,17 +21,16 @@ Methylome.At will produce 10 analysis and each analysis contains CG, CHG and CHH
 * BedGraph Files Generation for DMRs
 
 # System Requirements
-* Using Conda environment
-* * Linux Environment
-* * [Conda](https://docs.conda.io/en/latest/miniconda.html) ([download](https://repo.anaconda.com/archive/Anaconda3-2024.10-1-Linux-x86_64.sh))
-* * [Whiptail](https://linux.die.net/man/1/whiptail) (for UI tutorial)
-* * CPU: No special restrictions, but it is recommended to work with more than 10 cores for improved efficiency.
-####
-* using local R environment
-* * [R](https://cran.r-project.org/bin/linux/ubuntu/fullREADME.html) (≥ 4.4.0)
-* * [RCurl](https://cran.r-project.org/web/packages/RCurl/index.html)
-* * [textshaping](https://github.com/r-lib/textshaping) (≥ 0.4.1)
-* * R packages (install 'install_R_packages.R' script)
+#### Using Conda environment
+* Linux Environment
+* [Conda](https://docs.conda.io/en/latest/miniconda.html) ([download](https://repo.anaconda.com/archive/Anaconda3-2024.10-1-Linux-x86_64.sh))
+* [Whiptail](https://linux.die.net/man/1/whiptail) (for UI tutorial)
+* CPU: No special restrictions, but it is recommended to work with more than 10 cores for improved efficiency.
+#### using local R environment
+* [R](https://cran.r-project.org/bin/linux/ubuntu/fullREADME.html) (≥ 4.4.0)
+* [RCurl](https://cran.r-project.org/web/packages/RCurl/index.html)
+* [textshaping](https://github.com/r-lib/textshaping) (≥ 0.4.1)
+* R packages (install 'install_R_packages.R' script)
  ```
 dplyr
 tidyr
@@ -65,7 +64,7 @@ cd ./Methylome.At
 chmod +x ./setup_env.sh
 ./setup_env.sh
 ```
-#####  *Check the 'setup_env' log file to verify packages installation*
+######  *Check the 'setup_env' log file to verify packages installation*
 
 ### 
 * or manually:
@@ -103,7 +102,7 @@ Chr1     3577    +       1       5       CHH     CTA
 
 * By default, Methylome.At provides *gene annotation file* in GFF3 format, *transposable elements annotation file* in text file (provide by [TAIR10](https://www.arabidopsis.org/)), and a *description file* integrated from multiple databases.
 * users can alternativley use other *annotation files* (.gtf/.gff/.gff3) and *description file* (.csv/.txt)
-##### description file columns:
+##### Description file columns:
 ```
 gene_id Symbol	Short_description	Gene_description	Computational_description	AraCyc.Db	AraCyc.Name	gene_model_type	Protein.families	GO.biological.process	GO.cellular.component	GO.molecular.function	note	Derives_from	old_symbols	EC	KEGG_pathway	refseq_id	PMID
 
