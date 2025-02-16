@@ -54,8 +54,6 @@ plyranges
 #### 1. Download the source code.
 ```
 git clone https://github.com/Yo-yerush/Methylome.At.git
-```
-```
 cd ./Methylome.At
 ```
 #### 2. Setup [conda](https://docs.conda.io/en/latest/miniconda.html) environment and install all the packages.
