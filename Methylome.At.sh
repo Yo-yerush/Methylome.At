@@ -138,7 +138,7 @@ echo ""
 echo ""
 
 # Generate log file with a timestamp
-log_file="${treatment_s}_vs_${control_s}_$(date +"%d-%m-%y").log"
+log_file="results/${treatment_s}_vs_${control_s}_$(date +"%d-%m-%y").log"
 echo "**  $(date +"%d-%m-%y %H:%M")" > "$log_file"
 echo "**  $treatment_s VS. $control_s" >> "$log_file"
 echo "" >> "$log_file"
