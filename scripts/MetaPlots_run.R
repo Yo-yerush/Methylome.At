@@ -47,7 +47,6 @@ analyze_GeneFeatures = as.logical(configs[10])
 scripts_dir = paste0(rmv_d(Methylome.At_path),"/scripts/")
 
 # metaPlot results directory path
-dir.create(paste0(rmv_d(Methylome.At_path),"/results/"), showWarnings = F)
 dir.create(paste0(rmv_d(Methylome.At_path),"/results/",var2,"_vs_",var1), showWarnings = F)
 
 metaPlot_path = paste0(rmv_d(Methylome.At_path),"/results/",var2,"_vs_",var1,"/metaPlots/")
