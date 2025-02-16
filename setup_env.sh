@@ -33,7 +33,7 @@ for pkg in "r-base" "${packages[@]}"; do
     pkg_info=$(conda list "$pkg")
     # Extract the channel from the package info
     channel=$(echo "$pkg_info" | awk '/^'"$pkg"'[[:space:]]/ {print $NF}')
-    if [ "$channel" == "conda-forge|bioconda" ]; then
+    if [ "$channel" = "conda-forge" ] || [ "$channel" = "bioconda" ]; then
         echo "* installed $pkg: yes" >> "$log_file"
     else
         echo "* installed $pkg: no" >> "$log_file"
