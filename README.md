@@ -351,6 +351,9 @@ mto1_vs_wt
 ```
 * [long version of the output tree file](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/output_tree.txt)
 
-  #
-  ## License
+###
+###
+###
+# License
+
 This project is licensed under the [MIT License](https://github.com/Yo-yerush/Methylome.At/blob/main/LICENSE).
