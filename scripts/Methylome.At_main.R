@@ -54,7 +54,6 @@ Methylome.At_main <- function(var1, # control
   
   # results directory path
   Methylome.At_res_dir = paste0(Methylome.At_path,"/results/")
-  dir.create(Methylome.At_res_dir, showWarnings = FALSE)
   
   # new folders path names
   comparison_name = paste0(var2,"_vs_",var1)
