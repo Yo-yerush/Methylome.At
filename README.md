@@ -350,3 +350,7 @@ mto1_vs_wt
  °--methylation_levels/
 ```
 * [long version of the output tree file](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/output_tree.txt)
+
+  #
+  ## License
+This project is licensed under the [MIT License](https://github.com/Yo-yerush/Methylome.At/blob/main/LICENSE).
