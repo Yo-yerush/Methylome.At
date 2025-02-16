@@ -137,6 +137,9 @@ echo "Methylome.At directory path: $Methylome_At_path"
 echo ""
 echo ""
 
+# create results directory
+mkdir results
+
 # Generate log file with a timestamp
 log_file="results/${treatment_s}_vs_${control_s}_$(date +"%d-%m-%y").log"
 echo "**  $(date +"%d-%m-%y %H:%M")" > "$log_file"
