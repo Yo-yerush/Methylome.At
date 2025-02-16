@@ -174,15 +174,35 @@ Optional arguments:
 An automated log file will be created during the process. see examples from [Methylome.At](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/Methylome.At_log_file.log) and [MetaPlots](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/MetaPlots_log_file.log) pipelines.
 
 
-## Output Figures
-*each analysis also output the data as a table
-
+## Output Tabels and Figures
 *all the results taken from [paper]()
 
 #
 
-#### **Total Methylation Levels**
+#### **Chloroplast Conversion Rate**
+```
+| sample | conversion_rate |
+|--------|-----------------|
+| wt     | 99.49           |
+| wt     | 99.39           |
+| mto1   | 99.48           |
+| mto1   | 99.50           |
+| mto1   | 99.47           |
 
+```
+
+#### **Total Methylation Levels**
+> csv tabel for whole-genome, eu-/hetero- chromatin
+```
+| type | treatment | levels       | SD          |
+|-----:|:---------:|-------------:|------------:|
+| CG   | wt        | 25.82221842  | 0.067418241 |
+| CHG  | wt        | 6.837569844  | 0.335858464 |
+| CHH  | wt        | 2.264188479  | 0.160429206 |
+| CG   | mto1      | 25.94971156  | 0.203546496 |
+| CHG  | mto1      | 8.239533867  | 0.617113840 |
+| CHH  | mto1      | 2.540204156  | 0.119720471 |
+```
  ![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/Whole_Genome.svg)
  ![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/Heterochromatin_region.svg)
  ![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/Euchromatin_region.svg)
@@ -197,7 +217,17 @@ An automated log file will be created during the process. see examples from [Met
 #
 
 #### **Gene Body and Transposable Elements Meta-plots**
+> csv tables for up.stream, gene/TE-body, down.stream region; each context; each of genes/gene-feature/TEs
 
+> first 4 rows. position based on bin-size (20 as default). 
+```
+| seqnames   | start | end | width | strand | Proportion  |
+|:----------:|------:|----:|------:|:------:|-----------:|
+| up.stream  |     1 |   1 |     1 |   *    | 0.038614587 |
+| up.stream  |     2 |   2 |     1 |   *    | 0.039872008 |
+| up.stream  |     3 |   3 |     1 |   *    | 0.040454043 |
+| up.stream  |     4 |   4 |     1 |   *    | 0.041221039 |
+```
  ![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/TEs_CHG_metaPlot.svg)
  ![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/Genes_CHG_metaPlot.svg)
  ![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/Genes_features_CHG_metaPlot.svg)
@@ -211,28 +241,80 @@ An automated log file will be created during the process. see examples from [Met
 #
 
 #### **DMRs Distribution Mapping**
+> csv tables for each context
 
+> first 5 rows
+```
+| seqnames |  start  |   end   | width | strand |    pValue    |    log2FC    | context | sumReadsM1 | sumReadsN1 | proportion1 | sumReadsM2 | sumReadsN2 | proportion2 | cytosinesCount | direction | regionType |
+|:--------:|--------:|--------:|------:|:------:|------------:|------------:|:-------:|-----------:|-----------:|------------:|-----------:|-----------:|------------:|---------------:|----------:|:---------:|
+| Chr1     |  56101  |  56200  |   100 | *      | 7.32E-05     | 0.966553517  | CHG     | 21         | 75         | 0.285714286 | 66         | 118        | 0.558333333 | 4              | 1         | gain      |
+| Chr1     | 213701  | 213800  |   100 | *      | 0.000208476  | 3.608941364  | CHG     | 1          | 110        | 0.017857143 | 38         | 177        | 0.217877095 | 8              | 1         | gain      |
+| Chr1     | 239101  | 239200  |   100 | *      | 4.06E-05     | 0.496927653  | CHG     | 42         | 73         | 0.573333333 | 88         | 108        | 0.809090909 | 4              | 1         | gain      |
+| Chr1     | 432801  | 432900  |   100 | *      | 0.001693563  | 1.007546809  | CHG     | 10         | 44         | 0.239130435 | 49         | 102        | 0.480769231 | 4              | 1         | gain      |
+| Chr1     | 612601  | 612700  |   100 | *      | 0.040449983  | 0.827360614  | CHG     | 18         | 66         | 0.279411765 | 58         | 117        | 0.495798319 | 5              | 1         | gain      |
+```
  ![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/DMRs_Density.svg)
  ![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/ChrPlot_DMRs_CHG.svg)
 
 #
 
 #### **Genome Annotation for DMRs**
+> csv tables for each context; each gene-feature
+
+> first 5 rows
+```
+| gene_id   | seqnames |   start  |   end    | width | strand |  pValue   |   log2FC   | context | direction | regionType |  type  | Symbol | Short_description                                   | Gene_description | Computational_description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | AraCyc.Db | AraCyc.Name | gene_model_type | Protein.families | GO.biological.process | GO.cellular.component | GO.molecular.function | note | Derives_from | old_symbols | EC | KEGG_pathway |           refseq_id           |    PMID    | sumReadsM1 | sumReadsN1 | proportion1  | sumReadsM2 | sumReadsN2 | proportion2   | cytosinesCount |
+|-----------|---------:|---------:|---------:|------:|:------:|----------:|-----------:|:-------:|----------:|:----------:|:------:|:------:|:----------------------------------------------------|:----------------:|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|:---------:|:----------:|:---------------:|:-----------------:|:---------------------:|:---------------------:|:---------------------:|:----:|:-----------:|:----------:|:--:|:------------:|:---------------------------------:|:----------:|-----------:|-----------:|-------------:|-----------:|-----------:|--------------:|----------------:|
+| AT1G20400 | Chr1     |  7073626 |  7073725 |   100 |   *    | 9.32E-06  | 0.6119295  | CHG     |         1 | gain       | intron |        | Protein of unknown function (DUF1204)               |                  | FUNCTIONS IN: molecular_function unknown; INVOLVED IN: biological_process unknown; LOCATED IN: cellular_component unknown; EXPRESSED IN: cultured cell; CONTAINS InterPro DOMAIN/s: Protein of unknown function DUF1204 (InterPro:IPR009596); BEST Arabidopsis thaliana protein match is: myosin heavy chain-related (TAIR:AT2G15420.1); Has 2374 Blast hits to 2027 proteins in 308 species: Archae - 22; Bacteria - 170; Metazoa - 962; Fungi - 207; Plants - 198; Viruses - 74; Other Eukaryotes - 741 (source: NCBI BLink).                                                                                                      |           |             | protein_coding  |                  |                      |                      |                      |      |             |            |    |             | NM_101891; NP_173465            | 28441590   |         41 |        106 | 0.38888889   |         62 |        104 | 0.594339623    |               4 |
+| AT1G29620 | Chr1     | 10348093 | 10348192 |   100 |   *    | 4.28E-03  | 0.5191947  | CHG     |         1 | gain       | intron |        | Cytochrome C oxidase polypeptide VIB family protein |                  | Cytochrome C oxidase polypeptide VIB family protein; BEST Arabidopsis thaliana protein match is: Cytochrome C oxidase polypeptide VIB family protein (TAIR:AT1G32720.1); Has 17 Blast hits to 17 proteins in 3 species: Archae - 0; Bacteria - 0; Metazoa - 0; Fungi - 0; Plants - 17; Viruses - 0; Other Eukaryotes - 0 (source: NCBI BLink).                                                                                                                                                                                                                                                                                                                                                         |           |             | protein_coding  |                  |                      |                      |                      |      |             |            |    |             | NM_102702; NP_174255            |            |         32 |         65 | 0.49253731   |         59 |         83 | 0.705882353    |               6 |
+| AT1G30060 | Chr1     | 10545193 | 10545292 |   100 |   *    | 2.96E-07  | 1.2755803  | CHG     |         1 | gain       | intron |        | COP1-interacting protein-related                    |                  | COP1-interacting protein-related; BEST Arabidopsis thaliana protein match is: COP1-interacting protein-related (TAIR:AT2G01800.1); Has 95 Blast hits to 93 proteins in 18 species: Archae - 0; Bacteria - 0; Metazoa - 6; Fungi - 0; Plants - 89; Viruses - 0; Other Eukaryotes - 0 (source: NCBI BLink).<br>acyl carrier protein metabolism<br>holo-[acyl-carrier-protein] synthase                                                                                                                                                                                                                                                                                          |           |             | protein_coding  |                  |                      |                      |                      |      |             |            |    |             | NM_102745; NP_174298            |            |         31 |        221 | 0.14349776   |        106 |        306 | 0.347402597    |               7 |
+| AT1G30060 | Chr1     | 10545593 | 10545692 |   100 |   *    | 3.99E-07  | 0.9102812  | CHG     |         1 | gain       | intron |        | COP1-interacting protein-related                    |                  | COP1-interacting protein-related; BEST Arabidopsis thaliana protein match is: COP1-interacting protein-related (TAIR:AT2G01800.1); Has 95 Blast hits to 93 proteins in 18 species: Archae - 0; Bacteria - 0; Metazoa - 6; Fungi - 0; Plants - 89; Viruses - 0; Other Eukaryotes - 0 (source: NCBI BLink).<br>acyl carrier protein metabolism<br>holo-[acyl-carrier-protein] synthase                                                                                                                                                                                                                                                                                          |           |             | protein_coding  |                  |                      |                      |                      |      |             |            |    |             | NM_102745; NP_174298            |            |         24 |         88 | 0.27777778   |         70 |        134 | 0.522058824    |               4 |
+
+```
+###
+
+> TEs superfamily frequency
+```
+| Transposon_Super_Family | unique_IDs | total_DMRs | hyper_DMRs | hypo_DMRs |
+|:------------------------|-----------:|-----------:|-----------:|----------:|
+| LTR/Gypsy               |        927 |       1706 |       1705 |         1 |
+| DNA/MuDR                |        308 |        581 |        573 |         8 |
+| LTR/Copia               |        233 |        536 |        534 |         2 |
+| LINE/L1                 |        172 |        344 |        342 |         2 |
+```
 
  ![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/CHG_genom_annotations.svg)
 
 #
 
 #### **Gene Ontology (GO) Analysis**
-
+> csv tables for each context; each gene-feature; BP/MF/CC; gain/loss of methylation (compare to control)
+```
+| GO.ID      | Term                                | Annotated | Significant | Expected | Fisher   |
+|:----------:|:-------------------------------------|----------:|-----------:|---------:|---------:|
+| GO:0036071 | N-glycan fucosylation                |         2 |          1 |        0 | 0.00047  |
+| GO:0001887 | selenium compound metabolic process  |         4 |          1 |        0 | 0.00093  |
+| GO:0019346 | transsulfuration                     |         4 |          1 |        0 | 0.00093  |
+| GO:0009086 | methionine biosynthetic process      |        22 |          1 |     0.01 | 0.00511  |
+```
  ![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/CHG_Genes_GO.svg)
 
 #
 
 #### **KEGG Pathway Enrichment Test**
-
+> csv tables for each context; each gene-feature; gain/loss of methylation (compare to control)
+```
+| pathway.code | pathway.name                      |   p.value   | Significant | Annotated |
+|:------------:|:----------------------------------|-----------:|-----------:|----------:|
+| ath00261     | Monobactam biosynthesis           | 5.46E-06    |          3 |        14 |
+| ath00232     | Caffeine metabolism               | 0.00030362  |          1 |         3 |
+| ath03008     | Ribosome biogenesis in eukaryotes | 0.001228952 |          7 |        92 |
+| ath04144     | Endocytosis                       | 0.001590624 |         10 |       158 |
+| ath00565     | Ether lipid metabolism            | 0.001741456 |          3 |        26 |
+```
  ![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/Promoters.KEGG.svg)
 
+##
 ## Output Files tree
 
 ####  multiple files key:
