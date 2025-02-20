@@ -1,4 +1,4 @@
-load_replicates <- function(var_path, n.cores, metPlot_script=F) {
+load_replicates <- function(var_path, n.cores, metaPlot_script=F) {
   
   n.cores.f = ifelse(n.cores > 2, length(var_path), 1)
   ### load the data for replicates
@@ -8,10 +8,15 @@ load_replicates <- function(var_path, n.cores, metPlot_script=F) {
   methylationData_pool <- poolMethylationDatasets(GRangesList(methylationDataList))
   
   # Joining Replicates
-  if (!metPlot_script) {
-    methylationDataReplicates = joinReplicates(methylationDataList[[1]],methylationDataList[[2]])
-    if (length(var_path) == 3) {
-      methylationDataReplicates = joinReplicates(methylationDataReplicates,methylationDataList[[3]])
+  if (!metaPlot_script) {
+
+    if (length(var_path) == 1) {
+      methylationDataReplicates = methylationDataList # 1 sample
+    } else {
+      methylationDataReplicates = joinReplicates(methylationDataList[[1]], methylationDataList[[2]]) # 2 samples
+      if (length(var_path) == 3) {
+        methylationDataReplicates = joinReplicates(methylationDataReplicates, methylationDataList[[3]]) # 3 samples
+      }
     }
     
     return(list(methylationData_pool = methylationData_pool,
