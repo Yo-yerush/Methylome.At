@@ -198,6 +198,7 @@ An automated log file will be created during the process. see examples from [Met
 
 #### **PCA plots**
 > PCA plots and data tables for CG, CHG, CHH and all contexts
+
  ![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/PCA_all_contexts.svg)
 
 #### **Total Methylation Levels**
