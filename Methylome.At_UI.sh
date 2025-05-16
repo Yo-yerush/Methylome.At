@@ -31,11 +31,11 @@ SCRIPT1_DEFAULT_minProportionDiff_CHG="0.2"
 SCRIPT1_DEFAULT_minProportionDiff_CHH="0.1"
 SCRIPT1_DEFAULT_binSize="100"
 SCRIPT1_DEFAULT_minCytosinesCount="4"
-SCRIPT1_DEFAULT_minReadsPerCytosine="6"
+SCRIPT1_DEFAULT_minReadsPerCytosine="4"
 SCRIPT1_DEFAULT_pValueThreshold="0.05"
 SCRIPT1_DEFAULT_n_cores="10"
-SCRIPT1_DEFAULT_GO_analysis="TRUE"
-SCRIPT1_DEFAULT_KEGG_pathways="TRUE"
+SCRIPT1_DEFAULT_GO_analysis="FALSE"
+SCRIPT1_DEFAULT_KEGG_pathways="FALSE"
 SCRIPT1_DEFAULT_annotation_file="annotation_files/Methylome.At_annotations.csv.gz"
 SCRIPT1_DEFAULT_description_file="annotation_files/Methylome.At_description_file.csv.gz"
 SCRIPT1_DEFAULT_TEs_file="annotation_files/TAIR10_Transposable_Elements.txt"
@@ -43,9 +43,9 @@ SCRIPT1_DEFAULT_TEs_file="annotation_files/TAIR10_Transposable_Elements.txt"
 # Default parameters for Methylome.At_metaPlots.sh:
 SCRIPT2_DEFAULT_Genes_n_TEs="TRUE"
 SCRIPT2_DEFAULT_Gene_features="TRUE"
-SCRIPT2_DEFAULT_minReadsPerCytosine="6"
+SCRIPT2_DEFAULT_minReadsPerCytosine="4"
 SCRIPT2_DEFAULT_metaPlot_random_genes="10000"
-SCRIPT2_DEFAULT_n_cores="20"
+SCRIPT2_DEFAULT_n_cores="10"
 SCRIPT2_DEFAULT_bin_size_features="10"
 SCRIPT2_DEFAULT_annotation_file="annotation_files/Methylome.At_annotations.csv.gz"
 SCRIPT2_DEFAULT_TEs_file="annotation_files/TAIR10_Transposable_Elements.txt"
@@ -141,13 +141,13 @@ edit_script1_parameters() {
       SCRIPT1_n_cores=$(whiptail --inputbox "Number of cores" 10 70 "$SCRIPT1_n_cores" 3>&1 1>&2 2>&3 || echo "$SCRIPT1_n_cores")
     elif [ "$OPTION" = "$SCRIPT1_GO_analysis" ]; then
       SCRIPT1_GO_analysis=$(whiptail --radiolist "Perform GO analysis?" 12 70 2 \
-        "TRUE" "Perform GO analysis" ON \
-        "FALSE" "Skip GO analysis" OFF \
+        "TRUE" "Perform GO analysis" OFF \
+        "FALSE" "Skip GO analysis" ON \
         3>&1 1>&2 2>&3 || echo "$SCRIPT1_GO_analysis")
     elif [ "$OPTION" = "$SCRIPT1_KEGG_pathways" ]; then
       SCRIPT1_KEGG_pathways=$(whiptail --radiolist "Perform KEGG pathways analysis?" 12 70 2 \
-        "TRUE" "Perform KEGG pathways analysis" ON \
-        "FALSE" "Skip KEGG pathways analysis" OFF \
+        "TRUE" "Perform KEGG pathways analysis" OFF \
+        "FALSE" "Skip KEGG pathways analysis" ON \
         3>&1 1>&2 2>&3 || echo "$SCRIPT1_KEGG_pathways")
     elif [ "$OPTION" = "$SCRIPT1_annotation_file" ]; then
       SCRIPT1_annotation_file=$(whiptail --inputbox "Path to annotation file" 10 70 "$SCRIPT1_annotation_file" 3>&1 1>&2 2>&3 || echo "$SCRIPT1_annotation_file")

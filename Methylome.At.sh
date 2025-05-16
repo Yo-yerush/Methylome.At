@@ -16,11 +16,11 @@ minProportionDiff_CHG=0.2
 minProportionDiff_CHH=0.1
 binSize=100
 minCytosinesCount=4
-minReadsPerCytosine=6
+minReadsPerCytosine=4
 pValueThreshold=0.05
 n_cores=10
-GO_analysis=TRUE
-KEGG_pathways=TRUE
+GO_analysis=FALSE
+KEGG_pathways=FALSE
 
 # Function to display help text
 usage() {
@@ -138,7 +138,7 @@ echo ""
 echo ""
 
 # create results directory
-mkdir results
+mkdir -p results
 
 # Generate log file with a timestamp
 log_file="results/${treatment_s}_vs_${control_s}_$(date +"%d-%m-%y").log"

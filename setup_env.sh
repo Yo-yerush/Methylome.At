@@ -34,10 +34,9 @@ for pkg in "r-base" "${packages[@]}"; do
     # Extract the channel from the package info
     channel=$(echo "$pkg_info" | awk '/^'"$pkg"'[[:space:]]/ {print $NF}')
     if [ "$channel" = "conda-forge" ] || [ "$channel" = "bioconda" ]; then
-        echo "* installed $pkg: yes" >> "$log_file"
+        echo "* installed $pkg: yes"
     else
-        echo "* installed $pkg: no" >> "$log_file"
-        #exit 1
+        echo "* installed $pkg: no"
     fi
 done
 

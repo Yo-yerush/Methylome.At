@@ -2,14 +2,14 @@
 
 Methylome.At is a comprehensive, R-based pipeline for *Arabidopsis thaliana* that processes post-alignment WGBS data, identifies DMRs (including non-CG contexts, using [DMRcaller](https://github.com/nrzabet/DMRcaller) package), integrates multiple genomic resources for functional interpretation, and generates extensive visualizations and annotations to advance understanding of plant epigenetic regulation.
 
-### Publication
-[soon...](https://yo)
+#
 
-Methylome.At will produce 10 analysis and each analysis contains CG, CHG and CHH contexts:
+Methylome.At will produce few analysis and each analysis contains CG, CHG and CHH contexts:
 
 ![Methylome.At Flow](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/pipeline_scheme.png)
 
 * Chloroplast Conversion Rate
+* PCA analysis
 * Total Methylation Levels
 * Methylation Distribution
 * Gene Body and Transposable Elements Meta-plots
@@ -18,7 +18,7 @@ Methylome.At will produce 10 analysis and each analysis contains CG, CHG and CHH
 * Genome Annotation for DMRs and DMPs
 * Gene Ontology (GO) Analysis
 * KEGG Pathway Enrichment Test
-* BedGraph Files Generation for DMRs
+* BigWig Files Generation for DMRs visualisation
 
 # System Requirements
 #### Using Conda environment
@@ -48,6 +48,8 @@ Rgraphviz
 org.At.tair.db
 GenomicFeatures
 plyranges
+RColorBrewer
+circlize
  ```
 
 # Installation
@@ -71,6 +73,9 @@ conda create --name Methylome.At_env
 conda activate Methylome.At_env
 conda install -c conda-forge -c bioconda r-base=4.4.2 r-curl r-rcurl r-devtools zlib r-textshaping harfbuzz fribidi freetype libpng pkg-config libxml2 r-xml bioconductor-rsamtools
 Rscript scripts/install_R_packages.R
+chmod +x ./Methylome.At_UI.sh
+chmod +x ./Methylome.At_metaPlots.sh
+chmod +x ./Methylome.At.sh
 ```
 
 # Input files
@@ -190,6 +195,10 @@ An automated log file will be created during the process. see examples from [Met
 | mto1   | 99.47           |
 
 ```
+
+#### **PCA plots**
+> PCA plots and data tables for CG, CHG, CHH and all contexts
+ ![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/PCA_all_contexts.svg)
 
 #### **Total Methylation Levels**
 > csv tabel for whole-genome, eu-/hetero- chromatin
@@ -347,6 +356,7 @@ mto1_vs_wt
  ¦   ¦--TEs/Genes/Gene_features/
  ¦   ¦   ¦--metaPlot_tables/
  ¦   ¦   °--CNTX_metaPlot.svg
+ ¦--PCA_plots/
  °--methylation_levels/
 ```
 * [long version of the output tree file](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/output_tree.txt)
@@ -357,3 +367,4 @@ mto1_vs_wt
 # License
 
 This project is licensed under the [MIT License](https://github.com/Yo-yerush/Methylome.At/blob/main/LICENSE).
+
