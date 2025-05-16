@@ -354,9 +354,9 @@ mto1_vs_wt
  ¦   ¦   °--FEATURE/
  ¦   °--CNTX_FEATURE.svg
  ¦--metaPlots/
- ¦   ¦--TEs/Genes/Gene_features/
- ¦   ¦   ¦--metaPlot_tables/
- ¦   ¦   °--CNTX_metaPlot.svg
+ ¦   °--TEs/Genes/Gene_features/
+ ¦       ¦--metaPlot_tables/
+ ¦       °--CNTX_metaPlot.svg
  ¦--PCA_plots/
  °--methylation_levels/
 ```
