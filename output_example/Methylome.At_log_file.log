@@ -1,6 +1,9 @@
 **  26-09-24 21:55
 **  mto1 VS. wt
 
+load Transposable Elements file
+load description file
+
 load replicates data...
 Read 43080559 records
 Read 43080559 records
@@ -17,12 +20,12 @@ mto1: 99.48%
 mto1: 99.5%
 mto1: 99.47%
 
+PCA plots to total methylation levels
 plot total methylation levels (5-mC%)
 generated ChrPlots to methylation levels
 
-import annotation file
-import Transposable Elements file
-import description file
+call DMRs for replicates data: TRUE
+compute 100bp DMRs using beta regression
 
 DMRs in CG context...
 	min difference in methylation proportion: 0.4
@@ -42,7 +45,7 @@ DMRs in CG context...
 		done: TEG (40)
 		done: pseudogene (22)
 	genome annotations for DMRs: done
-	saved all DMRs also as bedGragh files
+	saved all DMRs also as BigWig files
 
 DMRs in CHG context...
 	min difference in methylation proportion: 0.2
@@ -62,7 +65,7 @@ DMRs in CHG context...
 		done: TEG (2498)
 		done: pseudogene (86)
 	genome annotations for DMRs: done
-	saved all DMRs also as bedGragh files
+	saved all DMRs also as BigWig files
 
 DMRs in CHH context...
 	min difference in methylation proportion: 0.1
@@ -82,9 +85,9 @@ DMRs in CHH context...
 		done: TEG (432)
 		done: pseudogene (31)
 	genome annotations for DMRs: done
-	saved all DMRs also as bedGragh files
+	saved all DMRs also as BigWig files
 
-generated DMRs density plot for all contexts: fail
+generated DMRs density plot for all contexts: done
 
 GO analysis for annotated DMRs...
 	done: Genes

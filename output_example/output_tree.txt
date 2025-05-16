@@ -4,13 +4,13 @@ GO_TYPE = BP (biological process), MF (molecular function), CC (cellular compone
 
 mto1_vs_wt
  ¦--ChrPlot_CX
- ¦   ¦--ChrPlot_CNTX_mto1_vs_wt.svg
- ¦   °--ChrPlot_difference_CNTX_mto1_vs_wt.svg
+ ¦   ¦--ChrPlot_CNTX.svg
+ ¦   °--ChrPlot_difference_CNTX.svg
  ¦--ChrPlot_DMRs
- ¦   °--ChrPlot_DMRs_CNTX_mto1_vs_wt.svg          
+ ¦   °--ChrPlot_DMRs_CNTX.svg          
  ¦--conversion_rate.csv
- ¦--DMRs_CNTX_mto1_vs_wt.csv
- ¦--DMRs_Density_mto1_vs_wt.svg
+ ¦--DMRs_CNTX.csv
+ ¦--DMRs_Density.svg
  ¦--gain_OR_loss
  ¦   ¦--pie_CNTX_gainORloss.svg
  ¦   °--ratio.distribution_CNTX_gainORloss.svg
@@ -49,11 +49,14 @@ mto1_vs_wt
  ¦   ¦   ¦   ¦--mto1.CNTX.STREAM.csv
  ¦   ¦   ¦   °--wt.CNTX.STREAM.csv
  ¦   ¦   °--Genes_CNTX_metaPlot.svg
- ¦   ¦--Gene_features
- ¦   ¦   ¦--metaPlot_tables
- ¦   ¦   ¦   ¦--mto1.CNTX.STREAM.csv
- ¦   ¦   ¦   °--wt.CNTX.STREAM.csv
- ¦   ¦   °--Gene_features_CNTX_metaPlot.svg
+ ¦   °--Gene_features
+ ¦       ¦--metaPlot_tables
+ ¦       ¦   ¦--mto1.CNTX.STREAM.csv
+ ¦       ¦   °--wt.CNTX.STREAM.csv
+ ¦       °--Gene_features_CNTX_metaPlot.svg
+ ¦--PCA_plots
+ ¦   ¦--CNTX_PCA_plot.svg
+ ¦   °--CNTX_PCA_table.csv
  °--methylation_levels
      ¦--Euchromatin_region.csv
      ¦--Euchromatin_region.svg

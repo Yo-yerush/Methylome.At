@@ -1,6 +1,9 @@
 **  23-10-24 16:10
 **  mto1 VS. wt
 
+load annotation file
+load Transposable Elements file
+
 load replicates data...
 Read 43080559 records
 Read 43080559 records
@@ -8,9 +11,6 @@ Read 43080559 records
 Read 43080559 records
 Read 43080559 records
 load and pool replicates data: successfully
-
-import annotation file
-import Transposable Elements file
 
 generate metaPlot to protein-coding Genes...
 process average metaPlot to 10000 Protein Coding Genes
