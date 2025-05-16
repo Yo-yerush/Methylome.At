@@ -95,7 +95,6 @@ ChrPlots_CX <- function(comparison_name, meth_var1, meth_var2, var1, var2, scrip
 
   
   par_function <- function(cntx) {
-    #### two conditions plot
     if (cntx == "CG") {
       y_cntx = 1
     } else if (cntx == "CHG") {
@@ -103,6 +102,8 @@ ChrPlots_CX <- function(comparison_name, meth_var1, meth_var2, var1, var2, scrip
     } else if (cntx == "CHH") {
       y_cntx = 0.2
     }
+
+    #### two conditions plot
     svg(paste0("ChrPlot_",cntx,"_",comparison_name,".svg"), width = 8, height = 2, family = "serif")
     par(mar = c(1,4,2,0))
     par(fig=c(0,2,0,10)/10)
@@ -126,7 +127,9 @@ ChrPlots_CX <- function(comparison_name, meth_var1, meth_var2, var1, var2, scrip
            lty = 0, col = c("gray50","#bf6828"), 
            pch = 16, bty = "n")
     dev.off()
+  }
 
+    par_function_diff <- function(cntx) {
     #### difference (delta) plot
     svg(paste0("ChrPlot_difference_",cntx,"_",comparison_name,".svg"), width = 8, height = 2, family = "serif")
     par(mar = c(1,4,2,0))
@@ -155,5 +158,9 @@ ChrPlots_CX <- function(comparison_name, meth_var1, meth_var2, var1, var2, scrip
   }
   
   if (n.cores > 2) {n.cores.plot = 3} else {n.cores.plot = n.cores}
+  cat("\nChrPlots...\n")
   mclapply(c("CG","CHG","CHH"), par_function, mc.cores = n.cores.plot)
+  cat("\nChrPlots (difference)...\n")
+  #mclapply(c("CG","CHG","CHH"), par_function_diff, mc.cores = n.cores.plot)
+  lapply(c("CG","CHG","CHH"), par_function_diff)
 }

@@ -15,16 +15,17 @@ trimm_and_rename <- function(gr_obj) {
     
   } else if (all(seqlevels(gr_obj)[1:5] == as.character(1:5)) & any(grepl("Pt", seqlevels(gr_obj)))) {
     # change 'Ensembl'
-    gr_obj = renameSeqlevels(gr_obj, gsub("Mt","M",seqlevels(gr_obj))) # MT
-    gr_obj = renameSeqlevels(gr_obj, gsub("Pt","C",seqlevels(gr_obj))) # Pltd
-    gr_obj = renameSeqlevels(gr_obj, paste0("Chr",seqlevels(gr_obj))) # Pltd
+    gr_obj = renameSeqlevels(gr_obj, paste0("Chr",seqlevels(gr_obj)))
+    gr_obj = renameSeqlevels(gr_obj, gsub("ChrMt", "M", seqlevels(gr_obj))) # MT
+    gr_obj = renameSeqlevels(gr_obj, gsub("ChrPt", "C", seqlevels(gr_obj))) # Pltd
     names(mcols(gr_obj)) = gsub("biotype","gene_model_type", names(mcols(gr_obj)))
   }
   
   ### trimm 'ChrM' and 'ChrC' from the genome
   remove_seqnames = c("ChrM","ChrC")
   gr_obj <- gr_obj[!seqnames(gr_obj) %in% remove_seqnames]
-  seqlevels(gr_obj) = as.character(unique(seqnames(gr_obj))) #setdiff(seqlevels(gr_obj), remove_seqnames)
+  seqlevels(gr_obj) <- c("Chr1", "Chr2", "Chr3", "Chr4", "Chr5")
+  gr_obj <- sort(gr_obj)
   
   return(gr_obj)
 }

@@ -20,7 +20,7 @@ DMRs_ann_plots <- function(var1, var2, context) {
   }
   
   ann_plot_final_df$percent = round((ann_plot_final_df$gain/ann_plot_final_df$total)*100, digits = 1)
-  ann_plot_final_df$percent[ann_plot_final_df$percent == 0] = 100
+  #ann_plot_final_df$percent[ann_plot_final_df$percent == 0] = 100
   ann_plot_final_df$percent_loss = round((100-ann_plot_final_df$percent), digits = 1)
   
   plot_levels = c("Promoters","CDS","Introns","5'UTRs","3'UTRs")#, "TEG")

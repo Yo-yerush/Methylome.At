@@ -28,7 +28,6 @@ genome_ann <- function(ann.gr, TE_file.f) {
       
       return(unique(x))
     }
-    
   }
   
   ### annotate 'introns'

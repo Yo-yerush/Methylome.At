@@ -10,19 +10,68 @@ Methylome.At_main <- function(var1, # control
                               binSize,
                               minCytosinesCount,
                               minReadsPerCytosine,
-                              metaPlot.random.genes,
                               pValueThreshold,
                               n.cores,
                               GO_analysis,
                               KEGG_pathways)
 {
   ########################################################################### 
-  start_time <- Sys.time()
   
-  # scripts directory path
-  scripts_dir = paste0(Methylome.At_path,"/scripts/")
+  start_time <- Sys.time()
+  scripts_dir = paste0(Methylome.At_path, "/scripts/")
+  source(paste0(scripts_dir, "trimm_and_rename_seq.R"))
   
   ########################################################################### 
+  
+  setwd(Methylome.At_path)
+  
+  ##### Read annotation and description files #####
+  cat("load annotations and description files...")
+  # annotation file
+  tryCatch({
+    # if its 'csv' file
+    if (grepl("\\.csv$|\\.csv\\.gz$", annotation_file)) {
+      annotation.gr = read.csv(annotation_file) %>% 
+        makeGRangesFromDataFrame(., keep.extra.columns = T) %>%
+        trimm_and_rename()
+      # if its 'gtf'/'gff'/'gff3' file
+    } else if (grepl("\\.gtf$|\\.gff$|\\.gff3$|\\.gtf\\.gz$|\\.gff\\.gz$|\\.gff3\\.gz$", tolower(annotation_file))) { 
+      annotation.gr = import.gff3(annotation_file) %>%
+        trimm_and_rename()
+    }
+    message("load annotation file")
+  }, error = function(cond) {
+    cat("\n*\n",as.character(cond),"\n*\n")
+    message("load 'annotation' file: fail")
+  })
+  
+  cat("...")
+  # TAIR10 Transposable Elements file
+  tryCatch({
+    source(paste0(scripts_dir,"edit_TE_file.R"))
+    TE_file.df = read.csv(TEs_file, sep = "\t")
+    TE_file = edit_TE_file(TE_file.df)
+    message("load Transposable Elements file")
+  }, error = function(cond) {
+    cat("\n*\n",as.character(cond),"\n*\n")
+    message("load Transposable Elements file: fail")
+  })
+  
+  cat("...")
+  # upload description file
+  tryCatch({
+    des_file_sep = ifelse(grepl("\\.csv$|\\.csv\\.gz$",description_file), ",", "\t")
+    description_df = read.csv(description_file, sep = des_file_sep)
+    names(description_df)[1] = "gene_id"
+    message("load description file\n")
+  }, error = function(cond) {
+    cat("\n*\n",as.character(cond),"\n*\n")
+    message("load description file: fail\n")
+  })
+  
+  cat(" done\n\n")
+
+  ###########################################################################
   
   ##### load the data for replicates ##### 
   message("load replicates data...")
@@ -33,7 +82,6 @@ Methylome.At_main <- function(var1, # control
     load_vars = mclapply(list(var1_path,var2_path), function(x) load_replicates(x, n.cores), mc.cores = n.cores.load)
     
     # trimm seqs objects (rename if not 'TAIR10' Chr seqnames)
-    source(paste0(scripts_dir,"trimm_and_rename_seq.R"))
     meth_var1 = trimm_and_rename(load_vars[[1]]$methylationData_pool)
     meth_var2 = trimm_and_rename(load_vars[[2]]$methylationData_pool)
     meth_var1_replicates = trimm_and_rename(load_vars[[1]]$methylationDataReplicates)
@@ -51,51 +99,68 @@ Methylome.At_main <- function(var1, # control
   })
   
   ###########################################################################
-  
-  # results directory path
-  Methylome.At_res_dir = paste0(Methylome.At_path,"/results/")
-  
+
   # new folders path names
   comparison_name = paste0(var2,"_vs_",var1)
-  exp_path = paste0(Methylome.At_res_dir,comparison_name)
-  ChrPlot_CX_path = paste0(Methylome.At_res_dir,comparison_name,"/ChrPlot_CX")
-  meth_levels_path = paste0(Methylome.At_res_dir,comparison_name,"/methylation_levels")
-  metaPlot_path = paste0(Methylome.At_res_dir,comparison_name,"/metaPlots")
-  gainORloss_path = paste0(Methylome.At_res_dir,comparison_name,"/gain_OR_loss")
-  genome_ann_path = paste0(Methylome.At_res_dir,comparison_name,"/genome_annotation")
-  DMRs_bedGragh_path = paste0(Methylome.At_res_dir,comparison_name,"/DMRs_bedGragh")
-  ChrPlots_DMRs_path = paste0(Methylome.At_res_dir,comparison_name,"/ChrPlot_DMRs")
+  exp_path = paste0(Methylome.At_path,"/results/",comparison_name)
+  ChrPlot_CX_path = paste0(exp_path,"/ChrPlot_CX")
+  PCA_plots_path = paste0(exp_path,"/PCA_plots")
+  meth_levels_path = paste0(exp_path,"/methylation_levels")
+  metaPlot_path = paste0(exp_path,"/metaPlots")
+  gainORloss_path = paste0(exp_path,"/gain_OR_loss")
+  genome_ann_path = paste0(exp_path,"/genome_annotation")
+  DMRs_bigWig_path = paste0(exp_path,"/DMRs_bigWig")
+  ChrPlots_DMRs_path = paste0(exp_path,"/ChrPlot_DMRs")
   
-  dir.create(exp_path)
+  dir.create(exp_path, showWarnings = F)
   setwd(exp_path)
   
   ###########################################################################
   
-  # calculate the conversion rate by the chloroplast chromosome (ChrC)
+  ##### calculate the conversion rate by the chloroplast chromosome (ChrC)
   message("\nconversion rate (C->T) along the Chloroplast genome:")
   source(paste0(scripts_dir,"ChrC_conversionRate.R"))
   conR_var1 = conversionRate(load_vars[[1]]$methylationDataReplicates, var1)
   conR_var2 = conversionRate(load_vars[[2]]$methylationDataReplicates, var2)
   write.csv(rbind(conR_var1,conR_var2), paste0(exp_path,"/conversion_rate.csv"), row.names = F)
+  rm(load_vars)
+
+  ##### PCA plot to total methlyation in all contexts
+  dir.create(PCA_plots_path, showWarnings = F)
+  setwd(PCA_plots_path)
+
+  tryCatch({
+    source(paste0(scripts_dir,"pca_plot.R"))
+    pca_plot(methylationDataReplicates_joints, var1, var2, var1_path, var2_path, "CG")
+    pca_plot(methylationDataReplicates_joints, var1, var2, var1_path, var2_path, "CHG")
+    pca_plot(methylationDataReplicates_joints, var1, var2, var1_path, var2_path, "CHH")
+    pca_plot(methylationDataReplicates_joints, var1, var2, var1_path, var2_path, "all_contexts")
+    message(paste0("\nPCA plots to total methylation levels"))
+  },
+  error = function(cond) {
+    cat("\n*\n",as.character(cond),"\n*\n")
+    message("\nPCA plot to total methylation levels: fail")
+  })
+  setwd(exp_path)
   
-  ###########################################################################
-  
+  ###########################################################################  
+
   ##### calculate and plot total methylation levels (%)
-  dir.create(meth_levels_path)
+  dir.create(meth_levels_path, showWarnings = F)
   setwd(meth_levels_path)
   
   tryCatch({
     source(paste0(scripts_dir,"total_meth_levels.R"))
     total_meth_levels = total_meth_levels(meth_var1_replicates, meth_var2_replicates, var1, var2)
-    message(paste0("\nplot total methylation levels (5-mC%)"))
+    message(paste0("plot total methylation levels (5-mC%)"))
   },
   error = function(cond) {
     cat("\n*\n",as.character(cond),"\n*\n")
-    message("\nplot total methylation levels (5-mC%): fail")
+    message("plot total methylation levels (5-mC%): fail")
   })
-  
+
   ##### ChrPlots for CX methylation #####
-  dir.create(ChrPlot_CX_path)
+  dir.create(ChrPlot_CX_path, showWarnings = F)
   setwd(ChrPlot_CX_path)
   
   tryCatch({
@@ -107,55 +172,23 @@ Methylome.At_main <- function(var1, # control
     cat("\n*\n",as.character(cond),"\n*\n")
     message("generated ChrPlots to methylation levels: fail\n")
   })
-  setwd(exp_path)
-  
-  ###########################################################################
-  
-  ##### import annotation and description files ##### 
-  # annotation file
-  tryCatch({
-    # if its 'csv' file
-    if (grepl("\\.csv$|\\.csv\\.gz$", annotation_file)) {
-      annotation.gr = read.csv(annotation_file) %>% 
-        makeGRangesFromDataFrame(., keep.extra.columns = T) %>%
-        trimm_and_rename()
-      # if its 'gtf'/'gff'/'gff3' file
-    } else if (grepl("\\.gtf$|\\.gff$|\\.gff3$|\\.gtf\\.gz$|\\.gff\\.gz$|\\.gff3\\.gz$", tolower(annotation_file))) { 
-      annotation.gr = import.gff3(annotation_file) %>%
-        trimm_and_rename()
-    }
-    message("import annotation file")
-  }, error = function(cond) {
-    cat("\n*\n",as.character(cond),"\n*\n")
-    message("import 'annotation' file: fail")
-  })
-  
-  # TAIR10 Transposable Elements file
-  tryCatch({
-    source(paste0(scripts_dir,"edit_TE_file.R"))
-    TE_file.df = read.csv(TEs_file, sep = "\t")
-    TE_file = edit_TE_file(TE_file.df)
-    message("import Transposable Elements file")
-  }, error = function(cond) {
-    cat("\n*\n",as.character(cond),"\n*\n")
-    message("import Transposable Elements file: fail")
-  })
-  
-  # upload description file
-  tryCatch({
-    des_file_sep = ifelse(grepl("\\.csv$|\\.csv\\.gz$",description_file), ",", "\t")
-    description_df = read.csv(description_file, sep = des_file_sep)
-    names(description_df)[1] = "gene_id"
-    message("import description file\n")
-  }, error = function(cond) {
-    cat("\n*\n",as.character(cond),"\n*\n")
-    message("import description file: fail\n")
-  })
   
   setwd(exp_path)
   
   ###########################################################################
-  
+
+  ##### call DMRs for replicates data only if both genotypes includes >1 samples
+  is_Replicates = (length(var1_path) > 1 & length(var2_path) > 1)
+  message(paste0("call DMRs for replicates data: ", is_Replicates))
+
+  if (is_Replicates) {
+    message(paste0("compute ", binSize, "bp DMRs using beta regression\n"))
+  } else {
+    message(paste0("compute ", binSize, "bp DMRs using fisher’s exact test\n"))
+  }
+
+  ###########################################################################
+
   ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ###
   ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ###
   ### ### main loop for 'DMRs' and its downstream results ### ### 
@@ -167,11 +200,11 @@ Methylome.At_main <- function(var1, # control
     ##############################
     ##### Calling DMRs in Replicates ##### 
     source(paste0(scripts_dir,"calling_DMRs.R"))
-    DMRsReplicates = calling_DMRs(methylationDataReplicates_joints, var1, var2,
-                                  var1_path, var2_path, comparison_name, context,
-                                  minProportionDiff, binSize, pValueThreshold, 
-                                  minCytosinesCount, minReadsPerCytosine, n.cores)
-    message(paste0("\tstatistically significant DMRs: ", length(DMRsReplicates)))
+    DMRs_bins = calling_DMRs(methylationDataReplicates_joints, meth_var1, meth_var2, 
+                             var1, var2, var1_path, var2_path, comparison_name,
+                             context, minProportionDiff, binSize, pValueThreshold, 
+                             minCytosinesCount, minReadsPerCytosine, n.cores, is_Replicates)
+    message(paste0("\tstatistically significant DMRs: ", length(DMRs_bins)))
     message(paste0("\tDMRs caller in ",context ," context: done"))
     
     ##############################
@@ -182,7 +215,7 @@ Methylome.At_main <- function(var1, # control
     
     ##### Pie chart
     tryCatch({
-      gainORloss(DMRsReplicates, context)
+      gainORloss(DMRs_bins, context)
       message("\tpie chart (gain or loss): done")
     }, error = function(cond) {
       cat("\n*\n",as.character(cond),"\n*\n")
@@ -191,7 +224,7 @@ Methylome.At_main <- function(var1, # control
     
     ##### Ratio distribution 
     tryCatch({
-      ratio.distribution(DMRsReplicates, var1, var2, context, comparison_name)
+      ratio.distribution(DMRs_bins, var1, var2, context, comparison_name)
       message("\tratio distribution (gain or loss): done")
     }, error = function(cond) {
       cat("\n*\n",as.character(cond),"\n*\n")
@@ -204,7 +237,7 @@ Methylome.At_main <- function(var1, # control
       dir.create(ChrPlots_DMRs_path, showWarnings = FALSE)
       setwd(ChrPlots_DMRs_path)
       source(paste0(scripts_dir,"ChrPlots_DMRs.R"))
-      ChrPlots_DMRs(comparison_name, DMRsReplicates, var1, var2, context, scripts_dir)
+      ChrPlots_DMRs(comparison_name, DMRs_bins, var1, var2, context, scripts_dir)
       message("\tgenerated ChrPlots for all DMRs: done")
     }, error = function(cond) {
       cat("\n*\n",as.character(cond),"\n*\n")
@@ -226,7 +259,7 @@ Methylome.At_main <- function(var1, # control
     # genome annotations
     tryCatch({
       ann_list = genome_ann(annotation.gr, TE_file) # create annotations from annotation file as a list
-      DMRs_ann(ann_list, DMRsReplicates, context, description_df) # save tables of annotate DMRs
+      DMRs_ann(ann_list, DMRs_bins, context, description_df) # save tables of annotate DMRs
       CX_ann(ann_list, var1, var2, meth_var1, meth_var2, context) # save tables of annotate CX
       DMRs_ann_plots(var1, var2, context)
       message("\tgenome annotations for DMRs: done")
@@ -247,14 +280,14 @@ Methylome.At_main <- function(var1, # control
     })
     setwd(exp_path)
     
-    ##### save DMRs as bedGragh file ##### 
-    dir.create(DMRs_bedGragh_path, showWarnings = FALSE)
-    source(paste0(scripts_dir,"DMRs_2_bedGragh.R"))
+    ##### save DMRs as bigWig file #####
+    dir.create(DMRs_bigWig_path, showWarnings = FALSE)
+    source(paste0(scripts_dir,"DMRs_2_bigWig.R"))
     ann_res_files = list.files(paste0(genome_ann_path,"/",context))
-    for (ann.loop.bedGragh in c("all", ann_res_files)) {
-      suppressWarnings(try({DMRs_2_bedGragh(var1,var2,context,ann.loop.bedGragh)}, silent = T))
+    for (ann.loop.bigWig in c("all", ann_res_files)) {
+      suppressWarnings(try({DMRs_2_bigWig(var1,var2,context,ann.loop.bigWig)}, silent = T))
     }
-    message("\tsaved all DMRs also as bedGragh files\n")
+    message("\tsaved all DMRs also as bigWig files\n")
   }
   
   ### ### # finish main loop  ### ### ### ### ### ### ### ### ###
@@ -284,11 +317,11 @@ Methylome.At_main <- function(var1, # control
   if (GO_analysis) {
     tryCatch({
       source(paste0(scripts_dir,"go_script.R"))
-      GO_path = paste0(Methylome.At_res_dir,comparison_name,"/GO_analysis")
+      GO_path = paste0(exp_path,"/GO_analysis")
       dir.create(GO_path, showWarnings = FALSE)
       
       message("GO analysis for annotated DMRs...")
-      run_GO(comparison_name, genome_ann_path, GO_path)
+      run_GO(comparison_name, genome_ann_path, GO_path, n.cores)
       message("GO analysis for annotated DMRs: done\n")
       
     }, error = function(cond) {
@@ -301,11 +334,11 @@ Methylome.At_main <- function(var1, # control
   if (KEGG_pathways) {
     tryCatch({
       source(paste0(scripts_dir,"kegg_script.R"))
-      KEGG_path = paste0(Methylome.At_res_dir,comparison_name,"/KEGG_pathway")
+      KEGG_path = paste0(exp_path,"/KEGG_pathway")
       dir.create(KEGG_path, showWarnings = FALSE)
       
       message("KEGG pathways for annotated DMRs...")
-      run_KEGG(comparison_name, genome_ann_path, KEGG_path)
+      run_KEGG(comparison_name, genome_ann_path, KEGG_path, n.cores)
       message("KEGG pathways for annotated DMRs: done\n")    
       
     }, error = function(cond) {
@@ -316,7 +349,7 @@ Methylome.At_main <- function(var1, # control
   
   ###########################################################################
   
-  setwd(Methylome.At_res_dir)
+  setwd(Methylome.At_path)
   message(paste0("**\t",var2," vs ",var1,": done\n"))
   
   ###########################################################################

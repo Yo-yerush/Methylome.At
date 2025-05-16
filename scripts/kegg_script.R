@@ -1,46 +1,65 @@
-run_KEGG <- function(comparison_name, genome_ann_path, KEGG_path) {
-  tryCatch({
-    pathways.list <- keggList("pathway", "ath")
-    # Pull all genes for each pathway
-    pathway.codes <- sub("path:", "", names(pathways.list)) 
-    genes.by.pathway.loop <- sapply(pathway.codes,
-                                    function(pwid){
-                                      pw <- keggGet(pwid)
-                                      if (is.null(pw[[1]]$GENE)) return(NA)
-                                      pw2 <- pw[[1]]$GENE[c(TRUE,FALSE)] # may need to modify this to c(FALSE, TRUE) for other organisms
-                                      pw2 <- unlist(lapply(strsplit(pw2, split = ";", fixed = T), function(x)x[1]))
-                                      return(pw2)
-                                    }
-    )
-    message("create KEGG 'gene to pathway' dataset: successfully") 
-  }, error = function(cond) {stop("create KEGG 'gene to pathway' dataset: fail")})
-  
+run_KEGG <- function(comparison_name, genome_ann_path, KEGG_path, n.cores) {
+  tryCatch(
+    {
+      pathways.list <- keggList("pathway", "ath")
+      # Pull all genes for each pathway
+      pathway.codes <- sub("path:", "", names(pathways.list))
+      genes.by.pathway.loop <- sapply(
+        pathway.codes,
+        function(pwid) {
+          pw <- keggGet(pwid)
+          if (is.null(pw[[1]]$GENE)) {
+            return(NA)
+          }
+          pw2 <- pw[[1]]$GENE[c(TRUE, FALSE)] # may need to modify this to c(FALSE, TRUE) for other organisms
+          pw2 <- unlist(lapply(strsplit(pw2, split = ";", fixed = T), function(x) x[1]))
+          return(pw2)
+        }
+      )
+      message("create KEGG 'gene to pathway' dataset: successfully")
+    },
+    error = function(cond) {
+      stop("create KEGG 'gene to pathway' dataset: fail")
+    }
+  )
+
   # run kegg pathway plot fun
   message("KEGG pathways for annotated DMRs...")
-  for (ann_loop in c("Genes","Promoters","CDS","Introns","fiveUTRs","threeUTRs")) {
-    for (contx_loop in c("CG","CHG","CHH")) {
-      for (gain_loss_loop in c("gain","loss")) {
+  n.cores.ann <- ifelse(n.cores >= 6, 6, n.cores)
+  n.cores.cntx <- ifelse(n.cores >= 18, 3, n.cores)
+
+  mclapply(c("Genes", "Promoters", "CDS", "Introns", "fiveUTRs", "threeUTRs"), function(ann_loop) {
+    mclapply(c("CG", "CHG", "CHH"), function(contx_loop) {
+      for (gain_loss_loop in c("gain", "loss")) {
         tryCatch(
-          {kegg.pathway.fun(treatment = comparison_name,
-                            gain_OR_loss = gain_loss_loop,
-                            context = contx_loop,
-                            annotation = ann_loop,
-                            gene2pathway = genes.by.pathway.loop,
-                            pathways.list = pathways.list,
-                            genome_ann_path = genome_ann_path,
-                            path_for_results = KEGG_path)},
+          {
+            kegg.pathway.fun(
+              treatment = comparison_name,
+              gain_OR_loss = gain_loss_loop,
+              context = contx_loop,
+              annotation = ann_loop,
+              gene2pathway = genes.by.pathway.loop,
+              pathways.list = pathways.list,
+              genome_ann_path = genome_ann_path,
+              path_for_results = KEGG_path
+            )
+          },
           error = function(cond) {
-            message(paste0("Error in 'kegg.pathway.fun': ",paste(ann_loop,contx_loop,gain_loss_loop,sep = "-")))}
+            message(paste0("Error in 'kegg.pathway.fun': ", paste(ann_loop, contx_loop, gain_loss_loop, sep = "-")))
+          }
         )
       }
-    }
+    }, mc.cores = n.cores.cntx)
     tryCatch(
-      {KEGG_one_plot(comparison_name,ann_loop,KEGG_path)
-        message(paste0("\tdone: ",ann_loop))},
+      {
+        KEGG_one_plot(comparison_name, ann_loop, KEGG_path)
+        message(paste0("\tdone: ", ann_loop))
+      },
       error = function(cond) {
-        message(paste0("Error in kegg pathway plot: ",paste(ann_loop,contx_loop,gain_loss_loop,sep = "-")))}
+        message(paste0("Error in kegg pathway plot: ", ann_loop))
+      }
     )
-  }
+  }, mc.cores = n.cores.ann)
 }
 
 ########################################################

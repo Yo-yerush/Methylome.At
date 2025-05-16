@@ -1,32 +1,42 @@
-run_GO <- function(comparison_name, genome_ann_path, GO_path) {
-  
-  for (ann_loop in c("Genes","Promoters","CDS","Introns","fiveUTRs","threeUTRs")) {
-    for (contx_loop in c("CG","CHG","CHH")) {
-      for (gain_loss_loop in c("gain","loss")) {
-        for (GO_type_loop in c("BP","MF","CC")) {
-          tryCatch({
-            suppressMessages(top.GO.fun(treatment = comparison_name,
-                                        gain_OR_loss = gain_loss_loop,
-                                        GO_Ontology_type = GO_type_loop,
-                                        context = contx_loop,
-                                        annotation = ann_loop,
-                                        genome_ann_path = genome_ann_path,
-                                        path_for_results = GO_path))}, 
+run_GO <- function(comparison_name, genome_ann_path, GO_path, n.cores) {
+
+  n.cores.ann = ifelse(n.cores >= 6, 6, n.cores)
+  n.cores.cntx = ifelse(n.cores >= 18, 3, n.cores)
+
+  mclapply(c("Genes", "Promoters", "CDS", "Introns", "fiveUTRs", "threeUTRs"), function(ann_loop) {
+    mclapply(c("CG", "CHG", "CHH"), function(contx_loop) {
+      for (gain_loss_loop in c("gain", "loss")) {
+        for (GO_type_loop in c("BP", "MF", "CC")) {
+          tryCatch(
+            {
+              suppressMessages(top.GO.fun(
+                treatment = comparison_name,
+                gain_OR_loss = gain_loss_loop,
+                GO_Ontology_type = GO_type_loop,
+                context = contx_loop,
+                annotation = ann_loop,
+                genome_ann_path = genome_ann_path,
+                path_for_results = GO_path
+              ))
+            },
             error = function(cond) {
-              message(paste0("Error in 'top.GO.fun': ",paste(ann_loop,contx_loop,gain_loss_loop,GO_type_loop,sep = "-")))}
+              message(paste0("Error in 'top.GO.fun': ", paste(ann_loop, contx_loop, gain_loss_loop, GO_type_loop, sep = "-")))
+            }
           )
         }
       }
       tryCatch(
         {
-          GO_one_plot(comparison_name,contx_loop,ann_loop,GO_path)
-          #message(paste0("\tdone: ",ann_loop," in ",contx_loop," context\t"))
-        }, error = function(cond) {
-          message(paste0("Error in GO plot: ",paste(ann_loop,contx_loop,gain_loss_loop,GO_type_loop,sep = "-")))}
+          GO_one_plot(comparison_name, contx_loop, ann_loop, GO_path)
+          # message(paste0("\tdone: ",ann_loop," in ",contx_loop," context\t"))
+        },
+        error = function(cond) {
+          message(paste0("Error in GO plot: ", paste(ann_loop, contx_loop, sep = "-")))
+        }
       )
-    }
-    message(paste0("\tdone: ",ann_loop))
-  }
+    }, mc.cores = n.cores.cntx)
+    message(paste0("\tdone: ", ann_loop))
+  }, mc.cores = n.cores.ann)
 }
 
 ########################################################
@@ -59,8 +69,7 @@ top.GO.fun = function(treatment,
   all_genes$pValue[is.na(all_genes$pValue)] <- 0.999
   all_genes$pValue[all_genes$pValue == 0] <- 1e-300
   
-  tmp = ifelse(all_genes$pValue < pcutoff, 1, 0)
-  geneList = tmp
+  geneList = ifelse(all_genes$pValue < pcutoff, 1, 0)
   names(geneList) = all_genes$gene_id
   
   ############################################################
@@ -69,7 +78,6 @@ top.GO.fun = function(treatment,
                   ontology = GO_Ontology_type,
                   allGenes = geneList,
                   geneSelectionFun = function(x)(x == 1),
-                  #description = "Test",
                   annot = annFUN.org,
                   #nodeSize = 5,
                   mapping="org.At.tair.db") 
@@ -87,6 +95,7 @@ top.GO.fun = function(treatment,
   allRes$Term = gsub(",", ";", allRes$Term)
   
   allRes_view = allRes[allRes$Fisher <= pcutoff,]
+  allRes_view = allRes_view[!is.na(allRes_view$GO.ID), ]
   
   ### save
   new_path_1 = paste(path_for_results,context, sep = "/")

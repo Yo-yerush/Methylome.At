@@ -15,75 +15,52 @@ total_meth_levels <- function(rep_var1, rep_var2, var1, var2) {
   eu.chromatin_ranges_var2 <- subsetByOverlaps(rep_var2, heterochromatin_ranges, invert = T)
   
   #############################################################
+
 total_meth_levels_fun <- function(rep_var1_f, rep_var2_f, var1_f, var2_f, plot_title) {
   ############ edit and add ratio (methylated / total) column 
   # var1
   meth_ratio_var1 = rep_var1_f
-  meth_ratio_var1$readsT1 = (meth_ratio_var1$readsM1/meth_ratio_var1$readsN1)*100
-  meth_ratio_var1$readsT2 = (meth_ratio_var1$readsM2/meth_ratio_var1$readsN2)*100
-  if (length(grep("readsM3",names(meth_ratio_var1@elementMetadata))) == 1) {
-    meth_ratio_var1$readsT3 = (meth_ratio_var1$readsM3/meth_ratio_var1$readsN3)*100
-    var1_t3 = T
-  } else {var1_t3 = F}
+  meth_ratio_var1$readsT1 = (meth_ratio_var1$readsM1 / meth_ratio_var1$readsN1) * 100
+  try({meth_ratio_var1$readsT2 = (meth_ratio_var1$readsM2 / meth_ratio_var1$readsN2) * 100}, silent = TRUE)
+  try({meth_ratio_var1$readsT3 = (meth_ratio_var1$readsM3 / meth_ratio_var1$readsN3) * 100}, silent = TRUE)
   
   # var2
   meth_ratio_var2 = rep_var2_f
-  meth_ratio_var2$readsT1 = (meth_ratio_var2$readsM1/meth_ratio_var2$readsN1)*100
-  meth_ratio_var2$readsT2 = (meth_ratio_var2$readsM2/meth_ratio_var2$readsN2)*100
-  if (length(grep("readsM3",names(meth_ratio_var2@elementMetadata))) == 1) {
-    meth_ratio_var2$readsT3 = (meth_ratio_var2$readsM3/meth_ratio_var2$readsN3)*100
-    var2_t3 = T
-  } else {var2_t3 = F}
+  meth_ratio_var2$readsT1 = (meth_ratio_var2$readsM1 / meth_ratio_var2$readsN1) * 100
+  try({meth_ratio_var2$readsT2 = (meth_ratio_var2$readsM2 / meth_ratio_var2$readsN2) * 100}, silent = TRUE)
+  try({meth_ratio_var2$readsT3 = (meth_ratio_var2$readsM3 / meth_ratio_var2$readsN3) * 100}, silent = TRUE)
   
   
-  ############ average for all ration separately 
-  # var1
-  var1_total_CG = meth_ratio_var1[which(meth_ratio_var1$context == "CG")]
-  var1_total_CHG = meth_ratio_var1[which(meth_ratio_var1$context == "CHG")]
-  var1_total_CHH = meth_ratio_var1[which(meth_ratio_var1$context == "CHH")]
-  if (var1_t3) {
-    var1_CG = c(mean(var1_total_CG@elementMetadata$readsT1, na.rm = T),
-                mean(var1_total_CG@elementMetadata$readsT2, na.rm = T),
-                mean(var1_total_CG@elementMetadata$readsT3, na.rm = T))
-    var1_CHG = c(mean(var1_total_CHG@elementMetadata$readsT1, na.rm = T),
-                 mean(var1_total_CHG@elementMetadata$readsT2, na.rm = T),
-                 mean(var1_total_CHG@elementMetadata$readsT3, na.rm = T))
-    var1_CHH = c(mean(var1_total_CHH@elementMetadata$readsT1, na.rm = T),
-                 mean(var1_total_CHH@elementMetadata$readsT2, na.rm = T),
-                 mean(var1_total_CHH@elementMetadata$readsT3, na.rm = T))
-  } else {
-    var1_CG = c(mean(var1_total_CG@elementMetadata$readsT1, na.rm = T),
-                mean(var1_total_CG@elementMetadata$readsT2, na.rm = T))
-    var1_CHG = c(mean(var1_total_CHG@elementMetadata$readsT1, na.rm = T),
-                 mean(var1_total_CHG@elementMetadata$readsT2, na.rm = T))
-    var1_CHH = c(mean(var1_total_CHH@elementMetadata$readsT1, na.rm = T),
-                 mean(var1_total_CHH@elementMetadata$readsT2, na.rm = T))
+  ############ average for each context separately
+  var_context <- function(x, cntx.loop) {
+    x_total <- x[which(x$context == cntx.loop)]
+    if (any(grepl("readsT3", names(mcols(x))))) {
+      x_cntx <- c(
+        mean(x_total@elementMetadata$readsT1, na.rm = T),
+        mean(x_total@elementMetadata$readsT2, na.rm = T),
+        mean(x_total@elementMetadata$readsT3, na.rm = T)
+      )
+    } else if (any(grepl("readsT2", names(mcols(x))))) {
+      x_cntx <- c(
+        mean(x_total@elementMetadata$readsT1, na.rm = T),
+        mean(x_total@elementMetadata$readsT2, na.rm = T)
+      )
+    } else {
+      x_cntx <- mean(x_total@elementMetadata$readsT1, na.rm = T)
+    }
+
+    return(x_cntx)
   }
+
+  var1_CG = var_context(meth_ratio_var1, "CG")
+  var1_CHG = var_context(meth_ratio_var1, "CHG")
+  var1_CHH = var_context(meth_ratio_var1, "CHH")
+
+  var2_CG = var_context(meth_ratio_var2, "CG")
+  var2_CHG = var_context(meth_ratio_var2, "CHG")
+  var2_CHH = var_context(meth_ratio_var2, "CHH")
   
-  # var2
-  var2_total_CG = meth_ratio_var2[which(meth_ratio_var2$context == "CG")]
-  var2_total_CHG = meth_ratio_var2[which(meth_ratio_var2$context == "CHG")]
-  var2_total_CHH = meth_ratio_var2[which(meth_ratio_var2$context == "CHH")]
-  if (var2_t3) {
-    var2_CG = c(mean(var2_total_CG@elementMetadata$readsT1, na.rm = T),
-                mean(var2_total_CG@elementMetadata$readsT2, na.rm = T),
-                mean(var2_total_CG@elementMetadata$readsT3, na.rm = T))
-    var2_CHG = c(mean(var2_total_CHG@elementMetadata$readsT1, na.rm = T),
-                 mean(var2_total_CHG@elementMetadata$readsT2, na.rm = T),
-                 mean(var2_total_CHG@elementMetadata$readsT3, na.rm = T))
-    var2_CHH = c(mean(var2_total_CHH@elementMetadata$readsT1, na.rm = T),
-                 mean(var2_total_CHH@elementMetadata$readsT2, na.rm = T),
-                 mean(var2_total_CHH@elementMetadata$readsT3, na.rm = T))
-  } else {
-    var2_CG = c(mean(var2_total_CG@elementMetadata$readsT1, na.rm = T),
-                mean(var2_total_CG@elementMetadata$readsT2, na.rm = T))
-    var2_CHG = c(mean(var2_total_CHG@elementMetadata$readsT1, na.rm = T),
-                 mean(var2_total_CHG@elementMetadata$readsT2, na.rm = T))
-    var2_CHH = c(mean(var2_total_CHH@elementMetadata$readsT1, na.rm = T),
-                 mean(var2_total_CHH@elementMetadata$readsT2, na.rm = T))
-  }
-  
-  
+  ############ plot
   meth_plot_df = data.frame(type = rep(c("CG", "CHG", "CHH"),2),
                             treatment = c(rep(var1,3), rep(var2,3)),
                             levels = c(mean(var1_CG),mean(var1_CHG),mean(var1_CHH),
@@ -91,7 +68,6 @@ total_meth_levels_fun <- function(rep_var1_f, rep_var2_f, var1_f, var2_f, plot_t
                             SD = c(sd(var1_CG),sd(var1_CHG),sd(var1_CHH),
                                    sd(var2_CG),sd(var2_CHG),sd(var2_CHH)))
   
-  # plot
   level_order = c(var1_f,var2_f)
   y_max_plot = max(meth_plot_df$levels)*1.1
   if (nchar(var1) > 6 | nchar(var2) > 6) {leg_horiz=0.75} else {leg_horiz=0.9} # legend position
