@@ -1,8 +1,4 @@
 #!/usr/bin/env bash
-#
-# A Bash script that uses whiptail to configure and run 'Methylome.At.sh' and 'Methylome.At_metaPlots.sh'
-# Make sure you have `whiptail` installed (commonly in the `newt` package).
-# Adjust the paths to 'Methylome.At.sh' and 'Methylome.At_metaPlots.sh' if needed.
 
 # Get the directory where the Bash script is located
 Methylome_At_path=$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")
