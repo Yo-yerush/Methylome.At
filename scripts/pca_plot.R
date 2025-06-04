@@ -47,7 +47,7 @@ pca_plot <- function(replicates_joints, var1, var2, var1_path, var2_path, cntx =
             axis.title.x = element_text(size = 12),
             axis.title.y = element_text(size = 12),
             axis.text = element_text(size = 9),
-            panel.border = element_rect(colour = "black", fill = NA, size = 0.5),
+            panel.border = element_rect(colour = "black", fill = NA, linewidth = 0.5),
             legend.title = element_blank()
         ) +
         geom_hline(yintercept = 0, colour = "grey60", linetype = "dashed") +
