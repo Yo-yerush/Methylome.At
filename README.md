@@ -21,7 +21,7 @@ Methylome.At will produce few analysis and each analysis contains CG, CHG and CH
 <img
   src="https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/pipeline_scheme.png"
   alt="Methylome.At Flow"
-  width="65%"
+  width="75%"
 />
 
 #
@@ -57,6 +57,7 @@ plyranges
 RColorBrewer
 circlize
  ```
+#
 
 # Installation
 #### 1. Download the source code.
@@ -83,6 +84,7 @@ chmod +x ./Methylome.At_UI.sh
 chmod +x ./Methylome.At_metaPlots.sh
 chmod +x ./Methylome.At.sh
 ```
+#
 
 # Input files
 #### 1. Samples table file ([example](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/sample_table_example.txt))
@@ -116,12 +118,14 @@ Chr1     3577    +       1       5       CHH     CTA
 gene_id Symbol	Short_description	Gene_description	Computational_description	AraCyc.Db	AraCyc.Name	gene_model_type	Protein.families	GO.biological.process	GO.cellular.component	GO.molecular.function	note	Derives_from	old_symbols	EC	KEGG_pathway	refseq_id	PMID
 
 ```
+#
 
 # Run Methylome.At with UI
 Running this script will open a UI menu to run the **Methylome.At** main pipeline and the **MetaPlot** pipeline, allowing the user to change parameters as needed.
 ```
 ./Methylome.At_UI.sh
 ```
+#
 
 # Run Methylome.At manually
 #### Main pipeline (**Methylome.At**):
@@ -180,10 +184,12 @@ Optional arguments:
   --Methylome_At_path           Path to 'Methylome.At' directory [default: PATH/TO/Methylome.At]
 
 ```
+#
 
 ## .log file
 An automated log file will be created during the process. see examples from [Methylome.At](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/Methylome.At_log_file.log) and [MetaPlots](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/MetaPlots_log_file.log) pipelines.
 
+#
 
 ## Output Tabels and Figures
 *all the results taken from [paper]()
@@ -201,11 +207,14 @@ An automated log file will be created during the process. see examples from [Met
 | mto1   | 99.47           |
 
 ```
+#
 
 #### **PCA plots**
 > PCA plots and data tables for CG, CHG, CHH and all contexts
 
  ![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/PCA_all_contexts.svg)
+
+#
 
 #### **Total Methylation Levels**
 > csv tabel for whole-genome, eu-/hetero- chromatin
@@ -222,17 +231,17 @@ An automated log file will be created during the process. see examples from [Met
 <img
   src="https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/Whole_Genome.svg"
   alt="fig"
-  height="75%"
+  height="60%"
 />
 <img
   src="https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/Heterochromatin_region.svg"
   alt="fig"
-  height="75%"
+  height="60%"
 />
 <img
   src="https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/Euchromatin_region.svg"
   alt="fig"
-  height="75%"
+  height="60%"
 />
 
 #
@@ -283,7 +292,7 @@ An automated log file will be created during the process. see examples from [Met
 <img
   src="https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/DMRs_Density.svg"
   alt="fig"
-  width="50%"
+  width="60%"
 />
 
  ![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/ChrPlot_DMRs_CHG.svg)
