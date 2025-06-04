@@ -17,9 +17,9 @@ Methylome.At will produce few analysis and each analysis contains CG, CHG and CH
 * Gene Ontology (GO) Analysis
 * KEGG Pathway Enrichment Test
 * BigWig Files Generation for DMRs visualisation
-
+#
 ![Methylome.At Flow](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/pipeline_scheme.png)
-
+#
 # System Requirements
 #### Using Conda environment
 * Linux Environment
