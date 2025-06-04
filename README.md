@@ -222,17 +222,17 @@ An automated log file will be created during the process. see examples from [Met
 <img
   src="https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/Whole_Genome.svg"
   alt="fig"
-  width="75%"
+  height="75%"
 />
 <img
   src="https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/Heterochromatin_region.svg"
   alt="fig"
-  width="75%"
+  height="75%"
 />
 <img
   src="https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/Euchromatin_region.svg"
   alt="fig"
-  width="75%"
+  height="75%"
 />
 
 #
@@ -273,7 +273,7 @@ An automated log file will be created during the process. see examples from [Met
 > first 5 rows
 ```
 | seqnames |  start  |   end   | width | strand |    pValue    |    log2FC    | context | sumReadsM1 | sumReadsN1 | proportion1 | sumReadsM2 | sumReadsN2 | proportion2 | cytosinesCount | direction | regionType |
-|:--------:|--------:|--------:|------:|:------:|------------:|------------:|:-------:|-----------:|-----------:|------------:|-----------:|-----------:|------------:|---------------:|----------:|:---------:|
+|:--------:|--------:|--------:|------:|:------:|-------------:|------------:|:-------:|-----------:|-----------:|------------:|-----------:|-----------:|------------:|---------------:|----------:|:---------:|
 | Chr1     |  56101  |  56200  |   100 | *      | 7.32E-05     | 0.966553517  | CHG     | 21         | 75         | 0.285714286 | 66         | 118        | 0.558333333 | 4              | 1         | gain      |
 | Chr1     | 213701  | 213800  |   100 | *      | 0.000208476  | 3.608941364  | CHG     | 1          | 110        | 0.017857143 | 38         | 177        | 0.217877095 | 8              | 1         | gain      |
 | Chr1     | 239101  | 239200  |   100 | *      | 4.06E-05     | 0.496927653  | CHG     | 42         | 73         | 0.573333333 | 88         | 108        | 0.809090909 | 4              | 1         | gain      |
@@ -283,7 +283,7 @@ An automated log file will be created during the process. see examples from [Met
 <img
   src="https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/DMRs_Density.svg"
   alt="fig"
-  width="60%"
+  width="50%"
 />
 
  ![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/ChrPlot_DMRs_CHG.svg)
