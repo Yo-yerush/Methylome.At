@@ -21,7 +21,7 @@ Methylome.At will produce few analysis and each analysis contains CG, CHG and CH
 <img
   src="https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/pipeline_scheme.png"
   alt="Methylome.At Flow"
-  width="75%"
+  width="80%"
 />
 
 #
@@ -231,17 +231,17 @@ An automated log file will be created during the process. see examples from [Met
 <img
   src="https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/Whole_Genome.svg"
   alt="fig"
-  height="50%"
+  height="40%"
 />
 <img
   src="https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/Heterochromatin_region.svg"
   alt="fig"
-  height="50%"
+  height="40%"
 />
 <img
   src="https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/Euchromatin_region.svg"
   alt="fig"
-  height="50%"
+  height="40%"
 />
 
 #
