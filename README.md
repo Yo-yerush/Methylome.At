@@ -18,7 +18,11 @@ Methylome.At will produce few analysis and each analysis contains CG, CHG and CH
 * KEGG Pathway Enrichment Test
 * BigWig Files Generation for DMRs visualisation
 #
-![Methylome.At Flow](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/pipeline_scheme.png "yo whats up")
+<img
+  src="https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/pipeline_scheme.png"
+  alt="Methylome.At Flow"
+  width="60%"
+/>
 #
 # System Requirements
 #### Using Conda environment
