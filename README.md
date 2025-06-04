@@ -17,13 +17,15 @@ Methylome.At will produce few analysis and each analysis contains CG, CHG and CH
 * Gene Ontology (GO) Analysis
 * KEGG Pathway Enrichment Test
 * BigWig Files Generation for DMRs visualisation
-#
+
 <img
   src="https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/pipeline_scheme.png"
   alt="Methylome.At Flow"
-  width="60%"
+  width="65%"
 />
+
 #
+
 # System Requirements
 #### Using Conda environment
 * Linux Environment
@@ -217,9 +219,21 @@ An automated log file will be created during the process. see examples from [Met
 | CHG  | mto1      | 8.239533867  | 0.617113840 |
 | CHH  | mto1      | 2.540204156  | 0.119720471 |
 ```
- ![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/Whole_Genome.svg)
- ![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/Heterochromatin_region.svg)
- ![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/Euchromatin_region.svg)
+<img
+  src="https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/Whole_Genome.svg"
+  alt="fig"
+  width="75%"
+/>
+<img
+  src="https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/Heterochromatin_region.svg"
+  alt="fig"
+  width="75%"
+/>
+<img
+  src="https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/Euchromatin_region.svg"
+  alt="fig"
+  width="75%"
+/>
 
 #
 
@@ -249,7 +263,6 @@ An automated log file will be created during the process. see examples from [Met
 #
 
 #### **DMRs direction (Gain or Loss)**
-
 ![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/CHH_gainORloss.svg)
 
 #
@@ -267,7 +280,12 @@ An automated log file will be created during the process. see examples from [Met
 | Chr1     | 432801  | 432900  |   100 | *      | 0.001693563  | 1.007546809  | CHG     | 10         | 44         | 0.239130435 | 49         | 102        | 0.480769231 | 4              | 1         | gain      |
 | Chr1     | 612601  | 612700  |   100 | *      | 0.040449983  | 0.827360614  | CHG     | 18         | 66         | 0.279411765 | 58         | 117        | 0.495798319 | 5              | 1         | gain      |
 ```
- ![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/DMRs_Density.svg)
+<img
+  src="https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/DMRs_Density.svg"
+  alt="fig"
+  width="60%"
+/>
+
  ![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/ChrPlot_DMRs_CHG.svg)
 
 #
@@ -372,4 +390,3 @@ mto1_vs_wt
 # License
 
 This project is licensed under the [MIT License](https://github.com/Yo-yerush/Methylome.At/blob/main/LICENSE).
-
