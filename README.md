@@ -27,17 +27,22 @@ Methylome.At will produce few analysis and each analysis contains CG, CHG and CH
 #
 
 # System Requirements
+
 #### Using Conda environment
+
 * Linux Environment
 * [Conda](https://docs.conda.io/en/latest/miniconda.html) ([download](https://repo.anaconda.com/archive/Anaconda3-2024.10-1-Linux-x86_64.sh))
 * [Whiptail](https://linux.die.net/man/1/whiptail) (for UI tutorial)
 * CPU: No special restrictions, but it is recommended to work with more than 10 cores for improved efficiency.
+
 #### using local R environment
+
 * [R](https://cran.r-project.org/bin/linux/ubuntu/fullREADME.html) (≥ 4.4.0)
 * [RCurl](https://cran.r-project.org/web/packages/RCurl/index.html)
 * [textshaping](https://github.com/r-lib/textshaping) (≥ 0.4.1)
 * R packages (install 'install_R_packages.R' script)
- ```
+
+ ```text
 dplyr
 tidyr
 ggplot2
@@ -57,25 +62,34 @@ plyranges
 RColorBrewer
 circlize
  ```
+
 #
 
 # Installation
-#### 1. Download the source code.
-```
+
+#### 1. Download the source code
+
+```bash
 git clone https://github.com/Yo-yerush/Methylome.At.git
 cd ./Methylome.At
 ```
-#### 2. Setup [conda](https://docs.conda.io/en/latest/miniconda.html) environment and install all the packages.
+
+#### 2. Setup [conda](https://docs.conda.io/en/latest/miniconda.html) environment and install all the packages
+
 * using build-in setup script:
-```
+
+```bash
 chmod +x ./setup_env.sh
 ./setup_env.sh
 ```
-######  *Check the 'setup_env' log file to verify packages installation*
 
-### 
+###### *Check the 'setup_env' log file to verify packages installation*
+
+###
+
 * or manually:
-```
+
+```bash
 conda create --name Methylome.At_env
 conda activate Methylome.At_env
 conda install -c conda-forge -c bioconda r-base=4.4.2 r-curl r-rcurl r-devtools zlib r-textshaping harfbuzz fribidi freetype libpng pkg-config libxml2 r-xml bioconductor-rsamtools
@@ -84,19 +98,24 @@ chmod +x ./Methylome.At_UI.sh
 chmod +x ./Methylome.At_metaPlots.sh
 chmod +x ./Methylome.At.sh
 ```
+
 #
 
 # Input files
+
 #### 1. Samples table file ([example](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/sample_table_example.txt))
 
 ###### ****tab-delimited***, no header
-```
-treatment	PATH/TO/CX_report.txt
+
+```text
+treatment PATH/TO/CX_report.txt
 ```
 
-#### 2. '**CX_report**' file is an post-alignment methylation status for every cytosine in the genome, output from [Bismark](https://www.bioinformatics.babraham.ac.uk/projects/bismark/) program.
-###### ****tab-delimited***, no header. See [columns definition](https://support.illumina.com/help/BaseSpace_App_MethylSeq_help/Content/Vault/Informatics/Sequencing_Analysis/Apps/swSEQ_mAPP_MethylSeq_CytosineReport.htm).
-```
+#### 2. '**CX_report**' file is an post-alignment methylation status for every cytosine in the genome, output from [Bismark](https://www.bioinformatics.babraham.ac.uk/projects/bismark/) program
+
+###### ****tab-delimited***, no header. See [columns definition](https://support.illumina.com/help/BaseSpace_App_MethylSeq_help/Content/Vault/Informatics/Sequencing_Analysis/Apps/swSEQ_mAPP_MethylSeq_CytosineReport.htm)
+
+```text
 Chr1     3563    +       0       6       CHG     CCG
 Chr1     3564    +       5       2       CG      CGA
 Chr1     3565    -       2       3       CG      CGG
@@ -104,8 +123,9 @@ Chr1     3571    -       0       5       CHH     CAA
 Chr1     3577    +       1       5       CHH     CTA
 ```
 
-##### Convert 'CGmap' to 'CX_report' file:
-```
+##### Convert 'CGmap' to 'CX_report' file
+
+```bash
 ./scripts/cgmap_to_cx.sh PATH/TO/input_file.CGmap PATH/TO/output_CX_report.txt
 ```
 
@@ -113,32 +133,43 @@ Chr1     3577    +       1       5       CHH     CTA
 
 * By default, Methylome.At provides *gene annotation file* in GFF3 format, *transposable elements annotation file* in text file (provide by [TAIR10](https://www.arabidopsis.org/)), and a *description file* integrated from multiple databases.
 * users can alternativley use other *annotation files* (.gtf/.gff/.gff3/.csv/.txt) and *description file* (.csv/.txt)
-##### Description file columns:
-```
-gene_id Symbol	Short_description	Gene_description	Computational_description	AraCyc.Db	AraCyc.Name	gene_model_type	Protein.families	GO.biological.process	GO.cellular.component	GO.molecular.function	note	Derives_from	old_symbols	EC	KEGG_pathway	refseq_id	PMID
+
+##### Description file columns
+
+```text
+gene_id Symbol Short_description Gene_description Computational_description AraCyc.Db AraCyc.Name gene_model_type Protein.families GO.biological.process GO.cellular.component GO.molecular.function note Derives_from old_symbols EC KEGG_pathway refseq_id PMID
 
 ```
+
 #
 
 # Run Methylome.At with UI
+
 Running this script will open a UI menu to run the **Methylome.At** main pipeline and the **MetaPlot** pipeline, allowing the user to change parameters as needed.
-```
+
+```bash
 ./Methylome.At_UI.sh
 ```
+
 #
 
 # Run Methylome.At manually
-#### Main pipeline (**Methylome.At**):
-```
+
+#### Main pipeline (**Methylome.At**)
+
+```bash
 ./Methylome.At.sh PATH/TO/samples_table.txt
 ```
-#### **MetaPlots** pipeline:
-```
+
+#### **MetaPlots** pipeline
+
+```bash
 ./Methylome.At_metaPlots.sh PATH/TO/samples_table.txt
 ```
 
-#### Usage:
-```
+#### Usage
+
+```text
 $ ./Methylome.At.sh --help
 
 Usage: ./Methylome.At.sh [samples_file] [options]
@@ -163,8 +194,7 @@ Optional arguments:
   --Methylome_At_path           Path to Methylome.At [default: PATH/TO/Methylome.At]
 ```
 
-
-```
+```text
 $ ./Methylome.At_metaPlots.sh --help
 
 Usage: ./Methylome.At_metaPlots.sh [samples_file] [options]
@@ -184,20 +214,24 @@ Optional arguments:
   --Methylome_At_path           Path to 'Methylome.At' directory [default: PATH/TO/Methylome.At]
 
 ```
+
 #
 
 ## .log file
+
 An automated log file will be created during the process. see examples from [Methylome.At](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/Methylome.At_log_file.log) and [MetaPlots](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/MetaPlots_log_file.log) pipelines.
 
 #
 
 ## Output Tabels and Figures
+
 *all the results taken from [paper]()
 
 #
 
 #### **Chloroplast Conversion Rate**
-```
+
+```text
 | sample | conversion_rate |
 |--------|-----------------|
 | wt     | 99.49           |
@@ -207,9 +241,11 @@ An automated log file will be created during the process. see examples from [Met
 | mto1   | 99.47           |
 
 ```
+
 #
 
 #### **PCA plots**
+>
 > PCA plots and data tables for CG, CHG, CHH and all contexts
 
  ![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/PCA_all_contexts.svg)
@@ -217,8 +253,10 @@ An automated log file will be created during the process. see examples from [Met
 #
 
 #### **Total Methylation Levels**
+>
 > csv tabel for whole-genome, eu-/hetero- chromatin
-```
+
+```text
 | type | treatment | levels       | SD          |
 |-----:|:---------:|-------------:|------------:|
 | CG   | wt        | 25.82221842  | 0.067418241 |
@@ -228,6 +266,7 @@ An automated log file will be created during the process. see examples from [Met
 | CHG  | mto1      | 8.239533867  | 0.617113840 |
 | CHH  | mto1      | 2.540204156  | 0.119720471 |
 ```
+
 <img
   src="https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/Whole_Genome.svg"
   alt="fig"
@@ -254,10 +293,11 @@ An automated log file will be created during the process. see examples from [Met
 #
 
 #### **Gene Body and Transposable Elements Meta-plots**
+>
 > csv tables for up.stream, gene/TE-body, down.stream region; each context; each of genes/gene-feature/TEs
+> first 4 rows. position based on bin-size (20 as default).
 
-> first 4 rows. position based on bin-size (20 as default). 
-```
+```text
 | seqnames   | start | end | width | strand | Proportion  |
 |:----------:|------:|----:|------:|:------:|-----------:|
 | up.stream  |     1 |   1 |     1 |   *    | 0.038614587 |
@@ -265,6 +305,7 @@ An automated log file will be created during the process. see examples from [Met
 | up.stream  |     3 |   3 |     1 |   *    | 0.040454043 |
 | up.stream  |     4 |   4 |     1 |   *    | 0.041221039 |
 ```
+
  ![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/TEs_CHG_metaPlot.svg)
  ![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/Genes_CHG_metaPlot.svg)
  ![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/Genes_features_CHG_metaPlot.svg)
@@ -272,15 +313,17 @@ An automated log file will be created during the process. see examples from [Met
 #
 
 #### **DMRs direction (Gain or Loss)**
+
 ![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/CHH_gainORloss.svg)
 
 #
 
 #### **DMRs Distribution Mapping**
+>
 > csv tables for each context
-
 > first 5 rows
-```
+
+```text
 | seqnames |  start  |   end   | width | strand |    pValue    |    log2FC    | context | sumReadsM1 | sumReadsN1 | proportion1 | sumReadsM2 | sumReadsN2 | proportion2 | cytosinesCount | direction | regionType |
 |:--------:|--------:|--------:|------:|:------:|-------------:|------------:|:-------:|-----------:|-----------:|------------:|-----------:|-----------:|------------:|---------------:|----------:|:---------:|
 | Chr1     |  56101  |  56200  |   100 | *      | 7.32E-05     | 0.966553517  | CHG     | 21         | 75         | 0.285714286 | 66         | 118        | 0.558333333 | 4              | 1         | gain      |
@@ -289,6 +332,7 @@ An automated log file will be created during the process. see examples from [Met
 | Chr1     | 432801  | 432900  |   100 | *      | 0.001693563  | 1.007546809  | CHG     | 10         | 44         | 0.239130435 | 49         | 102        | 0.480769231 | 4              | 1         | gain      |
 | Chr1     | 612601  | 612700  |   100 | *      | 0.040449983  | 0.827360614  | CHG     | 18         | 66         | 0.279411765 | 58         | 117        | 0.495798319 | 5              | 1         | gain      |
 ```
+
 <img
   src="https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/DMRs_Density.svg"
   alt="fig"
@@ -300,10 +344,11 @@ An automated log file will be created during the process. see examples from [Met
 #
 
 #### **Genome Annotation for DMRs**
+>
 > csv tables for each context; each gene-feature
-
 > first 5 rows
-```
+
+```text
 | gene_id   | seqnames |   start  |   end    | width | strand |  pValue   |   log2FC   | context | direction | regionType |  type  | Symbol | Short_description                                   | Gene_description | Computational_description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | AraCyc.Db | AraCyc.Name | gene_model_type | Protein.families | GO.biological.process | GO.cellular.component | GO.molecular.function | note | Derives_from | old_symbols | EC | KEGG_pathway |           refseq_id           |    PMID    | sumReadsM1 | sumReadsN1 | proportion1  | sumReadsM2 | sumReadsN2 | proportion2   | cytosinesCount |
 |-----------|---------:|---------:|---------:|------:|:------:|----------:|-----------:|:-------:|----------:|:----------:|:------:|:------:|:----------------------------------------------------|:----------------:|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|:---------:|:----------:|:---------------:|:-----------------:|:---------------------:|:---------------------:|:---------------------:|:----:|:-----------:|:----------:|:--:|:------------:|:---------------------------------:|:----------:|-----------:|-----------:|-------------:|-----------:|-----------:|--------------:|----------------:|
 | AT1G20400 | Chr1     |  7073626 |  7073725 |   100 |   *    | 9.32E-06  | 0.6119295  | CHG     |         1 | gain       | intron |        | Protein of unknown function (DUF1204)               |                  | FUNCTIONS IN: molecular_function unknown; INVOLVED IN: biological_process unknown; LOCATED IN: cellular_component unknown; EXPRESSED IN: cultured cell; CONTAINS InterPro DOMAIN/s: Protein of unknown function DUF1204 (InterPro:IPR009596); BEST Arabidopsis thaliana protein match is: myosin heavy chain-related (TAIR:AT2G15420.1); Has 2374 Blast hits to 2027 proteins in 308 species: Archae - 22; Bacteria - 170; Metazoa - 962; Fungi - 207; Plants - 198; Viruses - 74; Other Eukaryotes - 741 (source: NCBI BLink).                                                                                                      |           |             | protein_coding  |                  |                      |                      |                      |      |             |            |    |             | NM_101891; NP_173465            | 28441590   |         41 |        106 | 0.38888889   |         62 |        104 | 0.594339623    |               4 |
@@ -312,10 +357,12 @@ An automated log file will be created during the process. see examples from [Met
 | AT1G30060 | Chr1     | 10545593 | 10545692 |   100 |   *    | 3.99E-07  | 0.9102812  | CHG     |         1 | gain       | intron |        | COP1-interacting protein-related                    |                  | COP1-interacting protein-related; BEST Arabidopsis thaliana protein match is: COP1-interacting protein-related (TAIR:AT2G01800.1); Has 95 Blast hits to 93 proteins in 18 species: Archae - 0; Bacteria - 0; Metazoa - 6; Fungi - 0; Plants - 89; Viruses - 0; Other Eukaryotes - 0 (source: NCBI BLink).<br>acyl carrier protein metabolism<br>holo-[acyl-carrier-protein] synthase                                                                                                                                                                                                                                                                                          |           |             | protein_coding  |                  |                      |                      |                      |      |             |            |    |             | NM_102745; NP_174298            |            |         24 |         88 | 0.27777778   |         70 |        134 | 0.522058824    |               4 |
 
 ```
+
 ###
 
 > TEs superfamily frequency
-```
+
+```text
 | Transposon_Super_Family | unique_IDs | total_DMRs | hyper_DMRs | hypo_DMRs |
 |:------------------------|-----------:|-----------:|-----------:|----------:|
 | LTR/Gypsy               |        927 |       1706 |       1705 |         1 |
@@ -329,8 +376,10 @@ An automated log file will be created during the process. see examples from [Met
 #
 
 #### **Gene Ontology (GO) Analysis**
+>
 > csv tables for each context; each gene-feature; BP/MF/CC; gain/loss of methylation (compare to control)
-```
+
+```text
 | GO.ID      | Term                                | Annotated | Significant | Expected | Fisher   |
 |:----------:|:-------------------------------------|----------:|-----------:|---------:|---------:|
 | GO:0036071 | N-glycan fucosylation                |         2 |          1 |        0 | 0.00047  |
@@ -338,13 +387,16 @@ An automated log file will be created during the process. see examples from [Met
 | GO:0019346 | transsulfuration                     |         4 |          1 |        0 | 0.00093  |
 | GO:0009086 | methionine biosynthetic process      |        22 |          1 |     0.01 | 0.00511  |
 ```
+
  ![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/CHG_Genes_GO.svg)
 
 #
 
 #### **KEGG Pathway Enrichment Test**
+>
 > csv tables for each context; each gene-feature; gain/loss of methylation (compare to control)
-```
+
+```text
 | pathway.code | pathway.name                      |   p.value   | Significant | Annotated |
 |:------------:|:----------------------------------|-----------:|-----------:|----------:|
 | ath00261     | Monobactam biosynthesis           | 5.46E-06    |          3 |        14 |
@@ -353,12 +405,14 @@ An automated log file will be created during the process. see examples from [Met
 | ath04144     | Endocytosis                       | 0.001590624 |         10 |       158 |
 | ath00565     | Ether lipid metabolism            | 0.001741456 |          3 |        26 |
 ```
+
  ![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/Promoters.KEGG.svg)
 
 ##
+
 ## Output Files tree
 
-####  multiple files key:
+#### multiple files key
 
 > CNTX = CG, CHG, CHH
 
@@ -366,8 +420,9 @@ An automated log file will be created during the process. see examples from [Met
 
 > GO_TYPE = BP (biological process), MF (molecular function), CC (cellular component)
 
-####  short output tree:
-```
+#### short output tree
+
+```text
 mto1_vs_wt
  ¦--conversion_rate.csv
  ¦--DMRs_CNTX_mto1_vs_wt.csv
@@ -391,11 +446,15 @@ mto1_vs_wt
  ¦--PCA_plots/
  °--methylation_levels/
 ```
+
 * [long version of the output tree file](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/output_tree.txt)
 
 ###
+
 ###
+
 ###
+
 # License
 
 This project is licensed under the [MIT License](https://github.com/Yo-yerush/Methylome.At/blob/main/LICENSE).
