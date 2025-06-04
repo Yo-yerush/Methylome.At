@@ -299,7 +299,7 @@ An automated log file will be created during the process. see examples from [Met
 
 ```text
 | seqnames   | start | end | width | strand | Proportion  |
-|:----------:|------:|----:|------:|:------:|-----------:|
+|:----------:|------:|----:|------:|:------:|------------:|
 | up.stream  |     1 |   1 |     1 |   *    | 0.038614587 |
 | up.stream  |     2 |   2 |     1 |   *    | 0.039872008 |
 | up.stream  |     3 |   3 |     1 |   *    | 0.040454043 |
@@ -379,12 +379,12 @@ An automated log file will be created during the process. see examples from [Met
 > csv tables for each context; each gene-feature; BP/MF/CC; gain/loss of methylation (compare to control)
 
 ```text
-| GO.ID      | Term                                | Annotated | Significant | Expected | Fisher   |
-|:----------:|:-------------------------------------|----------:|-----------:|---------:|---------:|
-| GO:0036071 | N-glycan fucosylation                |         2 |          1 |        0 | 0.00047  |
-| GO:0001887 | selenium compound metabolic process  |         4 |          1 |        0 | 0.00093  |
-| GO:0019346 | transsulfuration                     |         4 |          1 |        0 | 0.00093  |
-| GO:0009086 | methionine biosynthetic process      |        22 |          1 |     0.01 | 0.00511  |
+| GO.ID      | Term                                 | Annotated | Significant | Expected | Fisher   |
+|:----------:|:-------------------------------------|----------:|------- ----:|---------:|---------:|
+| GO:0036071 | N-glycan fucosylation                |         2 |           1 |        0 | 0.00047  |
+| GO:0001887 | selenium compound metabolic process  |         4 |           1 |        0 | 0.00093  |
+| GO:0019346 | transsulfuration                     |         4 |           1 |        0 | 0.00093  |
+| GO:0009086 | methionine biosynthetic process      |        22 |           1 |     0.01 | 0.00511  |
 ```
 
  ![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/CHG_Genes_GO.svg)
@@ -397,12 +397,12 @@ An automated log file will be created during the process. see examples from [Met
 
 ```text
 | pathway.code | pathway.name                      |   p.value   | Significant | Annotated |
-|:------------:|:----------------------------------|-----------:|-----------:|----------:|
-| ath00261     | Monobactam biosynthesis           | 5.46E-06    |          3 |        14 |
-| ath00232     | Caffeine metabolism               | 0.00030362  |          1 |         3 |
-| ath03008     | Ribosome biogenesis in eukaryotes | 0.001228952 |          7 |        92 |
-| ath04144     | Endocytosis                       | 0.001590624 |         10 |       158 |
-| ath00565     | Ether lipid metabolism            | 0.001741456 |          3 |        26 |
+|:------------:|:----------------------------------|------------:|------------:|----------:|
+| ath00261     | Monobactam biosynthesis           | 5.46E-06    |           3 |        14 |
+| ath00232     | Caffeine metabolism               | 0.00030362  |           1 |         3 |
+| ath03008     | Ribosome biogenesis in eukaryotes | 0.001228952 |           7 |        92 |
+| ath04144     | Endocytosis                       | 0.001590624 |          10 |       158 |
+| ath00565     | Ether lipid metabolism            | 0.001741456 |           3 |        26 |
 ```
 
  ![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/Promoters.KEGG.svg)
