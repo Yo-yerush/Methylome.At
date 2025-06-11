@@ -103,6 +103,11 @@ total_meth_levels_fun <- function(rep_var1_f, rep_var2_f, var1_f, var2_f, plot_t
   #############################################################
   
 total_meth_levels_fun(rep_var1, rep_var2, var1, var2, "Whole_Genome") # all genom
+cat(".")
+
 total_meth_levels_fun(hetero.chromatin_ranges_var1, hetero.chromatin_ranges_var2, var1, var2, "Heterochromatin_region") # heterochromatin
+cat(".")
+
 total_meth_levels_fun(eu.chromatin_ranges_var1, eu.chromatin_ranges_var2, var1, var2, "Euchromatin_region") # euchromatin
+cat(".")
 }

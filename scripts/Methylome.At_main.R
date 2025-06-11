@@ -73,13 +73,21 @@ Methylome.At_main <- function(var1, # control
 
   ###########################################################################
   
-  ##### load the data for replicates ##### 
-  message("load replicates data...")
+  is_single = (length(var1_path) == 1 & length(var2_path) == 1) # both genotypes includes 1 sample
+  is_Replicates = (length(var1_path) > 1 & length(var2_path) > 1) # both genotypes includes >1 samples
+
+  var_args <- list(
+    list(path = var1_path, name = var1),
+    list(path = var2_path, name = var2)
+  )
+    
+  ##### load methylation data ('CX_report' file) ##### 
+  message("load CX methylation data...")
   source(paste0(scripts_dir,"load_replicates.R"))
   tryCatch({
     # load 'CX_reports'
     if (n.cores > 1) {n.cores.load = 2} else {n.cores.load = 1}
-    load_vars = mclapply(list(var1_path,var2_path), function(x) load_replicates(x, n.cores), mc.cores = n.cores.load)
+    load_vars = mclapply(var_args, function(x) load_replicates(x$path, n.cores, x$name), mc.cores = n.cores.load)
     
     # trimm seqs objects (rename if not 'TAIR10' Chr seqnames)
     meth_var1 = trimm_and_rename(load_vars[[1]]$methylationData_pool)
@@ -87,15 +95,21 @@ Methylome.At_main <- function(var1, # control
     meth_var1_replicates = trimm_and_rename(load_vars[[1]]$methylationDataReplicates)
     meth_var2_replicates = trimm_and_rename(load_vars[[2]]$methylationDataReplicates)
     
-    # join replicates
-    message("join replicates data...")
-    methylationDataReplicates_joints = joinReplicates(meth_var1_replicates,
-                                                      meth_var2_replicates)
-    message("load and join replicates data: successfully") 
+    if (!is_single) {
+      # join replicates
+      methylationDataReplicates_joints = joinReplicates(meth_var1_replicates,
+                                                        meth_var2_replicates)
+      message("load and join replicates data: successfully") 
+    } else {
+      # join singles
+      methylationDataReplicates_joints = joinReplicates(meth_var1,
+                                                        meth_var2)
+      message("load and join single-samples data: successfully") 
+    }
   },
   error = function(cond) {
     cat("\n*\n",as.character(cond),"\n*\n")
-    stop("load and join replicates data: fail")
+    stop("load and join CX methylation data: fail")
   })
   
   ###########################################################################
@@ -126,65 +140,77 @@ Methylome.At_main <- function(var1, # control
   rm(load_vars)
 
   ##### PCA plot to total methlyation in all contexts
-  dir.create(PCA_plots_path, showWarnings = F)
-  setwd(PCA_plots_path)
-
-  tryCatch({
-    source(paste0(scripts_dir,"pca_plot.R"))
-    pca_plot(methylationDataReplicates_joints, var1, var2, var1_path, var2_path, "CG")
-    pca_plot(methylationDataReplicates_joints, var1, var2, var1_path, var2_path, "CHG")
-    pca_plot(methylationDataReplicates_joints, var1, var2, var1_path, var2_path, "CHH")
-    pca_plot(methylationDataReplicates_joints, var1, var2, var1_path, var2_path, "all_contexts")
-    message(paste0("\nPCA plots to total methylation levels"))
-  },
-  error = function(cond) {
-    cat("\n*\n",as.character(cond),"\n*\n")
-    message("\nPCA plot to total methylation levels: fail")
-  })
-  setwd(exp_path)
+  if (!is_single) {
+    dir.create(PCA_plots_path, showWarnings = F)
+    setwd(PCA_plots_path)
   
+    message(paste0("\ngenerating PCA plots of total methylation levels: "), appendLF = F)
+    cat("\nPCA plots...")
+    tryCatch({
+      source(paste0(scripts_dir,"pca_plot.R"))
+      pca_plot(methylationDataReplicates_joints, var1, var2, var1_path, var2_path, "CG")
+      pca_plot(methylationDataReplicates_joints, var1, var2, var1_path, var2_path, "CHG")
+      pca_plot(methylationDataReplicates_joints, var1, var2, var1_path, var2_path, "CHH")
+      pca_plot(methylationDataReplicates_joints, var1, var2, var1_path, var2_path, "all_contexts")
+      message("done")
+    },
+    error = function(cond) {
+      cat("\n\n* PCA plot:\n",as.character(cond),"\n*\n")
+      message("fail")
+    })
+    setwd(exp_path)
+    cat(" done\n")
+  } else {
+     message("\n* skipping PCA plots for single-samples data")
+     cat(" fail\n")
+  }
   ###########################################################################  
 
   ##### calculate and plot total methylation levels (%)
   dir.create(meth_levels_path, showWarnings = F)
   setwd(meth_levels_path)
   
+  message("plotting total methylation levels (5-mC%): ", appendLF = F)
+  cat("total methylation levels...")
   tryCatch({
     source(paste0(scripts_dir,"total_meth_levels.R"))
     total_meth_levels = total_meth_levels(meth_var1_replicates, meth_var2_replicates, var1, var2)
-    message(paste0("plot total methylation levels (5-mC%)"))
+    message("done")
+    cat(" done\n")
   },
   error = function(cond) {
-    cat("\n*\n",as.character(cond),"\n*\n")
-    message("plot total methylation levels (5-mC%): fail")
+    cat("\n\n* total methylation levels:\n",as.character(cond),"\n*\n")
+    message("fail")
+    cat(" fail\n")
   })
 
   ##### ChrPlots for CX methylation #####
   dir.create(ChrPlot_CX_path, showWarnings = F)
   setwd(ChrPlot_CX_path)
   
+  message("generating chromosome methylation plots (ChrPlots): ", appendLF = F)
   tryCatch({
     source(paste0(scripts_dir,"ChrPlots_CX.R"))
-    suppressWarnings(ChrPlots_CX(comparison_name, meth_var1, meth_var2, var1, var2, scripts_dir, n.cores))
-    message("generated ChrPlots to methylation levels\n")
+    #suppressWarnings(ChrPlots_CX(comparison_name, meth_var1, meth_var2, var1, var2, scripts_dir, n.cores))
+    run_ChrPlots_CX(comparison_name, meth_var1, meth_var2, var1, var2, TE_file)
+    message("done\n")
   },
   error = function(cond) {
-    cat("\n*\n",as.character(cond),"\n*\n")
-    message("generated ChrPlots to methylation levels: fail\n")
+    cat("\n\n* ChrPlots:\n",as.character(cond),"\n*\n")
+    message("fail\n")
   })
   
   setwd(exp_path)
   
   ###########################################################################
 
-  ##### call DMRs for replicates data only if both genotypes includes >1 samples
-  is_Replicates = (length(var1_path) > 1 & length(var2_path) > 1)
+  ##### call DMRs for replicates/single data
   message(paste0("call DMRs for replicates data: ", is_Replicates))
 
   if (is_Replicates) {
-    message(paste0("compute ", binSize, "bp DMRs using beta regression\n"))
+    message(paste0("compute ", binSize, "bp DMRs using: beta regression\n"))
   } else {
-    message(paste0("compute ", binSize, "bp DMRs using fisher’s exact test\n"))
+    message(paste0("compute ", binSize, "bp DMRs using: fisher’s exact test\n"))
   }
 
   ###########################################################################
@@ -359,5 +385,7 @@ Methylome.At_main <- function(var1, # control
                  paste(format(Sys.time(),"%d"),format(Sys.time(),"%m"),format(Sys.time(),"%Y"), sep = "-"),
                  " ",format(Sys.time(),"%H:%M")))
   end_time <- Sys.time()
-  message(paste0("**\ttime: ", round(difftime(end_time,start_time, units = "hours"),2)," hours\n"))
+  end_msg <- paste0("**\ttime: ", round(difftime(end_time,start_time, units = "hours"),2)," hours\n")
+  cat(paste0("\n\n**\tDone!\n",end_msg))
+  message(end_msg)
 }

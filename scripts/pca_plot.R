@@ -57,4 +57,6 @@ pca_plot <- function(replicates_joints, var1, var2, var1_path, var2_path, cntx =
     svg(paste0(cntx, "_PCA_plot_", var2, "_vs_", var1, ".svg"), width = 3.25, height = 2, family = "serif")
     print(pca_p)
     dev.off()
+
+    cat(".")
 }

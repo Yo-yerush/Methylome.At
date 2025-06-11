@@ -1,12 +1,16 @@
-suppressMessages(library(DMRcaller))
-suppressMessages(library(dplyr))
-suppressMessages(library(ggplot2))
-suppressMessages(library(org.At.tair.db))
-suppressMessages(library(GenomicFeatures))
-suppressMessages(library(plyranges))
-suppressMessages(library(parallel))
-
 start_time <- Sys.time()
+
+# upload libraries
+lib_packages <- c(
+  "dplyr", "ggplot2", "DMRcaller", "org.At.tair.db",
+  "GenomicFeatures", "plyranges", "parallel"
+  )
+cat("loading libraries")
+for (pkg in lib_packages) {
+  suppressMessages(library(pkg, character.only = TRUE))
+  cat(".")
+}
+cat(" done\n\n")
 
 # remove "/" from the end of a path strings
 rmv_d <- function(x) {
