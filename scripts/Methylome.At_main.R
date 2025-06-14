@@ -17,7 +17,7 @@ Methylome.At_main <- function(var1, # control
 {
   ########################################################################### 
   
-  start_time <- Sys.time()
+  start_time = Sys.time()
   scripts_dir = paste0(Methylome.At_path, "/scripts/")
   source(paste0(scripts_dir, "trimm_and_rename_seq.R"))
   
@@ -76,7 +76,7 @@ Methylome.At_main <- function(var1, # control
   is_single = (length(var1_path) == 1 & length(var2_path) == 1) # both genotypes includes 1 sample
   is_Replicates = (length(var1_path) > 1 & length(var2_path) > 1) # both genotypes includes >1 samples
 
-  var_args <- list(
+  var_args = list(
     list(path = var1_path, name = var1),
     list(path = var2_path, name = var2)
   )
@@ -384,8 +384,11 @@ Methylome.At_main <- function(var1, # control
   message(paste0("\n**\t",
                  paste(format(Sys.time(),"%d"),format(Sys.time(),"%m"),format(Sys.time(),"%Y"), sep = "-"),
                  " ",format(Sys.time(),"%H:%M")))
-  end_time <- Sys.time()
-  end_msg <- paste0("**\ttime: ", round(difftime(end_time,start_time, units = "hours"),2)," hours\n")
+  end_time = Sys.time()
+  time_diff = difftime(end_time, start_time, units = "mins") %>% as.numeric()
+  end_msg = paste("**\ttime:",
+              paste0(floor(time_diff / 60), "hr"),
+              paste0(floor(time_diff %% 60), "min\n"))
   cat(paste0("\n\n**\tDone!\n",end_msg))
   message(end_msg)
 }

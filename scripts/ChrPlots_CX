@@ -1,4 +1,4 @@
-chromosome_plot <- function(profile_vars, profile_names, chr.n, y_max, y_mid, y_min, col_vec, cntx) {
+chromosome_plot <- function(profile_vars, chr.n, y_max, y_mid, y_min, col, cntx) {
     ### filter by chromosome
     profile_vars <- lapply(profile_vars, function(x) {
         x[x@seqnames == chr.n]
@@ -20,48 +20,39 @@ chromosome_plot <- function(profile_vars, profile_names, chr.n, y_max, y_mid, y_
     ### make it as gr list
     methylationProfiles <- GRangesList()
     for (i in seq_along(profile_vars)) {
-        methylationProfiles[[profile_names[i]]] <- profile_vars[[i]]
+        methylationProfiles[[i]] <- profile_vars[[i]]
     }
-
-    col <- col_vec
-    pch <- rep(26, length(methylationProfiles))
-    lty <- rep(1, length(methylationProfiles))
 
     pos <- (start(methylationProfiles[[1]]) + end(methylationProfiles[[1]])) / 2
     plot(pos, methylationProfiles[[1]]$Proportion,
         type = "o",
         ylim = c(y_min, y_max), xlab = "", ylab = "",
-        col = col[1], pch = pch[1], lty = lty[1],
+        col = col[1], pch = 26, lty = 1,
         yaxt = "n", xaxt = "n",
         main = "", frame.plot = FALSE
     )
+
+    if (length(profile_vars) == 2) {
+        lines(pos, methylationProfiles[[2]]$Proportion,
+            type = "o", col = col[2], lty = 1, pch = 26
+        )
+    }
+
     if (cntx != "TE") {
-        axis(1, at = c(min(pos), max(pos)), labels = FALSE, col = "gray40", tck = 0.025)
+        axis(1, at = c(min(pos), max(pos)), labels = FALSE, col = "gray20", tck = 0.025, pos = y_min) ###
+
     } else {
         # color bellow the lines
         polygon(c(pos, rev(pos)),
             c(methylationProfiles[[1]]$Proportion, rep(y_min, length(pos))),
-            col = adjustcolor(col[1], alpha.f = 0.2), border = NA
+            col = adjustcolor(col[1], alpha.f = 0.25), border = NA
         )
-        axis(1, at = c(min(pos), max(pos)), labels = FALSE, col = "gray20", tck = 0.1)
-    }
-    if (length(methylationProfiles) > 1) {
-        for (i in 2:length(methylationProfiles)) {
-            lines(pos, methylationProfiles[[i]]$Proportion,
-                type = "o", col = col[i], lty = lty[i], pch = pch[i]
-            )
-        }
+        axis(1, at = c(min(pos), max(pos)), labels = FALSE, col = "gray10", tck = 0.1, pos = 0) ###
     }
 
-    if (cntx != "TE") {
-        lines(pos, rep(0, length(pos)), type = "o", col = "gray30", lty = 2, pch = 26)
-    } # else {
-    #   lines(pos, rep(0, length(pos)), type = "o", col = "black", lty = 1, pch = 26)
-    # }
-
-    # if (cntx == "CHH") {
-    #    mtext(paste0("Chr ", chr.n), side = 1, line = 0, cex = 1)
-    # }
+    if (cntx != "TE" & y_min != 0) {
+        lines(pos, rep(0, length(pos)), type = "o", col = "gray50", lty = 2, pch = 26)
+    }
 }
 
 ###################################################################
@@ -81,10 +72,14 @@ ChrPlots_CX_all <- function(
     italic_legend_names = TRUE,
     ylab_suffix = NULL,
     y_title_cex = 1,
-    TE_as_gr = "tair10") {
+    TE_as_gr = NULL) {
+
     ### color palette
-    n.pal <- ifelse(length(meth_var_list) < 3, 3, length(meth_var_list))
-    col_vec <- c("#00000090", "#bf682890", paste0(RColorBrewer::brewer.pal(n = n.pal, "Set1")[-5], "90"))
+    if (length(meth_var_list) == 2) {
+       col_vec <- c("gray40", "#bf6828")
+    } else {
+       col_vec <- "gray20"
+    }
 
     ### y-mid edit
     y_mid_cg <- ifelse(is.null(y_mid_cg), (y_max_cg + y_min_cg) / 2, y_mid_cg)
@@ -182,7 +177,7 @@ ChrPlots_CX_all <- function(
                 side = 2,
                 text = y_max_cntx,
                 at = y_max_cntx,
-                adj = ifelse(y_max_cntx == 0, 0.5, 0.9), #
+                adj = ifelse(y_max_cntx == 0 | y_max_cntx == 1, 0.5, 0.9), #
                 line = 0.65,
                 col = "gray25",
                 cex = 0.55
@@ -191,16 +186,10 @@ ChrPlots_CX_all <- function(
             ## chromosome
             par(mar = c(0, 0, 0, 0)) # c(1, 0, 2, 0))
             for (chr in 1:5) {
-                chromosome_plot(meth_vars_context, meth_names, chr, y_max_cntx, y_mid_cntx, y_min_cntx, col_vec, cntx)
+                chromosome_plot(meth_vars_context, chr, y_max_cntx, y_mid_cntx, y_min_cntx, col_vec, cntx)
             }
-        } else {
-            if (!is.null(TE_as_gr)) {
-                if (TE_as_gr == "tair10") {
-                    #    te_plot_conf(upload_te()) # removed for Methylome.At pipe
-                } else {
-                    te_plot_conf(TE_as_gr)
-                }
-            }
+        } else if (!is.null(TE_as_gr)) {
+            te_plot_conf(TE_as_gr)
         }
     }
 
@@ -225,18 +214,18 @@ ChrPlots_CX_all <- function(
     legend("top",
         legend = meth_names,
         text.font = ifelse(italic_legend_names, 3, 1),
-        col = sub(".{2}$", "", col_vec), # remove the last two characters (e.g., "90")
+        col = col_vec,
         lty = 1, bty = "n", cex = 1.2, lwd = 2
     )
 }
 
 ###################################################################
 
-te_plot_conf <- function(te_gr) {
-    te_gr <- te_gr %>%
+te_plot_conf <- function(x) {
+    te_gr <- x %>%
         circlize::genomicDensity(window.size = 0.5e6) %>%
         makeGRangesFromDataFrame(keep.extra.columns = TRUE) %>%
-        renameSeqlevels(gsub("Chr|chr|chromosome", "", seqlevels(te_gr)))
+        renameSeqlevels(gsub("Chr|chr|chromosome", "", seqlevels(.)))
     names(mcols(te_gr)) <- "Proportion"
 
     y_max_te <- 1 # max(te_gr$Proportion)
@@ -263,16 +252,16 @@ te_plot_conf <- function(te_gr) {
 
     for (chr in 1:5) {
         cat(".")
-        chromosome_plot(te_list, te_names,
-            chr, y_max_te, y_mid_te, y_min_te,
-            col_vec = "#55555590", cntx = "TE"
-        )
+        chromosome_plot(te_list, chr,
+            y_max_te, y_mid_te, y_min_te,
+            col = "#55555590", cntx = "TE"
+        ) ###
     }
 }
 
 ###################################################################
 
-windowSize <- function(x, mcol_name, windowSize = 1.5e5) {
+windowSize_mcol <- function(x, mcol_name, windowSize = 1.5e5) {
     # chromosome lengths
     seqlens <- vapply(split(end(x), seqnames(x)), max, numeric(1))
     seqlengths(x) <- seqlens[seqlevels(x)]
@@ -301,15 +290,15 @@ windowSize <- function(x, mcol_name, windowSize = 1.5e5) {
 
 var_sep <- function(a) {
     list(
-        cg = a[a$context == "CG", ] %>% makeGRangesFromDataFrame(keep.extra.columns = T) %>% windowSize("Proportion"),
-        chg = a[a$context == "CHG", ] %>% makeGRangesFromDataFrame(keep.extra.columns = T) %>% windowSize("Proportion"),
-        chh = a[a$context == "CHH", ] %>% makeGRangesFromDataFrame(keep.extra.columns = T) %>% windowSize("Proportion")
+        cg = a[a$context == "CG", ] %>% makeGRangesFromDataFrame(keep.extra.columns = T) %>% windowSize_mcol("Proportion"),
+        chg = a[a$context == "CHG", ] %>% makeGRangesFromDataFrame(keep.extra.columns = T) %>% windowSize_mcol("Proportion"),
+        chh = a[a$context == "CHH", ] %>% makeGRangesFromDataFrame(keep.extra.columns = T) %>% windowSize_mcol("Proportion")
     )
 }
 
 ###################################################################
 
-run_ChrPlots_CX <- function(comparison_name, meth_var1, meth_var2, var1, var2, TE.gr = NULL) {
+run_ChrPlots_CX <- function(comparison_name, meth_var1, meth_var2, var1, var2, TE.gr) {
     cat("\nCalculate methylated/unmethylated C's ratio...")
     meth_var1 <- as.data.frame(meth_var1) %>%
         mutate(Proportion = readsM / readsN) %>%
@@ -336,8 +325,8 @@ run_ChrPlots_CX <- function(comparison_name, meth_var1, meth_var2, var1, var2, T
             meth_var_list = list(var_sep(meth_var1), var_sep(meth_var2)),
             meth_names = c(var1, var2),
             y_max_cg = 1,
-            y_max_chg = 0.5,
-            y_max_chh = 0.2,
+            y_max_chg = 0.6,
+            y_max_chh = 0.25,
             y_mid_cg = NULL,
             y_mid_chg = NULL,
             y_mid_chh = NULL,
