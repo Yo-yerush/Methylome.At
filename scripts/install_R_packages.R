@@ -12,24 +12,28 @@ pkg_name = c("dplyr", "tidyr", "ggplot2", "lattice", "PeakSegDisk", "geomtextpat
 pkg_biocond = c("DMRcaller","rtracklayer","topGO","KEGGREST","Rgraphviz","org.At.tair.db","GenomicFeatures","plyranges")
 
 # install packages if required
-cat("\nInstall R packages...\n")
 installed_packages = rownames(installed.packages())
 i=1
 for (pkg in pkg_name) {
   if (!(pkg %in% installed_packages)) {
     suppressMessages(install.packages(pkg, repos = "http://cran.r-project.org", quiet = T))
   }
-  cat(round(i / length(c(pkg_name, pkg_biocond)),3)*100, "%\n")
+  perc_val <- (i / length(c(pkg_name, pkg_biocond))) * 100
+  cat(paste0("\rInstall R packages...\t", round(perc_val, 1), "% "))
   i=i+1
 }
-
+    
 for (pkg in pkg_biocond) {
   if (!(pkg %in% installed_packages)) {
     suppressMessages(BiocManager::install(pkg, quiet = T))
   }
-  cat(round(i / length(c(pkg_name, pkg_biocond)), 3) * 100, "%\n")
+  perc_val <- (i / length(c(pkg_name, pkg_biocond))) * 100
+  cat(paste0("\rInstall R packages...\t", round(perc_val, 1), "% "))
   i=i+1
 }
+
+
+cat("\n\n")
 
 # Check each package if installed
 c.pkg = .packages(all.available = TRUE)
