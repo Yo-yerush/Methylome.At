@@ -1,5 +1,6 @@
 DMRs_circular_plot <- function(ann.file, TE_4_dens, comparison_name) {
-
+chr_amount = length(seqnames(ann.file)@values)
+  
 genes_type = ann.file[which(ann.file$type == "gene")]
 
   cntx_file <- function(context) {
@@ -18,7 +19,7 @@ genes_type = ann.file[which(ann.file$type == "gene")]
   svg(paste0("DMRs_Density_",comparison_name,".svg"), width = 3.25, height = 3.25, family = "serif")
   
   circos.par(start.degree = 90)
-  circos.genomicInitialize(as.data.frame(ann.file)[,1:3], sector.names = paste0("Chr ",1:5), axis.labels.cex = 0.325, labels.cex = 1.35)
+  circos.genomicInitialize(as.data.frame(ann.file)[,1:3], sector.names = paste0("Chr ",seq(chr_amount)), axis.labels.cex = 0.325, labels.cex = 1.35)
   
   circos.genomicDensity(list(CG_file[CG_file$log2FC > 0, 1:3],
                              CG_file[CG_file$log2FC < 0, 1:3]),

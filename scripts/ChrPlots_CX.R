@@ -72,6 +72,7 @@ ChrPlots_CX_all <- function(
     italic_legend_names = TRUE,
     ylab_suffix = NULL,
     y_title_cex = 1,
+    chr_amount,
     TE_as_gr = NULL) {
 
     ### color palette
@@ -185,7 +186,7 @@ ChrPlots_CX_all <- function(
 
             ## chromosome
             par(mar = c(0, 0, 0, 0)) # c(1, 0, 2, 0))
-            for (chr in 1:5) {
+            for (chr in seq(chr_amount)) {
                 chromosome_plot(meth_vars_context, chr, y_max_cntx, y_mid_cntx, y_min_cntx, col_vec, cntx)
             }
         } else if (!is.null(TE_as_gr)) {
@@ -196,7 +197,7 @@ ChrPlots_CX_all <- function(
     ## x-axis - chromosome
     par(mar = c(1, 0, 0, 0))
     plot.new()
-    for (chr in 1:5) {
+    for (chr in seq(chr_amount)) {
         plot.new()
         mtext(
             side = 1,
@@ -250,7 +251,7 @@ te_plot_conf <- function(x) {
     te_list <- list(te_gr)
     te_names <- "TE"
 
-    for (chr in 1:5) {
+    for (chr in seq(chr_amount)) {
         cat(".")
         chromosome_plot(te_list, chr,
             y_max_te, y_mid_te, y_min_te,
@@ -299,6 +300,8 @@ var_sep <- function(a) {
 ###################################################################
 
 run_ChrPlots_CX <- function(comparison_name, meth_var1, meth_var2, var1, var2, TE.gr) {
+    chr_amount <- length(seqnames(meth_var1)@values)
+
     cat("\nCalculate methylated/unmethylated C's ratio...")
     meth_var1 <- as.data.frame(meth_var1) %>%
         mutate(Proportion = readsM / readsN) %>%
@@ -336,6 +339,7 @@ run_ChrPlots_CX <- function(comparison_name, meth_var1, meth_var2, var1, var2, T
             italic_legend_names = FALSE,
             ylab_suffix = NULL,
             y_title_cex = 1,
+            chr_amount = chr_amount,
             TE_as_gr = TE.gr
         )
     })
@@ -360,6 +364,7 @@ run_ChrPlots_CX <- function(comparison_name, meth_var1, meth_var2, var1, var2, T
             italic_legend_names = FALSE,
             ylab_suffix = "(Δ)",
             y_title_cex = 1,
+            chr_amount = chr_amount,
             TE_as_gr = TE.gr
         )
     })

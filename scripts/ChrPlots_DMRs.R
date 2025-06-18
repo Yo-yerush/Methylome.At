@@ -23,17 +23,19 @@ chromosome_plot <- function(DMRs_trimmed,var1_name,var2_name,chr.n,ymax,ymin,pch
 
 ##################################################
 
-ChrPlots_DMRs <- function(comparison_name, DMRs_df, var1, var2, context, scripts_dir) {
+ChrPlots_DMRs <- function(comparison_name, DMRs_gr_pl, var1, var2, context, scripts_dir) {
+  chr_amount = length(seqnames(DMRs_gr_pl)@values)
   
-  DMRs_df$plog = -log10(DMRs_df$pValue)
-  DMRs_df$plog[which(DMRs_df$plog == Inf)] = 300
-  DMRs_df$plog[which(DMRs_df$plog > 300)] = 300
-  DMRs_df$plog[DMRs_df$regionType == "loss"] = -DMRs_df$plog[DMRs_df$regionType == "loss"]
-  p.max = round(max(DMRs_df[DMRs_df$regionType == "gain",]$plog))
-  p.min = round(min(DMRs_df[DMRs_df$regionType == "loss",]$plog))
+  DMRs_gr_pl$plog = -log10(DMRs_gr_pl$pValue)
+  DMRs_gr_pl$plog[which(DMRs_gr_pl$plog == Inf)] = 300
+  DMRs_gr_pl$plog[which(DMRs_gr_pl$plog > 300)] = 300
+  DMRs_gr_pl$plog[DMRs_gr_pl$regionType == "loss"] = -DMRs_gr_pl$plog[DMRs_gr_pl$regionType == "loss"]
+  p.max = round(max(DMRs_gr_pl[DMRs_gr_pl$regionType == "gain",]$plog))
+  p.min = round(min(DMRs_gr_pl[DMRs_gr_pl$regionType == "loss",]$plog))
   
   #### change seqnames for plots
-  DMRs_df_trimmed = renameSeqlevels(DMRs_df, gsub("Chr","",seqlevels(DMRs_df)))
+  DMRs_gr_pl_trimmed = renameSeqlevels(DMRs_gr_pl, gsub("Chr","",seqlevels(DMRs_gr_pl)))
+
 
 
     svg(paste0("ChrPlot_DMRs_",context,"_",comparison_name,".svg"), width = 8, height = 2, family = "serif")
@@ -50,10 +52,10 @@ ChrPlots_DMRs <- function(comparison_name, DMRs_df, var1, var2, context, scripts
     i=1
     i.0=1.15
     u = (10-i.0)/6
-    for (chr_number in 1:5) {
+    for (chr_number in seq(chr_amount)) {
       par(mar = c(1,0,2,0))
       par(fig=c(i,i+u,0,10)/10)
-      chromosome_plot(DMRs_df_trimmed,var1,var2,chr_number,p.max,p.min,"•")
+      chromosome_plot(DMRs_gr_pl_trimmed,var1,var2,chr_number,p.max,p.min,"•")
       par(new=T)
       i=i+u
     }
