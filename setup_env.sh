@@ -51,3 +51,4 @@ chmod +x ./Methylome.At.sh
 chmod +x ./Methylome.At_metaPlots.sh
 chmod +x ./Methylome.At_UI.sh
 chmod +x scripts/cgmap_to_cx.sh
+chmod +x scripts/cx_to_cgmap.sh
