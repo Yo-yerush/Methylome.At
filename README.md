@@ -97,6 +97,8 @@ Rscript scripts/install_R_packages.R
 chmod +x ./Methylome.At_UI.sh
 chmod +x ./Methylome.At_metaPlots.sh
 chmod +x ./Methylome.At.sh
+chmod +x ./scripts/cgmap_to_cx.sh
+chmod +x ./scripts/cx_to_cgmap.sh
 ```
 
 #
@@ -183,11 +185,11 @@ Optional arguments:
   --minProportionDiff_CHH       Minimum proportion difference for CHH [default: 0.1]
   --binSize                     DMRs bin size [default: 100]
   --minCytosinesCount           Minimum cytosines count [default: 4]
-  --minReadsPerCytosine         Minimum reads per cytosine [default: 6]
+  --minReadsPerCytosine         Minimum reads per cytosine [default: 4]
   --pValueThreshold             P-value threshold [default: 0.05]
   --n_cores                     Number of cores [default: 10]
-  --GO_analysis                 Perform GO analysis [default: TRUE]
-  --KEGG_pathways               Perform KEGG pathways analysis [default: TRUE]
+  --GO_analysis                 Perform GO analysis [default: FALSE]
+  --KEGG_pathways               Perform KEGG pathways analysis [default: FALSE]
   --annotation_file             Genome Annotation file [default: Methylome.At annotations file (TAIR10 based)]
   --description_file            Description file [default: Methylome.At description file]
   --TEs_file                    Transposable Elements file [default: TAIR10 'Transposable Elements' annotations]
