@@ -8,9 +8,9 @@ lib_packages <- c(
 for (n.pkg in seq(lib_packages)) {
     suppressMessages(library(lib_packages[n.pkg], character.only = TRUE))
     perc_val <- (n.pkg / length(lib_packages)) * 100
-    cat(paste0("\rloading libraries...\t", round(perc_val, 1), "% "))
+    cat(paste0("\rloading libraries [", round(perc_val, 1), "%] "))
 }
-cat("\n\n")
+cat("\n")
 
 # configuration from the command line arguments (in Bash)
 configs <- commandArgs(trailingOnly = TRUE)

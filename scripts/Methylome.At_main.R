@@ -26,7 +26,7 @@ Methylome.At_main <- function(var1, # control
   setwd(Methylome.At_path)
   
   ##### Read annotation and description files #####
-  cat("load annotations and description files...")
+  cat("\rload annotations and description files [0/3]")
   # annotation file
   tryCatch({
     # if its 'csv' file
@@ -45,7 +45,7 @@ Methylome.At_main <- function(var1, # control
     message("load 'annotation' file: fail")
   })
   
-  cat("...")
+  cat("\rload annotations and description files [1/3]")
   # TAIR10 Transposable Elements file
   tryCatch({
     source(paste0(scripts_dir,"edit_TE_file.R"))
@@ -57,7 +57,7 @@ Methylome.At_main <- function(var1, # control
     message("load Transposable Elements file: fail")
   })
   
-  cat("...")
+  cat("\rload annotations and description files [2/3]")
   # upload description file
   tryCatch({
     des_file_sep = ifelse(grepl("\\.csv$|\\.csv\\.gz$",description_file), ",", "\t")
@@ -69,7 +69,8 @@ Methylome.At_main <- function(var1, # control
     message("load description file: fail\n")
   })
   
-  cat(" done\n\n")
+  cat("\rload annotations and description files [3/3]")
+  cat("\n")
 
   ###########################################################################
   

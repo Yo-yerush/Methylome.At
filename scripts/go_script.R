@@ -122,10 +122,11 @@ top.GO.fun = function(treatment,
   }
   
   setwd(new_path)
-  printGraph(myGOdata, resultFisher, 
-             firstSigNodes = n.nodes, fn.prefix= paste(GO_Ontology_type,annotation,context,gain_OR_loss,treatment, sep = "_"),
-             useInfo="all", pdfSW= T)
-  
+  if (nrow(allRes_view) > 0) {
+    printGraph(myGOdata, resultFisher, 
+               firstSigNodes = n.nodes, fn.prefix= paste(GO_Ontology_type,annotation,context,gain_OR_loss,treatment, sep = "_"),
+               useInfo="all", pdfSW= T)
+  }
   setwd(start_path)
 }
 

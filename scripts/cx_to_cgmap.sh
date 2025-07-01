@@ -2,7 +2,7 @@
 
 # Check arguments
 if [ $# -ne 2 ]; then
-  echo "Usage: $0 <input.cgmap> <output.CX_report>"
+  echo "Usage: $0 <input.CX_report> <output.CGmap>"
   echo "
 Column Description of 'CX' report:
 1) Chromosome
@@ -19,7 +19,7 @@ Column Description of 'CGmap' format:
 3) Position
 4) C-context (CG, CHG, CHH)
 5) Dinucleotide context (CC, CT, CA, etc.)
-6) Methylation level
+6) Methylation level (3 decimal places)
 7) Count methylated
 8) Count total
   "
@@ -31,22 +31,31 @@ OUTPUT_FILE="$2"
 
 # Check if input file is gzipped and unzip if necessary
 if [[ "${INPUT_FILE}" == *.gz ]]; then
-    gunzip -c "${INPUT_FILE}" > tmp_cgmap2cx_gunzipeed_file
-    INPUT_FILE="tmp_cgmap2cx_gunzipeed_file"
+    gunzip -c "${INPUT_FILE}" > tmp_cx2cgmap_gunzipped_file
+    INPUT_FILE="tmp_cx2cgmap_gunzipped_file"
 fi
 
 awk 'BEGIN {
   FS="\t"; OFS="\t"
 }
 {
-  if ($2 == "C") { strand = "+" } else { strand = "-" }
-  unmethyl = $8 - $7
-  print $1, $3, strand, $7, unmethyl, $4, $5
+  chr = $1
+  pos = $2
+  strand = $3
+  methyl = $4 + 0
+  unmethyl = $5 + 0
+  context = $6
+  trinuc = $7
+  dinuc = substr(trinuc, 1, 2)
+  total = methyl + unmethyl
+  if (total == 0) { level = "0.000" }
+  else { level = sprintf("%.3f", methyl / total) }
+  print chr, strand, pos, context, dinuc, level, methyl, total
 }' "${INPUT_FILE}" > "${OUTPUT_FILE}"
 
-# Check if input file is gzipped remove 'tmp' file
-if [[ "${INPUT_FILE}" == tmp_cgmap2cx_gunzipeed_file ]]; then
-    rm tmp_cgmap2cx_gunzipeed_file
+# Remove temporary file if created
+if [[ "${INPUT_FILE}" == "tmp_cx2cgmap_gunzipped_file" ]]; then
+    rm tmp_cx2cgmap_gunzipped_file
 fi
 
 echo "Conversion complete."

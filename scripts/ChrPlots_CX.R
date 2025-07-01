@@ -229,6 +229,7 @@ te_plot_conf <- function(x) {
         renameSeqlevels(gsub("Chr|chr|chromosome", "", seqlevels(.)))
     names(mcols(te_gr)) <- "Proportion"
 
+    chr_amount <- length(seqnames(te_gr)@values)
     y_max_te <- 1 # max(te_gr$Proportion)
     y_mid_te <- 0.5 # y_max_te / 2
     y_min_te <- 0
