@@ -114,7 +114,7 @@ echo "Methylome_At_path: $Methylome_At_path"
 echo ""
 
 # create results directory
-mkdir results
+mkdir -p results
 
 # Generate log file with a timestamp
 log_file="results/${treatment_s}_vs_${control_s}_metaPlots_$(date +"%d-%m-%y").log"
