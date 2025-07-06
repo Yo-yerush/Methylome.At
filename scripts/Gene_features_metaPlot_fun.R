@@ -184,8 +184,8 @@ Genes_features_metaPlot <- function(methylationPool_var1, methylationPool_var2, 
     #breaks_and_labels <- list(breaks = seq(0,100,by=binSize), labels = region_names)
     
     plot_out = ggplot(data = v.cntx, aes(x = pos, y = Proportion, color = V, group = V)) +
-      geom_vline(xintercept = breaks_vline, colour = "gray", linetype = "solid", size = 0.6) +
-      geom_line(size = 0.65) +#, aes(linetype = V)) +
+      geom_vline(xintercept = breaks_vline, colour = "gray", linetype = "solid", linewidth = 0.6) +
+      geom_line(linewidth = 0.65) +#, aes(linetype = V)) +
       scale_color_manual(values = c("V1" = "gray50", "V2" = "#bf6828")) +
       theme_classic() +
       labs(title = main_title, x = "", y = paste0(cntx," Methylation")) +

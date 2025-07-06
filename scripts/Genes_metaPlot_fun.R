@@ -18,7 +18,7 @@ Genes_metaPlot <- function(methylationPool_var1,methylationPool_var2,var1,var2,a
     }
   }
   
-  dir.create(new_path.f)
+  dir.create(new_path.f, showWarnings = F)
   setwd(new_path.f)
   
   
@@ -103,7 +103,9 @@ Genes_metaPlot <- function(methylationPool_var1,methylationPool_var2,var1,var2,a
           CHH_list = strand_minus(CHH_list)
         }
         
-        cat("\rprepare 20bp proportional bins:",gene.num,"/",length(ann.obj),"      ")
+        #cat("\rprepare 20bp proportional bins:",gene.num,"/",length(ann.obj),"      ")
+        cat("\rcaculate average methylation in 20bp proportional bins over", length(ann.obj), new_path.f, "body and 2Kb up-/down-stream regions" paste0("[", round((gene.num/length(ann.obj)*100), 0), "%]  "))
+
         return(list(CG_list=CG_list,
                     CHG_list=CHG_list,
                     CHH_list=CHH_list))
@@ -112,8 +114,10 @@ Genes_metaPlot <- function(methylationPool_var1,methylationPool_var2,var1,var2,a
         return(NULL)
         })
     }
-    
-    cat("\nprepare 20bp proportional bins to",length(ann.obj),new_path.f,"\n")
+
+    cat("\n")
+    cat("\rcaculate average methylation in 20bp proportional bins over", length(ann.obj), new_path.f, "body and 2Kb up-/down-stream regions" paste0("[", 0, "%]  "))
+    #cat("\nprepare 20bp proportional bins to",length(ann.obj),new_path.f,"\n")
     results = mclapply(1:length(ann.obj) , gene_2_bins_run, mc.cores = n.cores.f)
     results = results[!sapply(results, is.null)]
     cat("\n")
@@ -136,7 +140,7 @@ Genes_metaPlot <- function(methylationPool_var1,methylationPool_var2,var1,var2,a
         CHG = mean(sapply(results, function(x) x$CHG_list[[string_loc]][row_num]$Proportion), na.rm = TRUE)
         CHH = mean(sapply(results, function(x) x$CHH_list[[string_loc]][row_num]$Proportion), na.rm = TRUE)
         
-      cat("processing average of bins:",(row_num/20)*100,"%\n")
+      cat(paste0("\rprocessing average of ", gsub("\\."," ",string_loc), " bins: ",(row_num/20)*100,"%  "))
       return(list(CG = CG,
              CHG = CHG,
              CHH = CHH))
@@ -161,10 +165,10 @@ Genes_metaPlot <- function(methylationPool_var1,methylationPool_var2,var1,var2,a
   }
   
   var1_metaPlot = genes_metaPlot_fun(methylationPool_var1, coding.Genes)
-  cat(paste0("finish calculating 'Genes_metaPlot' values to ",var1,"\n"))
+  cat(paste0("finish calculating 'Genes_metaPlot' values to ",var1,"\n\n"))
   var2_metaPlot = genes_metaPlot_fun(methylationPool_var2, coding.Genes)
-  cat(paste0("finish calculating 'Genes_metaPlot' values to ",var2,"\n"))
-  
+  cat(paste0("finish calculating 'Genes_metaPlot' values to ",var2,"\n\n"))
+
   v1.CG = var1_metaPlot$gr_list_CG
   v1.CHG = var1_metaPlot$gr_list_CHG
   v1.CHH = var1_metaPlot$gr_list_CHH
@@ -173,7 +177,7 @@ Genes_metaPlot <- function(methylationPool_var1,methylationPool_var2,var1,var2,a
   v2.CHG = var2_metaPlot$gr_list_CHG
   v2.CHH = var2_metaPlot$gr_list_CHH
   
-  dir.create("metaPlot_tables")
+  dir.create("metaPlot_tables", showWarnings = F)
   for (name in c("up.stream","gene.body","down.stream")) {
     try({write.csv(v1.CG[[name]], paste0("metaPlot_tables/",var1,".CG.",name,".csv"), row.names = FALSE)})
     try({write.csv(v1.CHG[[name]], paste0("metaPlot_tables/",var1,".CHG.",name,".csv"), row.names = FALSE)})
@@ -215,8 +219,8 @@ Genes_metaPlot <- function(methylationPool_var1,methylationPool_var2,var1,var2,a
     breaks_and_labels <- list(breaks = c(1, 20, 40, 60), labels = c("    -2kb", "TSS", "TTS", "+2kb    "))
     
     plot_out = ggplot(data = v.cntx.stream, aes(x = pos, y = Proportion, color = V, group = V)) +
-      geom_vline(xintercept = c(20, 40), colour = "gray", linetype = "solid", size = 0.5) +
-      geom_line(size = 0.65) +#, aes(linetype = V)) +
+      geom_vline(xintercept = c(20, 40), colour = "gray", linetype = "solid", linewidth = 0.5) +
+      geom_line(linewidth = 0.65) +#, aes(linetype = V)) +
       #scale_color_manual(values = c("V1" = "#e37320", "V2" = "#0072B2")) +
       scale_color_manual(values = c("V1" = "gray50", "V2" = "#bf6828")) +
       #scale_linetype_manual(values = c("V1" = "dashed", "V2" = "solid")) +
@@ -230,7 +234,7 @@ Genes_metaPlot <- function(methylationPool_var1,methylationPool_var2,var1,var2,a
             axis.text.y = element_text(size = 8),
             axis.text.x = element_text(size = 9)
       ) +
-      scale_x_continuous(breaks = breaks_and_labels$breaks, labels = breaks_and_labels$labels, expand = expand_scale(add = c(0,0))) +
+      scale_x_continuous(breaks = breaks_and_labels$breaks, labels = breaks_and_labels$labels, expand = expansion(add = c(0,0))) +
       scale_y_continuous(breaks = c(min_value, q1_value, q2_value, max_value),
                          labels = c(round(min_value, 3), round(q1_value, 3),
                                     round(q2_value, 3), round(max_value, 3))) +
