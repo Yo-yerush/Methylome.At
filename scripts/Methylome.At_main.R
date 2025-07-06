@@ -87,7 +87,7 @@ Methylome.At_main <- function(var1, # control
   source(paste0(scripts_dir,"load_replicates.R"))
   tryCatch({
     # load 'CX_reports'
-    if (n.cores > 1) {n.cores.load = 2} else {n.cores.load = 1}
+    n.cores.load = ifelse(n.cores > 1, 2, 1)
     load_vars = mclapply(var_args, function(x) load_replicates(x$path, n.cores, x$name), mc.cores = n.cores.load)
     
     # trimm seqs objects (rename if not 'TAIR10' Chr seqnames)
