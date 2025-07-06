@@ -103,7 +103,7 @@ Genes_metaPlot <- function(methylationPool_var1,methylationPool_var2,var1,var2,a
           CHH_list = strand_minus(CHH_list)
         }
         
-        cat("prepare 20bp proportional bins:",gene.num,"/",length(ann.obj),"\n")
+        cat("\rprepare 20bp proportional bins:",gene.num,"/",length(ann.obj),"      ")
         return(list(CG_list=CG_list,
                     CHG_list=CHG_list,
                     CHH_list=CHH_list))
@@ -116,7 +116,7 @@ Genes_metaPlot <- function(methylationPool_var1,methylationPool_var2,var1,var2,a
     cat("\nprepare 20bp proportional bins to",length(ann.obj),new_path.f,"\n")
     results = mclapply(1:length(ann.obj) , gene_2_bins_run, mc.cores = n.cores.f)
     results = results[!sapply(results, is.null)]
-    
+    cat("\n")
     ###################################################
     # prepare grange list for uptream, body and downstream
     gr_obj_u = GRanges(rep("up.stream",20), IRanges(1:20,1:20))

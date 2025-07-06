@@ -56,33 +56,12 @@ dir.create(paste0(rmv_d(Methylome.At_path),"/results/",var2,"_vs_",var1), showWa
 metaPlot_path = paste0(rmv_d(Methylome.At_path),"/results/",var2,"_vs_",var1,"/metaPlots/")
 dir.create(metaPlot_path, showWarnings = F)
 
+source(paste0(scripts_dir,"trimm_and_rename_seq.R"))
+
 ########################################################################### 
 
-var_args = list(
-  list(path = var1_path, name = var1),
-  list(path = var2_path, name = var2)
-)
-
-##### load the data for replicates ##### 
-message("load replicates data...")
-source(paste0(scripts_dir,"load_replicates.R"))
-tryCatch({
-  # load 'CX_reports'
-  n.cores.load = ifelse(n.cores > 1, 2, 1)
-  load_vars = mclapply(var_args, function(x) load_replicates(x$path, n.cores, x$name, T), mc.cores = n.cores.load)
-  
-  # trimm seqs objects (rename if not 'TAIR10' Chr seqnames)
-  source(paste0(scripts_dir,"trimm_and_rename_seq.R"))
-  meth_var1 = trimm_and_rename(load_vars[[1]])
-  meth_var2 = trimm_and_rename(load_vars[[2]])
-  message("load and pool replicates data: successfully\n") 
-},
-error = function(cond) {stop("load and pool replicates data: fail\n")}
-)
-
-###########################################################################
-
-##### import annotation files ##### 
+##### Read annotation files #####
+cat("\rload annotations files [0/2]")
 # annotation file
 tryCatch({
   # if its 'csv' file
@@ -95,16 +74,51 @@ tryCatch({
     annotation.gr = import.gff3(annotation_file) %>%
       trimm_and_rename()
   }
-  message("import annotation file")
-}, error = function(cond) {message("import 'annotation' file: fail")})
+  message("load annotation file")
+}, error = function(cond) {
+  cat("\n*\n",as.character(cond),"\n*\n")
+  message("load 'annotation' file: fail")
+})
+cat("\rload annotations files [1/2]")
 
-# TAIR10 Transposable Elements file
+ # TAIR10 Transposable Elements file
 tryCatch({
   source(paste0(scripts_dir,"edit_TE_file.R"))
   TE.gr = read.csv(TEs_file, sep = "\t")
   TE.gr = edit_TE_file(TE.gr)
-  message("import Transposable Elements file\n")
-}, error = function(cond) {message("import Transposable Elements file: fail\n")})
+  message("load Transposable Elements file")
+}, error = function(cond) {
+  cat("\n*\n",as.character(cond),"\n*\n")
+  message("load Transposable Elements file: fail")
+})
+cat("\rload annotations files [2/2]")
+
+cat("\n\n")
+
+########################################################################### 
+
+var_args = list(
+  list(path = var1_path, name = var1),
+  list(path = var2_path, name = var2)
+)
+
+##### load the data for replicates ##### 
+message("load CX methylation data...")
+source(paste0(scripts_dir,"load_replicates.R"))
+tryCatch({
+  # load 'CX_reports'
+  n.cores.load = ifelse(n.cores > 1, 2, 1)
+  load_vars = mclapply(var_args, function(x) load_replicates(x$path, n.cores, x$name, T), mc.cores = n.cores.load)
+  
+  # trimm seqs objects (rename if not 'TAIR10' Chr seqnames)
+  meth_var1 = trimm_and_rename(load_vars[[1]])
+  meth_var2 = trimm_and_rename(load_vars[[2]])
+  message("load and pool replicates data: successfully\n") 
+},
+error = function(cond) {stop("load and pool replicates data: fail\n")}
+)
+
+cat("\n")
 
 ###########################################################################
 

@@ -118,7 +118,7 @@ mkdir -p results
 
 # Generate log file with a timestamp
 log_file="results/${treatment_s}_vs_${control_s}_metaPlots_$(date +"%d-%m-%y").log"
-echo "**  $(date +"%d-%m-%y %H:%M")" >> "$log_file"
+echo "**  $(date +"%d-%m-%y %H:%M")" > "$log_file" # create the .log file
 echo "**  $treatment_s VS. $control_s" >> "$log_file"
 echo "" >> "$log_file"
 
