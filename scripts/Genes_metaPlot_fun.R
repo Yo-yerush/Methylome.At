@@ -41,44 +41,54 @@ Genes_metaPlot <- function(methylationPool_var1,methylationPool_var2,var1,var2,a
         localMethylationData = methylationData %>% 
           subset(seqnames == as.character(seqnames(region)) & start >= (minPos-2000) & end <= (maxPos+2000))
         
-        gene_2_bins <- function(cntx.fun,stream_pos,lMd = localMethylationData) {
-          
+        gene_2_bins <- function(cntx.fun, stream_pos, lMd = localMethylationData) {
+
+          # Pre-filter by context first (moved up)
+          lMd = lMd[which(lMd$context == cntx.fun)]
+
+          # Early return if no data
+          if (length(lMd) == 0) {
+            ranges = GRanges(seqname, IRanges(1:20, 1:20))
+            ranges$Proportion = rep(NA, 20)
+            return(ranges)
+          }
+
           if (stream_pos == "up.stream") {
-            
             lMd = lMd %>% filter(start >= (minPos-2000), end <= minPos)
             windowSize = 100
             seqs = seq((minPos-2000), minPos-windowSize, windowSize)
-            ranges = GRanges(seqname, IRanges(seqs, seqs+windowSize-1))
-            ranges$Proportion = NA
-            
+
           } else if (stream_pos == "gene.body") {
-            
             lMd = lMd %>% filter(start >= minPos, end <= maxPos)
             windowSize = width(region)/20
             seqs = seq(minPos, maxPos, windowSize)
-            ranges = GRanges(seqname, IRanges(seqs, seqs+windowSize-1))
-            ranges$Proportion = NA
-            
+
           } else if (stream_pos == "down.stream") {
-            
             lMd = lMd %>% filter(start >= maxPos, end <= (maxPos+2000))
             windowSize = 100
             seqs = seq(maxPos+1, (maxPos+2000-windowSize)+1, windowSize)
-            ranges = GRanges(seqname, IRanges(seqs, seqs+windowSize-1))
-            ranges$Proportion = NA
           }
-          
-          # filter by methylation context
-          lMd = lMd[which(lMd$context == cntx.fun)]
-          
-          # average methylation levels for each bin
-          for (n.seqs in 1:20) {
-            hits.l = findOverlaps(lMd, ranges[n.seqs])
-            ranges$Proportion[n.seqs] = mean(lMd[queryHits(hits.l)]$Proportion, na.rm=TRUE)
+
+          ranges = GRanges(seqname, IRanges(seqs, seqs+windowSize-1))
+          ranges$Proportion = rep(NA, 20)
+
+          # Vectorized findOverlaps approach
+          if (length(lMd) > 0) {
+            hits.l = findOverlaps(lMd, ranges)
+
+            if (length(hits.l) > 0) {
+              hit_df = data.frame(
+                subject_idx = subjectHits(hits.l),
+                proportion = lMd[queryHits(hits.l)]$Proportion
+              )
+
+              bin_means = aggregate(proportion ~ subject_idx, hit_df, mean, na.rm = TRUE)
+              ranges$Proportion[bin_means$subject_idx] = bin_means$proportion
+            }
           }
           return(ranges)
         }
-        
+
         CG_list = GRangesList("up.stream"=GRanges(),"gene.body"=GRanges(), "down.stream"=GRanges())
         CHG_list = GRangesList("up.stream"=GRanges(),"gene.body"=GRanges(), "down.stream"=GRanges())
         CHH_list = GRangesList("up.stream"=GRanges(),"gene.body"=GRanges(), "down.stream"=GRanges())

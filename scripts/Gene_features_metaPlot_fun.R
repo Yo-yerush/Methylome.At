@@ -68,21 +68,34 @@ Genes_features_metaPlot <- function(methylationPool_var1, methylationPool_var2, 
           
           context_results = list()
           
+          # Create bins once
+          windowSize = width(region) / binSize
+          seqs = seq(minPos, maxPos, length.out = binSize+1)
+          ranges = GRanges(seqname, IRanges(seqs[-length(seqs)], seqs[-1] - 1))
+          
           for (cntx in contexts) {
             lMd_context = methylationData_contexts[[cntx]] %>% 
               subset(seqnames == as.character(seqname) & start >= minPos & end <= maxPos)
             
             if (length(lMd_context) >= 15) { # at least 15 sites...
               
-              windowSize = width(region) / binSize
-              seqs = seq(minPos, maxPos, length.out = binSize+1)
-              ranges = GRanges(seqname, IRanges(seqs[-length(seqs)], seqs[-1] - 1))
-              ranges$Proportion = NA
+              ranges$Proportion = rep(NA, length(ranges))
               
-              # Average methylation levels for each bin
-              for (n.seqs in 1:length(ranges)) {
-                hits.l = findOverlaps(lMd_context, ranges[n.seqs])
-                ranges$Proportion[n.seqs] = mean(lMd_context[queryHits(hits.l)]$Proportion, na.rm=TRUE)
+              # VECTORIZED APPROACH - Single findOverlaps call
+              if (length(lMd_context) > 0) {
+                hits.l = findOverlaps(lMd_context, ranges)
+                
+                if (length(hits.l) > 0) {
+                  # Create data frame for aggregation
+                  hit_df = data.frame(
+                    subject_idx = subjectHits(hits.l),
+                    proportion = lMd_context[queryHits(hits.l)]$Proportion
+                  )
+                  
+                  # Calculate mean for each bin
+                  bin_means = aggregate(proportion ~ subject_idx, hit_df, mean, na.rm = TRUE)
+                  ranges$Proportion[bin_means$subject_idx] = bin_means$proportion
+                }
               }
               
               # Handle reverse strand if necessary
@@ -90,7 +103,6 @@ Genes_features_metaPlot <- function(methylationPool_var1, methylationPool_var2, 
                 ranges = rev(ranges)
               }
               
-              # return context
               context_results[[cntx]] = ranges
             } else {
               context_results[[cntx]] = NULL
@@ -103,7 +115,7 @@ Genes_features_metaPlot <- function(methylationPool_var1, methylationPool_var2, 
           return(NULL)
         })
       }
-      
+
       cat("\nPreparing bins for region:", region_name, "\n")
       results = mclapply(1:length(ann.obj), gene_2_bins_run, mc.cores = n.cores.f)
       results = results[!sapply(results, is.null)]
