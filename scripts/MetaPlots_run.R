@@ -58,13 +58,18 @@ dir.create(metaPlot_path, showWarnings = F)
 
 ########################################################################### 
 
+var_args = list(
+  list(path = var1_path, name = var1),
+  list(path = var2_path, name = var2)
+)
+
 ##### load the data for replicates ##### 
 message("load replicates data...")
 source(paste0(scripts_dir,"load_replicates.R"))
 tryCatch({
   # load 'CX_reports'
   n.cores.load = ifelse(n.cores > 1, 2, 1)
-  load_vars = mclapply(list(var1_path,var2_path), function(x) load_replicates(x,n.cores,T), mc.cores = n.cores.load)
+  load_vars = mclapply(var_args, function(x) load_replicates(x$path, n.cores, x$name, T), mc.cores = n.cores.load)
   
   # trimm seqs objects (rename if not 'TAIR10' Chr seqnames)
   source(paste0(scripts_dir,"trimm_and_rename_seq.R"))
