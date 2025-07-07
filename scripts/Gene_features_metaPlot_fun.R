@@ -57,7 +57,7 @@ Genes_features_metaPlot <- function(methylationPool_var1, methylationPool_var2, 
     for (region_name in region_names) {
       ann.obj = regions_list[[region_name]]
       
-      cat("\nProcessing region:", region_name, "with", length(ann.obj), "features\n")
+      #cat("\nProcessing region:", region_name, "with", length(ann.obj), "features\n")
       
       gene_2_bins_run <- function(feature.num) {
         tryCatch({
@@ -109,17 +109,19 @@ Genes_features_metaPlot <- function(methylationPool_var1, methylationPool_var2, 
             }
           }
           
-          cat("\rProcessed feature:", feature.num, "/", length(ann.obj), "in region:", region_name, "      ")
+          cat("\rProcessed", length(ann.obj),  "features in", region_name, paste0("region [", round((feature.num/length(ann.obj))*100, 0), "%]  "))
+          #cat("\rProcessed feature:", feature.num, "/", length(ann.obj), "in region:", region_name, "      ")
           return(context_results)
         }, error = function(cond) {
           return(NULL)
         })
       }
 
-      cat("\nPreparing bins for region:", region_name, "\n")
+      cat("\rProcessed", length(ann.obj),  "features in", region_name, "region [0%]  ")
+      #cat("\n\nPreparing", length(ann.obj), "bins for region:", region_name, "\n")
       results = mclapply(1:length(ann.obj), gene_2_bins_run, mc.cores = n.cores.f)
       results = results[!sapply(results, is.null)]
-      cat("\n")
+      cat("\n\n")
 
       # Average across features for each bin and context
       region_result = list()

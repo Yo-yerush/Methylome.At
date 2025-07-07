@@ -114,7 +114,7 @@ Genes_metaPlot <- function(methylationPool_var1,methylationPool_var2,var1,var2,a
         }
         
         #cat("\rprepare 20bp proportional bins:",gene.num,"/",length(ann.obj),"      ")
-        cat("\rcaculate average methylation in 20bp proportional bins over", length(ann.obj), new_path.f, "body and 2Kb up-/down-stream regions" paste0("[", round((gene.num/length(ann.obj)*100), 0), "%]  "))
+        cat("\rcaculate average methylation in 20bp proportional bins over", length(ann.obj), new_path.f, "body and 2Kb up-/down-stream regions", paste0("[", round((gene.num/length(ann.obj)*100), 0), "%]  "))
 
         return(list(CG_list=CG_list,
                     CHG_list=CHG_list,
@@ -126,7 +126,7 @@ Genes_metaPlot <- function(methylationPool_var1,methylationPool_var2,var1,var2,a
     }
 
     cat("\n")
-    cat("\rcaculate average methylation in 20bp proportional bins over", length(ann.obj), new_path.f, "body and 2Kb up-/down-stream regions" paste0("[", 0, "%]  "))
+    cat("\rcaculate average methylation in 20bp proportional bins over", length(ann.obj), new_path.f, "body and 2Kb up-/down-stream regions", paste0("[", 0, "%]  "))
     #cat("\nprepare 20bp proportional bins to",length(ann.obj),new_path.f,"\n")
     results = mclapply(1:length(ann.obj) , gene_2_bins_run, mc.cores = n.cores.f)
     results = results[!sapply(results, is.null)]
