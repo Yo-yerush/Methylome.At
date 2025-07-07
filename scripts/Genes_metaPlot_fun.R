@@ -150,7 +150,7 @@ Genes_metaPlot <- function(methylationPool_var1,methylationPool_var2,var1,var2,a
         CHG = mean(sapply(results, function(x) x$CHG_list[[string_loc]][row_num]$Proportion), na.rm = TRUE)
         CHH = mean(sapply(results, function(x) x$CHH_list[[string_loc]][row_num]$Proportion), na.rm = TRUE)
         
-      cat(paste0("\rprocessing average of ", gsub("\\."," ",string_loc), " bins: ",(row_num/20)*100,"%  "))
+      cat(paste0("\rprocessing average of ", gsub("\\.","-",string_loc), " bins: ",(row_num/20)*100,"%  "))
       return(list(CG = CG,
              CHG = CHG,
              CHH = CHH))

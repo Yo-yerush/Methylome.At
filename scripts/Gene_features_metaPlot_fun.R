@@ -117,11 +117,12 @@ Genes_features_metaPlot <- function(methylationPool_var1, methylationPool_var2, 
         })
       }
 
+      cat("\n")
       cat("\rProcessed", length(ann.obj),  "features in", region_name, "region [0%]  ")
       #cat("\n\nPreparing", length(ann.obj), "bins for region:", region_name, "\n")
       results = mclapply(1:length(ann.obj), gene_2_bins_run, mc.cores = n.cores.f)
       results = results[!sapply(results, is.null)]
-      cat("\n\n")
+      cat("\n")
 
       # Average across features for each bin and context
       region_result = list()
