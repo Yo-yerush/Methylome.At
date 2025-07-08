@@ -1,4 +1,7 @@
-DMRs_2_bigWig <- function(var1, var2, context, ann.res) {
+DMRs_2_bigWig <- function(var1, var2, context, ann.res, scaling=TRUE) {
+
+
+    ################# scale it!!
     if (ann.res == "all") {
         DMRsReplicates <- read.csv(paste0("DMRs_", context, "_", var2, "_vs_", var1, ".csv"))
         file_name <- paste(context, "all", var2, "vs", var1, sep = "_")
