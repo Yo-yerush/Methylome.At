@@ -71,7 +71,7 @@ Methylome.At_main <- function(var1, # control
   })
   cat("\rload annotations and description files [3/3]")
   
-  cat("\n")
+  cat("\n\n")
 
   ###########################################################################
   
