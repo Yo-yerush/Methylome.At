@@ -69,7 +69,7 @@ total_meth_levels_fun <- function(rep_var1_f, rep_var2_f, var1_f, var2_f, plot_t
                                    sd(var2_CG),sd(var2_CHG),sd(var2_CHH)))
   
   level_order = c(var1_f,var2_f)
-  max_pos <- which.max(meth_plot_df$ave_levels)
+  max_pos <- which.max(meth_plot_df$levels)
   y_max_plot = (meth_plot_df$levels[max_pos] + meth_plot_df$SD[max_pos])*1.1
 
   if (nchar(var1) > 6 | nchar(var2) > 6) {leg_horiz=0.75} else {leg_horiz=0.9} # legend position
