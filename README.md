@@ -1,6 +1,6 @@
 # Methylome.At
 
-Methylome.At is a comprehensive, R-based pipeline for *Arabidopsis thaliana* that processes post-alignment WGBS data for CG, CHG and CHH DNA methylation contexts, identifies differentially methylated regions (DMRs, using [DMRcaller](https://github.com/nrzabet/DMRcaller) package) to replicates/single samples data, integrates multiple genomic resources for functional interpretation, and generates extensive visualizations and annotations to advance understanding of plant epigenetic regulation.
+Methylome.At is a comprehensive, R-based pipeline for *Arabidopsis thaliana* that processes post-alignment **WGBS** or **Nanopor** sequencing data for CG, CHG and CHH DNA methylation contexts, identifies differentially methylated regions (DMRs, using [DMRcaller](https://github.com/nrzabet/DMRcaller) package) to replicates/single samples data, integrates multiple genomic resources for functional interpretation, and generates extensive visualizations and annotations to advance understanding of plant epigenetic regulation.
 
 #
 
@@ -126,9 +126,23 @@ Chr1     3577    +       1       5       CHH     CTA
 ```
 
 ##### Convert 'CGmap' to 'CX_report' file
+If the methylome was generated using [CGmapTools](https://cgmaptools.github.io/)
 
 ```bash
-./scripts/cgmap_to_cx.sh PATH/TO/input_file.CGmap PATH/TO/output_CX_report.txt
+./scripts/cgmap_2_cx.sh PATH/TO/input_file.CGmap PATH/TO/output_CX_report.txt
+```
+
+##### Convert 'bedMethyl' to 'CX_report' file
+If the methylome sequenced using [Oxford Nanopore Technologies](https://nanoporetech.com/) is recommended to use [](https://github.com/PengNi/deepsignal-plant) pipeline to generate '*.bedMethyl* files.
+* *genome file as '**.fasta**' or '**.fa**'*
+* *trinucleotide context are **not required** for 'Methylome.At' pipeline*
+
+```bash
+# Without trinucleotide column:
+./scripts/bedmethyl_2_cx.sh -i PATH/TO/input_file.bed -o test
+
+# With trinucleotide column:
+./scripts/bedmethyl_2_cx.sh -i PATH/TO/input_file.bed -t /path/to/genome_dir/ -o test
 ```
 
 #### 3. Annotation and description files

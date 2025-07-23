@@ -3,15 +3,15 @@ set -euo pipefail
 usage() {
 cat <<'EOF'
 -----------------------------------------------------------
-./bedmethyl2cx.sh  - convert DeepSignal-plant bedMethyl to CX_report
+./bedmethyl_2_cx.sh  - convert DeepSignal-plant bedMethyl to CX_report
 
 -----------------------------------------------------------
 USAGE EXAMPLES
   Without trinucleotide column:
-  ./bedmethyl2cx.sh -i deepsig_output.bed -o test
+  ./bedmethyl_2_cx.sh -i deepsig_output.bed -o test
 
   With trinucleotide column:
-  ./bedmethyl2cx.sh -i deepsig_output.bed -t /path/to/genome_dir/ -o test
+  ./bedmethyl_2_cx.sh -i deepsig_output.bed -t /path/to/genome_dir/ -o test
 
 -----------------------------------------------------------
 OPTIONS
