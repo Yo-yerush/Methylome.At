@@ -11,6 +11,7 @@ Methylome.At_main <- function(var1, # control
                               minCytosinesCount,
                               minReadsPerCytosine,
                               pValueThreshold,
+                              methyl_files_type,
                               n.cores,
                               GO_analysis,
                               KEGG_pathways)
@@ -74,6 +75,7 @@ Methylome.At_main <- function(var1, # control
   cat("\n\n")
 
   ###########################################################################
+  setwd(Methylome.At_path)
   
   is_single = (length(var1_path) == 1 & length(var2_path) == 1) # both genotypes includes 1 sample
   is_Replicates = (length(var1_path) > 1 & length(var2_path) > 1) # both genotypes includes >1 samples
@@ -82,7 +84,7 @@ Methylome.At_main <- function(var1, # control
     list(path = var1_path, name = var1),
     list(path = var2_path, name = var2)
   )
-    
+  
   ##### load methylation data ('CX_report' file) ##### 
   message("load CX methylation data...")
   source(paste0(scripts_dir,"load_replicates.R"))

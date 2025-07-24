@@ -18,6 +18,7 @@ binSize=100
 minCytosinesCount=4
 minReadsPerCytosine=4
 pValueThreshold=0.05
+methyl_files_type=CX_report
 n_cores=10
 GO_analysis=FALSE
 KEGG_pathways=FALSE
@@ -38,6 +39,7 @@ usage() {
   echo "  --minCytosinesCount           Minimum cytosines count [default: $minCytosinesCount]"
   echo "  --minReadsPerCytosine         Minimum reads per cytosine [default: $minReadsPerCytosine]"
   echo "  --pValueThreshold             P-value threshold [default: $pValueThreshold]"
+  echo "  --file_type                   Post-alignment file type - 'CX_report', 'bedMethyl' and 'CGmap' [default: '$methyl_files_type' OR determine automatically]"
   echo "  --n_cores                     Number of cores [default: $n_cores]"
   echo "  --GO_analysis                 Perform GO analysis [default: $GO_analysis]"
   echo "  --KEGG_pathways               Perform KEGG pathways analysis [default: $KEGG_pathways]"
@@ -72,6 +74,7 @@ while [[ "$#" -gt 0 ]]; do
     --minCytosinesCount) minCytosinesCount="$2"; shift ;;
     --minReadsPerCytosine) minReadsPerCytosine="$2"; shift ;;
     --pValueThreshold) pValueThreshold="$2"; shift ;;
+    --file_type) methyl_files_type="$2"; shift ;;
     --n_cores) n_cores="$2"; shift ;;
     --GO_analysis) GO_analysis="$2"; shift ;;
     --KEGG_pathways) KEGG_pathways="$2"; shift ;;
@@ -101,13 +104,27 @@ cd "$Methylome_At_path" || {
 is_txt=$(awk -F'\t' 'NR==1 {print NF}' "$samples_file")
 is_csv=$(awk -F',' 'NR==1 {print NF}' "$samples_file")
 if [ "$is_txt" -eq 2 ]; then
-    samples_var=$(cut -f1 "$samples_file" | uniq)
+  samples_var=$(cut -f1 "$samples_file" | uniq)
+  samples_path=$(cut -f2 "$samples_file" | head -n 1)
 elif [ "$is_csv" -eq 2 ]; then
-    samples_var=$(cut -d',' -f1 "$samples_file" | uniq)
+  samples_var=$(cut -d',' -f1 "$samples_file" | uniq)
+  samples_path=$(cut -d',' -f2 "$samples_file" | head -n 1)
 else
-    echo "Error: Cannot read the samples file. Please provide a tab or comma separated file with two columns and no headers."
-    exit 1
+  echo "Error: Cannot read the samples file. Please provide a tab or comma separated file with two columns and no headers."
+  exit 1
 fi
+
+# # Determine file type based on samples_path content
+# if [[ "$methyl_files_type" != "CX_report" ]]; then 
+#   if [[ $(basename "$samples_path" | awk -F. '{print $NF}') == "bed" ]]; then
+#     methyl_files_type="bedMethyl"
+#   elif [[ $(basename "$samples_path" .gz | awk -F. '{print $NF}') == "CGmap" ]]; then
+#     methyl_files_type="CGmap"
+#   else
+#     echo "Error: Cannot read the samples file. Please provide a tab or comma separated file with two columns and no headers."
+#     exit 1
+#   fi
+# fi
 
 # Use head and sed to get the first and second lines
 control_s=$(echo "$samples_var" | head -n1)
@@ -125,6 +142,7 @@ echo "DMRs Min Cytosines Count: $minCytosinesCount"
 echo "DMRs Min Reads Per Cytosine: $minReadsPerCytosine"
 echo "DMRs P-value Threshold: $pValueThreshold"
 echo ""
+echo "Post-alignment file type: $methyl_files_type"
 echo "Number of Cores: $n_cores"
 echo "GO Analysis: $GO_analysis"
 echo "KEGG Pathways: $KEGG_pathways"
@@ -160,6 +178,7 @@ Rscript ./scripts/Methylome.At_run.R \
 "$minCytosinesCount" \
 "$minReadsPerCytosine" \
 "$pValueThreshold" \
+"$methyl_files_type" \
 "$n_cores" \
 "$GO_analysis" \
 "$KEGG_pathways" \
@@ -177,6 +196,7 @@ echo "DMRs Bin size: $binSize" >> "$log_file"
 echo "DMRs Min Cytosines Count: $minCytosinesCount" >> "$log_file"
 echo "DMRs Min Reads Per Cytosine: $minReadsPerCytosine" >> "$log_file"
 echo "DMRs P-value Threshold: $pValueThreshold" >> "$log_file"
+echo "Post-alignment file type: $methyl_files_type" >> "$log_file"
 echo "Number of Cores: $n_cores" >> "$log_file"
 echo "GO Analysis: $GO_analysis" >> "$log_file"
 echo "KEGG Pathways: $KEGG_pathways" >> "$log_file"

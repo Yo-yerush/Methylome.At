@@ -47,9 +47,10 @@ try({
     minCytosinesCount = as.numeric(configs[10]),
     minReadsPerCytosine = as.numeric(configs[11]),
     pValueThreshold = as.numeric(configs[12]),
-    n.cores = as.numeric(configs[13]),
-    GO_analysis = configs[14],
-    KEGG_pathways = configs[15]
+    methyl_files_type = configs[13],
+    n.cores = as.numeric(configs[14]),
+    GO_analysis = configs[15],
+    KEGG_pathways = configs[16]
   )
   # message("\n\nwarnings:\n", warnings())
 })
