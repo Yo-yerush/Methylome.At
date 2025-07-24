@@ -14,6 +14,7 @@ minReadsPerCytosine=6
 metaPlot_random_genes=10000
 n_cores=20
 bin_size_features=10
+methyl_files_type=CX_report
 Genes_n_TEs=TRUE
 Gene_features=TRUE
 
@@ -32,6 +33,7 @@ usage() {
   echo "  --metaPlot_random_genes       Number of random genes for metaPlots. 'all' for all the coding-genes and TEs [default: $metaPlot_random_genes]"
   echo "  --n_cores                     Number of cores [default: $n_cores]"
   echo "  --bin_size_features           Bin-size (set only for 'Gene_features' analysis!) [default: $bin_size_features]"
+  echo "  --file_type                   Post-alignment file type - 'CX_report', 'bedMethyl' and 'CGmap' [default: '$methyl_files_type' OR determine automatically]"
   echo "  --annotation_file             Genome Annotation file [default: Methylome.At annotations file (TAIR10 based)]"
   echo "  --TEs_file                    Transposable Elements file [default: TAIR10 'Transposable Elements' annotations]"
   echo "  --Methylome_At_path           Path to 'Methylome.At' directory [default: $Methylome_At_path]"
@@ -59,6 +61,7 @@ while [[ "$#" -gt 0 ]]; do
     --metaPlot_random_genes) metaPlot_random_genes="$2"; shift ;;
     --n_cores) n_cores="$2"; shift ;;
     --bin_size_features) bin_size_features="$2"; shift ;;
+    --file_type) methyl_files_type="$2"; shift ;;
     --annotation_file) annotation_file="$2"; shift ;;
     --TEs_file) TEs_file="$2"; shift ;;
     --Methylome_At_path) Methylome_At_path="$2"; shift ;;
@@ -107,6 +110,7 @@ echo "Min Reads Per Cytosine: $minReadsPerCytosine"
 echo "MetaPlot Random Genes: $metaPlot_random_genes"
 echo "Number of Cores: $n_cores"
 echo "Bin-Size for 'Gene_features' analysis: $bin_size_features"
+echo "Post-alignment file type: $methyl_files_type"
 echo "Samples file: $samples_file"
 echo "Annotation file: Methylome.At (TAIR10 based)"
 echo "Transposable Elements file: TAIR10"
@@ -132,6 +136,7 @@ Rscript ./scripts/MetaPlots_run.R \
 "$metaPlot_random_genes" \
 "$n_cores" \
 "$bin_size_features" \
+"$methyl_files_type" \
 "$Genes_n_TEs" \
 "$Gene_features" \
     2>> "$log_file"
@@ -147,6 +152,7 @@ echo "Min Reads Per Cytosine: $minReadsPerCytosine" >> "$log_file"
 echo "MetaPlot Random Genes: $metaPlot_random_genes" >> "$log_file"
 echo "Number of Cores: $n_cores" >> "$log_file"
 echo "Bin-Size for 'Gene_features' analysis: $bin_size_features" >> "$log_file"
+echo "Post-alignment file type: $methyl_files_type" >> "$log_file"
 echo "Samples file: $samples_file" >> "$log_file"
 echo "Annotation file: Methylome.At (TAIR10 based)" >> "$log_file"
 echo "Transposable Elements file: TAIR10" >> "$log_file"

@@ -42,8 +42,9 @@ minReadsPerCytosine = as.numeric(configs[5])
 metaPlot.random.genes = configs[6]
 n.cores = as.numeric(configs[7])
 binSize = as.numeric(configs[8])
-analyze_Gene_n_TEs = as.logical(configs[9])
-analyze_GeneFeatures = as.logical(configs[10])
+methyl_files_type = configs[9]
+analyze_Gene_n_TEs = as.logical(configs[10])
+analyze_GeneFeatures = as.logical(configs[11])
 
 ########################################################################### 
 
@@ -108,7 +109,7 @@ source(paste0(scripts_dir,"load_replicates.R"))
 tryCatch({
   # load 'CX_reports'
   n.cores.load = ifelse(n.cores > 1, 2, 1)
-  load_vars = mclapply(var_args, function(x) load_replicates(x$path, n.cores, x$name, T), mc.cores = n.cores.load)
+  load_vars = mclapply(var_args, function(x) load_replicates(x$path, n.cores, x$name, T, methyl_files_type), mc.cores = n.cores.load)
   
   # trimm seqs objects (rename if not 'TAIR10' Chr seqnames)
   meth_var1 = trimm_and_rename(load_vars[[1]])

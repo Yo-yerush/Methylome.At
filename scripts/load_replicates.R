@@ -1,4 +1,4 @@
-load_replicates <- function(var_path, n.cores, var_name, metaPlot_script = F, file_type = "CX_report") {
+load_replicates <- function(var_path, n.cores, var_name, metaPlot_script=F, file_type="CX_report") {
   n.cores.f <- ifelse(n.cores > 2, length(var_path), 1)
   ### load the data for replicates
   methylationDataList <- mclapply(var_path,
