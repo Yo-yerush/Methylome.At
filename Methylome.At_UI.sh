@@ -32,6 +32,7 @@ SCRIPT1_DEFAULT_pValueThreshold="0.05"
 SCRIPT1_DEFAULT_n_cores="10"
 SCRIPT1_DEFAULT_GO_analysis="FALSE"
 SCRIPT1_DEFAULT_KEGG_pathways="FALSE"
+SCRIPT1_DEFAULT_file_type="CX_report"
 SCRIPT1_DEFAULT_annotation_file="annotation_files/Methylome.At_annotations.csv.gz"
 SCRIPT1_DEFAULT_description_file="annotation_files/Methylome.At_description_file.csv.gz"
 SCRIPT1_DEFAULT_TEs_file="annotation_files/TAIR10_Transposable_Elements.txt"
@@ -43,6 +44,7 @@ SCRIPT2_DEFAULT_minReadsPerCytosine="4"
 SCRIPT2_DEFAULT_metaPlot_random_genes="10000"
 SCRIPT2_DEFAULT_n_cores="10"
 SCRIPT2_DEFAULT_bin_size_features="10"
+SCRIPT2_DEFAULT_file_type="CX_report"
 SCRIPT2_DEFAULT_annotation_file="annotation_files/Methylome.At_annotations.csv.gz"
 SCRIPT2_DEFAULT_TEs_file="annotation_files/TAIR10_Transposable_Elements.txt"
 
@@ -97,7 +99,7 @@ fi
 edit_script1_parameters() {
   # Parameters are expected to be set before calling this function
   while true; do
-    OPTION=$(whiptail --title "'Methylome.At' Parameters" --menu "Select a parameter to change or proceed with current settings." 25 78 15 \
+    OPTION=$(whiptail --title "'Methylome.At' Parameters" --menu "Select a parameter to change or proceed with current settings." 25 78 16 \
       "Proceed." "Use current parameters" \
       "$SCRIPT1_minProportionDiff_CG" "Minimum proportion difference for CG" \
       "$SCRIPT1_minProportionDiff_CHG" "Minimum proportion difference for CHG" \
@@ -109,6 +111,7 @@ edit_script1_parameters() {
       "$SCRIPT1_n_cores" "Number of cores" \
       "$SCRIPT1_GO_analysis" "Perform GO analysis (TRUE/FALSE)" \
       "$SCRIPT1_KEGG_pathways" "Perform KEGG pathways analysis (TRUE/FALSE)" \
+      "$SCRIPT1_file_type" "Methylation file type" \
       "$SCRIPT1_annotation_file" "Path to annotation file" \
       "$SCRIPT1_description_file" "Path to description file" \
       "$SCRIPT1_TEs_file" "Path to Transposable Elements file" \
@@ -145,6 +148,12 @@ edit_script1_parameters() {
         "TRUE" "Perform KEGG pathways analysis" OFF \
         "FALSE" "Skip KEGG pathways analysis" ON \
         3>&1 1>&2 2>&3 || echo "$SCRIPT1_KEGG_pathways")
+    elif [ "$OPTION" = "$SCRIPT1_file_type" ]; then
+      SCRIPT1_file_type=$(whiptail --radiolist "Select methylation file type:" 15 70 3 \
+        "CX_report" "'.txt'" ON \
+        "bedMethyl" "'.bed'" OFF \
+        "CGmap" "'.CGmap'" OFF \
+        3>&1 1>&2 2>&3 || echo "$SCRIPT1_file_type")
     elif [ "$OPTION" = "$SCRIPT1_annotation_file" ]; then
       SCRIPT1_annotation_file=$(whiptail --inputbox "Path to annotation file" 10 70 "$SCRIPT1_annotation_file" 3>&1 1>&2 2>&3 || echo "$SCRIPT1_annotation_file")
     elif [ "$OPTION" = "$SCRIPT1_description_file" ]; then
@@ -158,7 +167,7 @@ edit_script1_parameters() {
 # A generic function to create a parameter menu for script2
 edit_script2_parameters() {
   while true; do
-    OPTION=$(whiptail --title "'MetaPlots' Parameters" --menu "Select a parameter to change or proceed with current settings." 25 78 12 \
+    OPTION=$(whiptail --title "'MetaPlots' Parameters" --menu "Select a parameter to change or proceed with current settings." 25 78 13 \
       "Proceed." "Use current parameters" \
       "$SCRIPT2_Genes_n_TEs" "Analyze Genes and TEs metaPlot (TRUE/FALSE)" \
       "$SCRIPT2_Gene_features" "Analyze Gene Features metaPlot (TRUE/FALSE)" \
@@ -166,6 +175,7 @@ edit_script2_parameters() {
       "$SCRIPT2_metaPlot_random_genes" "Number of random genes (or [all])" \
       "$SCRIPT2_n_cores" "Number of cores" \
       "$SCRIPT2_bin_size_features" "Bin-size for Gene_features analysis" \
+      "$SCRIPT2_file_type" "Methylation file types" \
       "$SCRIPT2_annotation_file" "Path to genome annotation file" \
       "$SCRIPT2_TEs_file" "Path to Transposable Elements file" \
       3>&1 1>&2 2>&3)
@@ -192,6 +202,12 @@ edit_script2_parameters() {
       SCRIPT2_n_cores=$(whiptail --inputbox "Number of cores" 10 70 "$SCRIPT2_n_cores" 3>&1 1>&2 2>&3 || echo "$SCRIPT2_n_cores")
     elif [ "$OPTION" = "$SCRIPT2_bin_size_features" ]; then
       SCRIPT2_bin_size_features=$(whiptail --inputbox "Bin-size for Gene_features analysis" 10 70 "$SCRIPT2_bin_size_features" 3>&1 1>&2 2>&3 || echo "$SCRIPT2_bin_size_features")
+    elif [ "$OPTION" = "$SCRIPT2_file_type" ]; then
+      SCRIPT2_file_type=$(whiptail --radiolist "Select methylation file type:" 15 70 3 \
+        "CX_report" "'.txt'" ON \
+        "bedMethyl" "'.bed'" OFF \
+        "CGmap" "'.CGmap'" OFF \
+        3>&1 1>&2 2>&3 || echo "$SCRIPT2_file_type")
     elif [ "$OPTION" = "$SCRIPT2_annotation_file" ]; then
       SCRIPT2_annotation_file=$(whiptail --inputbox "Path to genome annotation file" 10 70 "$SCRIPT2_annotation_file" 3>&1 1>&2 2>&3 || echo "$SCRIPT2_annotation_file")
     elif [ "$OPTION" = "$SCRIPT2_TEs_file" ]; then
@@ -217,6 +233,7 @@ if [[ " ${SELECTED_SCRIPTS[*]} " =~ "Methylome.At" ]]; then
     SCRIPT1_n_cores="$SCRIPT1_DEFAULT_n_cores"
     SCRIPT1_GO_analysis="$SCRIPT1_DEFAULT_GO_analysis"
     SCRIPT1_KEGG_pathways="$SCRIPT1_DEFAULT_KEGG_pathways"
+    SCRIPT1_file_type="$SCRIPT1_DEFAULT_file_type"
     SCRIPT1_annotation_file="$SCRIPT1_DEFAULT_annotation_file"
     SCRIPT1_description_file="$SCRIPT1_DEFAULT_description_file"
     SCRIPT1_TEs_file="$SCRIPT1_DEFAULT_TEs_file"
@@ -236,6 +253,7 @@ if [[ " ${SELECTED_SCRIPTS[*]} " =~ "MetaPlots" ]]; then
     SCRIPT2_metaPlot_random_genes="$SCRIPT2_DEFAULT_metaPlot_random_genes"
     SCRIPT2_n_cores="$SCRIPT2_DEFAULT_n_cores"
     SCRIPT2_bin_size_features="$SCRIPT2_DEFAULT_bin_size_features"
+    SCRIPT2_file_type="$SCRIPT2_DEFAULT_file_type"
     SCRIPT2_annotation_file="$SCRIPT2_DEFAULT_annotation_file"
     SCRIPT2_TEs_file="$SCRIPT2_DEFAULT_TEs_file"
     
@@ -285,6 +303,7 @@ if (whiptail --title "All done!" --yesno "You have chosen to run: $chosen_messag
       --n_cores "$SCRIPT1_n_cores" \
       --GO_analysis "$SCRIPT1_GO_analysis" \
       --KEGG_pathways "$SCRIPT1_KEGG_pathways" \
+      --file_type "$SCRIPT1_file_type" \
       --annotation_file "$SCRIPT1_annotation_file" \
       --description_file "$SCRIPT1_description_file" \
       --TEs_file "$SCRIPT1_TEs_file"
@@ -301,6 +320,7 @@ if (whiptail --title "All done!" --yesno "You have chosen to run: $chosen_messag
       --metaPlot_random_genes "$SCRIPT2_metaPlot_random_genes" \
       --n_cores "$SCRIPT2_n_cores" \
       --bin_size_features "$SCRIPT2_bin_size_features" \
+      --file_type "$SCRIPT2_file_type" \
       --annotation_file "$SCRIPT2_annotation_file" \
       --TEs_file "$SCRIPT2_TEs_file"
   fi
