@@ -10,6 +10,7 @@ Methylome.At will produce few analysis and each analysis contains CG, CHG and CH
 * PCA analysis
 * Total Methylation Levels
 * Methylation Distribution
+* Sub-contexts (CAG, CCG, etc.) methylation Distribution
 * Gene Body and Transposable Elements Meta-plots
 * DMRs Identification (using [DMRcaller](https://github.com/nrzabet/DMRcaller))
 * DMRs Distribution Mapping
@@ -126,6 +127,8 @@ Chr1     3577    +       1       5       CHH     CTA
 ```
 
 ##### Convert 'CGmap' to 'CX_report' file
+*Not needed to convert, it will determine automatically*
+
 If the methylome was generated using [CGmapTools](https://cgmaptools.github.io/)
 
 ```bash
@@ -201,6 +204,7 @@ Optional arguments:
   --minCytosinesCount           Minimum cytosines count [default: 4]
   --minReadsPerCytosine         Minimum reads per cytosine [default: 4]
   --pValueThreshold             P-value threshold [default: 0.05]
+  --file_type                   Post-alignment file type - 'CX_report', 'bedMethyl' and 'CGmap' [default: '$methyl_files_type' OR determine automatically]
   --n_cores                     Number of cores [default: 10]
   --GO_analysis                 Perform GO analysis [default: FALSE]
   --KEGG_pathways               Perform KEGG pathways analysis [default: FALSE]
@@ -225,6 +229,7 @@ Optional arguments:
   --metaPlot_random_genes       Number of random genes for metaPlots. 'all' for all the coding-genes and TEs [default: 10000]
   --n_cores                     Number of cores [default: 20]
   --bin_size_features           Bin-size (set only for 'Gene_features' analysis!) [default: 10]
+  --file_type                   Post-alignment file type - 'CX_report', 'bedMethyl' and 'CGmap' [default: '$methyl_files_type' OR determine automatically]"
   --annotation_file             Genome Annotation file [default: Methylome.At annotations file (TAIR10 based)]
   --TEs_file                    Transposable Elements file [default: TAIR10 'Transposable Elements' annotations]
   --Methylome_At_path           Path to 'Methylome.At' directory [default: PATH/TO/Methylome.At]
@@ -305,6 +310,7 @@ An automated log file will be created during the process. see examples from [Met
 
  ![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/ChrPlot_CHG.svg)
  ![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/ChrPlot_difference_CHG.svg)
+ ![fig](https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/wt_sub.CG_ChrPlot.svg)
 
 #
 
