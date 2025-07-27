@@ -50,5 +50,4 @@ Rscript scripts/install_R_packages.R 2>> "$log_file"
 chmod +x ./Methylome.At.sh
 chmod +x ./Methylome.At_metaPlots.sh
 chmod +x ./Methylome.At_UI.sh
-chmod +x scripts/cgmap_to_cx.sh
-chmod +x scripts/cx_to_cgmap.sh
+chmod +x scripts/*.sh
