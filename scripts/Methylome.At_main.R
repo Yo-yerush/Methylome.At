@@ -153,6 +153,7 @@ Methylome.At_main <- function(var1, # control
     cat(" fail\n")
   })
   
+  cat("\n")
   rm(load_vars)
 
   ##### PCA plot to total methlyation in all contexts
