@@ -14,6 +14,24 @@ run_ChrPlots_sub_CX <- function(ctrl_name, trnt_name, ctrl_pool, trnt_pool, num_
         CHH = c("CAA", "CAT", "CAC", "CTA", "CTT", "CTC", "CCA", "CCT", "CCC")
     )
 
+    max_cores <- 9 * length(chr_names)
+    if (num_cores >= max_cores) {
+       num_cores_1 <- 9
+       num_cores_2 <- length(chr_names)
+    } else if (num_cores >= 18) {
+       num_cores_1 <- 9
+       num_cores_2 <- 2
+    } else if (num_cores >= 9) {
+       num_cores_1 <- 9
+       num_cores_2 <- 1
+    } else if (num_cores >= 3) {
+       num_cores_1 <- 3
+       num_cores_2 <- 1
+    } else {
+       num_cores_1 <- 1
+       num_cores_2 <- 1
+    }
+
     for (context_name in names(context_list)) {
         cat(context_name, "sub-contexts ... \n")
 
@@ -52,7 +70,7 @@ run_ChrPlots_sub_CX <- function(ctrl_name, trnt_name, ctrl_pool, trnt_pool, num_
                 trnt = profile_trnt,
                 delta = profile_delta
             ))
-        }, mc.cores = num_cores)
+        }, mc.cores = num_cores_1)
 
         for (isc in seq_along(context_list[[context_name]])) {
             sub_context <- context_list[[context_name]][isc]
