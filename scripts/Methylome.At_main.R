@@ -264,7 +264,7 @@ Methylome.At_main <- function(var1, # control
     
     ##### Pie chart
     tryCatch({
-      gainORloss(DMRs_bins, context)
+      gainORloss(DMRs_bins, context, add_count = T)
       message("\tpie chart (gain or loss): done")
     }, error = function(cond) {
       cat("\n*\n",as.character(cond),"\n*\n")

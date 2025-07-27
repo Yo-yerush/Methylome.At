@@ -7,8 +7,8 @@ gainORloss <- function(DMRsReplicates, context, add_count = FALSE) {
   pres_gain <- round((gain_DMRs / total) * 100, 1)
   pres_loss <- round((loss_DMRs / total) * 100, 1)
 
-  count_gain <- ifelse(add_count, paste0(" (", gain_DMRs, ")"))
-  count_loss <- ifelse(add_count, paste0(" (", loss_DMRs, ")"))
+  count_gain <- ifelse(add_count, paste0(" (", gain_DMRs, ")"), "")
+  count_loss <- ifelse(add_count, paste0(" (", loss_DMRs, ")"), "")
 
   pie_data <- data.frame(
     group = c("gain", "loss"),
