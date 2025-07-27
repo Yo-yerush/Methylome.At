@@ -8,7 +8,7 @@ if (packageVersion("textshaping") < "0.4.1") {
   })
 }
 
-pkg_name = c("dplyr", "tidyr", "ggplot2", "lattice", "PeakSegDisk", "geomtextpath", "parallel", "BiocManager", "RColorBrewer", "circlize", "cowplot")
+pkg_name = c("dplyr", "tidyr", "ggplot2", "lattice", "PeakSegDisk", "geomtextpath", "parallel", "BiocManager", "RColorBrewer", "circlize", "cowplot", "knitr")
 pkg_biocond = c("DMRcaller","rtracklayer","topGO","KEGGREST","Rgraphviz","org.At.tair.db","GenomicFeatures","plyranges")
 
 # install packages if required

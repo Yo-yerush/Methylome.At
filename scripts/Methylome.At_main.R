@@ -137,11 +137,22 @@ Methylome.At_main <- function(var1, # control
   ###########################################################################
   
   ##### calculate the conversion rate by the chloroplast chromosome (ChrC)
-  message("\nconversion rate (C->T) along the Chloroplast genome:")
-  source(paste0(scripts_dir,"ChrC_conversionRate.R"))
-  conR_var1 = conversionRate(load_vars[[1]]$methylationDataReplicates, var1)
-  conR_var2 = conversionRate(load_vars[[2]]$methylationDataReplicates, var2)
-  write.csv(rbind(conR_var1,conR_var2), paste0(exp_path,"/conversion_rate.csv"), row.names = F)
+  message("\nconversion rate (C->T) along the Chloroplast genome:", appendLF = F)
+  tryCatch({
+    message("")
+    source(paste0(scripts_dir,"ChrC_conversionRate.R"))
+    conR_var1 = conversionRate(load_vars[[1]]$methylationDataReplicates, var1)
+    conR_var2 = conversionRate(load_vars[[2]]$methylationDataReplicates, var2)
+    conR_b = rbind(conR_var1,conR_var2)
+    write.csv(conR_b, paste0(exp_path,"/conversion_rate.csv"), row.names = F)
+    print(kable(conR_b))
+  },
+  error = function(cond) {
+    cat("\n\n* conversion rate:\n",as.character(cond),"\n*\n")
+    message("fail")
+    cat(" fail\n")
+  })
+  
   rm(load_vars)
 
   ##### PCA plot to total methlyation in all contexts

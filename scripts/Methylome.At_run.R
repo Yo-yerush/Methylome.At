@@ -1,14 +1,22 @@
 # upload libraries
 lib_packages <- c(
-    "dplyr", "tidyr", "ggplot2", "DMRcaller", "rtracklayer", "lattice",
-    "PeakSegDisk", "topGO", "KEGGREST", "Rgraphviz", "org.At.tair.db",
-    "GenomicFeatures", "geomtextpath", "plyranges", "parallel",
-    "RColorBrewer", "circlize", "cowplot"
+  "dplyr", "tidyr", "ggplot2", "DMRcaller", "rtracklayer", "lattice",
+  "PeakSegDisk", "topGO", "KEGGREST", "Rgraphviz", "org.At.tair.db",
+  "GenomicFeatures", "geomtextpath", "plyranges", "parallel",
+  "RColorBrewer", "circlize", "cowplot", "knitr"
 )
 for (n.pkg in seq(lib_packages)) {
-    suppressMessages(library(lib_packages[n.pkg], character.only = TRUE))
-    perc_val <- (n.pkg / length(lib_packages)) * 100
-    cat(paste0("\rloading libraries [", round(perc_val, 1), "%] "))
+  tryCatch(
+    {
+      suppressMessages(library(lib_packages[n.pkg], character.only = TRUE))
+      perc_val <- (n.pkg / length(lib_packages)) * 100
+      cat(paste0("\rloading libraries [", round(perc_val, 1), "%] "))
+    },
+    error = function(e) {
+      cat(paste0("\nError loading ", lib_packages[n.pkg], ": ", e$message, "\n"))
+      message(paste0("\n* Error loading ", lib_packages[n.pkg], "package\n"))
+    }
+  )
 }
 cat("\n")
 
