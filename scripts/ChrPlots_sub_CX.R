@@ -89,16 +89,16 @@ run_ChrPlots_sub_CX <- function(ctrl_name, trnt_name, ctrl_pool, trnt_pool, num_
 
         dir.create(paste0("sub", context_name), showWarnings = F)
 
-        subC_plot(ctrl_name, subContext_list_ctrl, max_comb, 0, context_name)
-        subC_plot(trnt_name, subContext_list_trnt, max_comb, 0, context_name)
-        subC_plot("delta", subContext_list_delta, max_proportions_delta, min_proportions_delta, context_name)
+        subC_plot(ctrl_name, subContext_list_ctrl, max_comb, 0, context_name, context_list)
+        subC_plot(trnt_name, subContext_list_trnt, max_comb, 0, context_name, context_list)
+        subC_plot("delta", subContext_list_delta, max_proportions_delta, min_proportions_delta, context_name, context_list)
     }
 }
 
 ###########################################################################
 
 
-subC_plot <- function(subC_var, subC_list, subC_max, subC_min, subC_CNTX) {
+subC_plot <- function(subC_var, subC_list, subC_max, subC_min, subC_CNTX, CNTX_list) {
     if (subC_var == "delta") {
         y_lab_fun <- paste(subC_CNTX, " methylation (Δ)")
     } else {
@@ -139,8 +139,8 @@ subC_plot <- function(subC_var, subC_list, subC_max, subC_min, subC_CNTX) {
     par(mar = c(1, 0, 1, 0))
     par(fig = c(8, 10, 0, 10) / 10)
     legend("top",
-        legend = context_list[[subC_CNTX]],
-        lty = 0, col = brewer.pal(n = length(context_list[[subC_CNTX]]), name = "Set1"),
+        legend = CNTX_list[[subC_CNTX]],
+        lty = 0, col = brewer.pal(n = length(CNTX_list[[subC_CNTX]]), name = "Set1"),
         pch = 15, bty = "n", cex = 0.75
     )
 
