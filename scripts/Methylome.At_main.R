@@ -224,13 +224,14 @@ Methylome.At_main <- function(var1, # control
   ##### ChrPlots for CX methylation #####
   dir.create(ChrPlot_CX_path, showWarnings = F)
   setwd(ChrPlot_CX_path)
+  source(paste0(scripts_dir, "ChrPlots_CX.R"))
 
   message("generating chromosome methylation plots (ChrPlots): ", appendLF = F)
   tryCatch(
     {
-      source(paste0(scripts_dir, "ChrPlots_CX.R"))
       # suppressWarnings(ChrPlots_CX(comparison_name, meth_var1, meth_var2, var1, var2, scripts_dir, n.cores))
-      run_ChrPlots_CX(comparison_name, meth_var1, meth_var2, var1, var2, TE_file)
+      # run_ChrPlots_CX(comparison_name, meth_var1, meth_var2, var1, var2, TE_file)
+      run_ChrPlots_CX(var1, var2, meth_var1, meth_var2, TE_file, n.cores)
       message("done")
     },
     error = function(cond) {
