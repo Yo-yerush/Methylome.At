@@ -13,9 +13,9 @@ echo "**  $(date +"%d-%m-%y %H:%M")" > "$log_file"
 echo "" >> "$log_file"
 
 # Create and activate the conda environment
-packages=("r-curl" "r-rcurl" "r-devtools" "zlib" "r-textshaping" "harfbuzz" "fribidi" "freetype" "libpng" "pkg-config" "libxml2" "r-xml" "bioconductor-rsamtools")
+packages=("r-curl" "r-rcurl" "zlib" "r-textshaping" "harfbuzz" "fribidi" "freetype" "libpng" "pkg-config" "libxml2" "r-xml" "bioconductor-rsamtools") # "r-devtools"
 echo "Creating Conda environment..." >> "$log_file"
-if conda create --name Methylome.At_env -c conda-forge -c bioconda r-base=4.4.2 "${packages[@]}" -y && conda activate Methylome.At_env; then
+if conda create --name Methylome.At_env -c conda-forge -c bioconda r-base=4.4.3 "${packages[@]}" -y && conda activate Methylome.At_env; then
     echo "Conda environment created and activated successfully." >> "$log_file"
     echo "Conda environment name: $CONDA_DEFAULT_ENV" >> "$log_file"
 else

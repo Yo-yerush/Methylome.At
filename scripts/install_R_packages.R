@@ -16,7 +16,9 @@ installed_packages = rownames(installed.packages())
 i=1
 for (pkg in pkg_name) {
   if (!(pkg %in% installed_packages)) {
-    suppressMessages(install.packages(pkg, repos = "http://cran.r-project.org", quiet = T))
+    try({
+      suppressMessages(install.packages(pkg, repos = "http://cran.r-project.org", quiet = T))
+    }, silent = T)
   }
   perc_val <- (i / length(c(pkg_name, pkg_biocond))) * 100
   cat(paste0("\rInstall R packages...\t", round(perc_val, 1), "% "))
@@ -25,7 +27,9 @@ for (pkg in pkg_name) {
     
 for (pkg in pkg_biocond) {
   if (!(pkg %in% installed_packages)) {
-    suppressMessages(BiocManager::install(pkg, quiet = T))
+    try({
+      suppressMessages(BiocManager::install(pkg, quiet = T, update = F, ask = F))
+    }, silent = T)
   }
   perc_val <- (i / length(c(pkg_name, pkg_biocond))) * 100
   cat(paste0("\rInstall R packages...\t", round(perc_val, 1), "% "))
@@ -38,10 +42,17 @@ cat("\n\n")
 # Check each package if installed
 c.pkg = .packages(all.available = TRUE)
 message("\n")
-for (i in c("textshaping",pkg_name,pkg_biocond)) {
-  tryCatch({
-    if (c.pkg[grep(paste0("^",i,"$"), c.pkg)] == i) {
-      message(paste0("*\tinstalled ",i,": yes"))
+for (i in c("textshaping", pkg_name, pkg_biocond)) {
+  tryCatch(
+    {
+      if (c.pkg[grep(paste0("^", i, "$"), c.pkg)] == i) {
+        cat(paste0("*\tinstalled ", i, ": yes\n"))
+        message(paste0("*\tinstalled ", i, ": yes"))
+      }
+    },
+    error = function(cond) {
+      cat(paste0("*\tinstalled ", i, ": no\n"))
+      message(paste0("*\tinstalled ", i, ": no"))
     }
-  }, error = function(cond) {message(paste0("*\tinstalled ",i,": no"))})
+  )
 }
