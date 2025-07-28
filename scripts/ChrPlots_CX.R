@@ -37,7 +37,7 @@ chromosome_plot <- function(profile_vars, chr.n, y_max, y_mid, y_min, col, cntx)
     if (length(profile_vars) > 1) {
         for (i_p in 1:length(profile_vars)) {
             lines(pos, methylationProfiles[[i_p]]$mean_value,
-                type = "o", col = col[i_p], lty = 1, pch = 26
+                type = "o", col = col[i_p], lty = 1, lwd = lwd_f, pch = 26
             )
         }
     }
