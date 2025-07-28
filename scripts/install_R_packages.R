@@ -12,6 +12,7 @@ pkg_name = c("dplyr", "tidyr", "ggplot2", "lattice", "PeakSegDisk", "geomtextpat
 pkg_biocond = c("DMRcaller","rtracklayer","topGO","KEGGREST","Rgraphviz","org.At.tair.db","GenomicFeatures","plyranges")
 
 # install packages if required
+cat(paste0("\rInstall R packages...\t    "))
 installed_packages = rownames(installed.packages())
 i=1
 for (pkg in pkg_name) {
