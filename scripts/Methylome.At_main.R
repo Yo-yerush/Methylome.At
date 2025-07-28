@@ -135,8 +135,8 @@ Methylome.At_main <- function(var1, # control
   # new folders path names
   comparison_name <- paste0(var2, "_vs_", var1)
   exp_path <- paste0(Methylome.At_path, "/results/", comparison_name)
-  ChrPlot_CX_path <- paste0(exp_path, "/ChrPlot_CX")
-  ChrPlot_subCX_path <- paste0(exp_path, "/ChrPlot_subCX")
+  ChrPlot_CX_path <- paste0(ChrPlot_CX_path, "/ChrPlot_CX")
+  ChrPlot_subCX_path <- paste0(exp_path, "/subCX")
   PCA_plots_path <- paste0(exp_path, "/PCA_plots")
   meth_levels_path <- paste0(exp_path, "/methylation_levels")
   metaPlot_path <- paste0(exp_path, "/metaPlots")
@@ -223,6 +223,7 @@ Methylome.At_main <- function(var1, # control
 
   ##### ChrPlots for CX methylation #####
   dir.create(ChrPlot_CX_path, showWarnings = F)
+  dir.create(ChrPlot_subCX_path, showWarnings = F)
   setwd(ChrPlot_CX_path)
   source(paste0(scripts_dir, "ChrPlots_CX.R"))
 
@@ -242,25 +243,25 @@ Methylome.At_main <- function(var1, # control
 
   setwd(exp_path)
 
-  ##### ChrPlots for sub-CX methylation #####
-  dir.create(ChrPlot_subCX_path, showWarnings = F)
-  setwd(ChrPlot_subCX_path)
-
-  message("generating chromosome methylation plots to sub-contexts (ChrPlots): ", appendLF = F)
-  tryCatch(
-    {
-      source(paste0(scripts_dir, "ChrPlots_sub_CX.R"))
-      chr_names <- unique(as.character(seqnames(annotation.gr)))
-      run_ChrPlots_sub_CX(var1, var2, meth_var1, meth_var2, n.cores, chr_names)
-      message("done\n")
-    },
-    error = function(cond) {
-      cat("\n\n* sub-context ChrPlots:\n", as.character(cond), "\n*\n")
-      message("fail\n")
-    }
-  )
-
-  setwd(exp_path)
+  # ##### ChrPlots for sub-CX methylation #####
+  # dir.create(ChrPlot_subCX_path, showWarnings = F)
+  # setwd(ChrPlot_subCX_path)
+  # 
+  # message("generating chromosome methylation plots to sub-contexts (ChrPlots): ", appendLF = F)
+  # tryCatch(
+  #   {
+  #     source(paste0(scripts_dir, "ChrPlots_sub_CX.R"))
+  #     chr_names <- unique(as.character(seqnames(annotation.gr)))
+  #     run_ChrPlots_sub_CX(var1, var2, meth_var1, meth_var2, n.cores, chr_names)
+  #     message("done\n")
+  #   },
+  #   error = function(cond) {
+  #     cat("\n\n* sub-context ChrPlots:\n", as.character(cond), "\n*\n")
+  #     message("fail\n")
+  #   }
+  # )
+  # 
+  # setwd(exp_path)
 
   ###########################################################################
 

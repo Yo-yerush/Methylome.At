@@ -343,7 +343,7 @@ var_sep <- function(a, subCX = F, num_cores) {
 
 ###################################################################
 
-run_ChrPlots_CX <- function(ctrl_name, trnt_name, ctrl_pool, trnt_pool, TE.gr, chr_length, num_cores) {
+run_ChrPlots_CX <- function(ctrl_name, trnt_name, ctrl_pool, trnt_pool, TE.gr, num_cores) {
     cat("\n")
     cat(paste0("\rCalculate methylated/unmethylated C's ratio... [",ctrl_name,"]          "))
     ctrl_pool <- as.data.frame(ctrl_pool) %>%
