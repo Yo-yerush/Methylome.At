@@ -226,8 +226,8 @@ Methylome.At_main <- function(var1, # control
   message("generating chromosome methylation plots to sub-contexts (ChrPlots): ", appendLF = F)
   tryCatch({
     source(paste0(scripts_dir,"ChrPlots_sub_CX.R"))
-    chr_names <- unique(as.character(seqnames(annotation.gr)))
-    run_ChrPlots_sub_CX(ctrl_name, trnt_name, ctrl_pool, trnt_pool, n.cores, chr_names)
+    chr_names = unique(as.character(seqnames(annotation.gr)))
+    run_ChrPlots_sub_CX(var1, var2, meth_var1, meth_var2, n.cores, chr_names)
     message("done\n")
   },
   error = function(cond) {
