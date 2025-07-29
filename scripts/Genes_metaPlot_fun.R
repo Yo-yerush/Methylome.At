@@ -113,7 +113,7 @@ Genes_metaPlot <- function(methylationPool_var1,methylationPool_var2,var1,var2,a
           CHH_list = strand_minus(CHH_list)
         }
         
-        # print percentage every 250 genes
+        # print percentage every 100 genes
         if (gene.num %% 100 == 0) {
           cat("\rcaculate average methylation in 20bp proportional bins over", length(ann.obj), new_path.f, "body and 2Kb up-/down-stream regions", paste0("[", round((gene.num/length(ann.obj)*100), 0), "%]  "))
         }
