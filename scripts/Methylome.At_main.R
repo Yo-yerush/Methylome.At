@@ -259,7 +259,7 @@ Methylome.At_main <- function(var1, # control
   ### ### main loop for 'DMRs' and its downstream results ### ###
 
   for (context in c("CG", "CHG", "CHH")) {
-    cat("\n*\n", context, "\n*\n")
+    cat("\n*\tDMRs in", context, "context\t*\n")
     message(paste0("DMRs in ", context, " context..."))
 
     ##############################
