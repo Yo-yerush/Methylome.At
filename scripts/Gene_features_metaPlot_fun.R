@@ -109,7 +109,7 @@ Genes_features_metaPlot <- function(methylationPool_var1, methylationPool_var2, 
             }
           }
           
-          if (gene.num %% 250 == 0) {
+          if (gene.num %% 100 == 0) {
             cat("\rProcessed", length(ann.obj),  "features in", region_name, paste0("region [", round((feature.num/length(ann.obj))*100, 0), "%]  "))
           }
 
