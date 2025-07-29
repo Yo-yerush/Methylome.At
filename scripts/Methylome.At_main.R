@@ -135,8 +135,8 @@ Methylome.At_main <- function(var1, # control
   # new folders path names
   comparison_name <- paste0(var2, "_vs_", var1)
   exp_path <- paste0(Methylome.At_path, "/results/", comparison_name)
-  ChrPlot_CX_path <- paste0(ChrPlot_CX_path, "/ChrPlot_CX")
-  ChrPlot_subCX_path <- paste0(exp_path, "/subCX")
+  ChrPlot_CX_path <- paste0(exp_path, "/ChrPlot_CX")
+  ChrPlot_subCX_path <- paste0(ChrPlot_CX_path, "/subCX")
   PCA_plots_path <- paste0(exp_path, "/PCA_plots")
   meth_levels_path <- paste0(exp_path, "/methylation_levels")
   metaPlot_path <- paste0(exp_path, "/metaPlots")
