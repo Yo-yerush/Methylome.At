@@ -109,8 +109,10 @@ Genes_features_metaPlot <- function(methylationPool_var1, methylationPool_var2, 
             }
           }
           
-          cat("\rProcessed", length(ann.obj),  "features in", region_name, paste0("region [", round((feature.num/length(ann.obj))*100, 0), "%]  "))
-          #cat("\rProcessed feature:", feature.num, "/", length(ann.obj), "in region:", region_name, "      ")
+          if (gene.num %% 250 == 0) {
+            cat("\rProcessed", length(ann.obj),  "features in", region_name, paste0("region [", round((feature.num/length(ann.obj))*100, 0), "%]  "))
+          }
+
           return(context_results)
         }, error = function(cond) {
           return(NULL)

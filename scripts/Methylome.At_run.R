@@ -8,7 +8,7 @@ lib_packages <- c(
 for (n.pkg in seq(lib_packages)) {
   tryCatch(
     {
-      suppressMessages(library(lib_packages[n.pkg], character.only = TRUE))
+      suppressWarnings(suppressMessages(library(lib_packages[n.pkg], character.only = TRUE)))
       perc_val <- (n.pkg / length(lib_packages)) * 100
       cat(paste0("\rloading libraries [", round(perc_val, 1), "%] "))
     },

@@ -230,7 +230,7 @@ Methylome.At_main <- function(var1, # control
   message("generating chromosome methylation plots (ChrPlots): ", appendLF = F)
   tryCatch(
     {
-      run_ChrPlots_CX(var1, var2, meth_var1, meth_var2, TE_file, n.cores)
+      suppressWarnings(run_ChrPlots_CX(var1, var2, meth_var1, meth_var2, TE_file, n.cores))
       message("done")
     },
     error = function(cond) {

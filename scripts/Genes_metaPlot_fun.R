@@ -113,8 +113,10 @@ Genes_metaPlot <- function(methylationPool_var1,methylationPool_var2,var1,var2,a
           CHH_list = strand_minus(CHH_list)
         }
         
-        #cat("\rprepare 20bp proportional bins:",gene.num,"/",length(ann.obj),"      ")
-        cat("\rcaculate average methylation in 20bp proportional bins over", length(ann.obj), new_path.f, "body and 2Kb up-/down-stream regions", paste0("[", round((gene.num/length(ann.obj)*100), 0), "%]  "))
+        # print percentage every 250 genes
+        if (gene.num %% 250 == 0) {
+          cat("\rcaculate average methylation in 20bp proportional bins over", length(ann.obj), new_path.f, "body and 2Kb up-/down-stream regions", paste0("[", round((gene.num/length(ann.obj)*100), 0), "%]  "))
+        }
 
         return(list(CG_list=CG_list,
                     CHG_list=CHG_list,
@@ -126,7 +128,7 @@ Genes_metaPlot <- function(methylationPool_var1,methylationPool_var2,var1,var2,a
     }
 
     cat("\n")
-    cat("\rcaculate average methylation in 20bp proportional bins over", length(ann.obj), new_path.f, "body and 2Kb up-/down-stream regions", paste0("[", 0, "%]  "))
+    cat("\rcaculate average methylation in 20bp proportional bins over", length(ann.obj), new_path.f, "body and 2Kb up-/down-stream regions [0%]  ")
     #cat("\nprepare 20bp proportional bins to",length(ann.obj),new_path.f,"\n")
     results = mclapply(1:length(ann.obj) , gene_2_bins_run, mc.cores = n.cores.f)
     results = results[!sapply(results, is.null)]
@@ -150,7 +152,6 @@ Genes_metaPlot <- function(methylationPool_var1,methylationPool_var2,var1,var2,a
         CHG = mean(sapply(results, function(x) x$CHG_list[[string_loc]][row_num]$Proportion), na.rm = TRUE)
         CHH = mean(sapply(results, function(x) x$CHH_list[[string_loc]][row_num]$Proportion), na.rm = TRUE)
         
-      cat(paste0("\rprocessing average of ", gsub("\\.","-",string_loc), " bins: ",(row_num/20)*100,"%  "))
       return(list(CG = CG,
              CHG = CHG,
              CHH = CHH))
@@ -158,15 +159,16 @@ Genes_metaPlot <- function(methylationPool_var1,methylationPool_var2,var1,var2,a
     
     for (string_loc in 1:3) {
       # Parallel processing using mclapply
+      cat(paste0("processing average of ", gsub("\\.","-",string_loc), " bins... "))
       results_parallel = mclapply(1:20, function(row_num) process_row(row_num, results,string_loc), mc.cores = ifelse(n.cores.f >= 20, 20, n.cores.f))
-      
+
       # Assigning results back to your lists
       for (row_num_l in 1:20) {
         gr_list_CG[[string_loc]][row_num_l]$Proportion <- results_parallel[[row_num_l]]$CG
         gr_list_CHG[[string_loc]][row_num_l]$Proportion <- results_parallel[[row_num_l]]$CHG
         gr_list_CHH[[string_loc]][row_num_l]$Proportion <- results_parallel[[row_num_l]]$CHH
       }
-      cat("\n")
+      cat("done\n")
     }
     return(list(gr_list_CG=gr_list_CG,
                 gr_list_CHG=gr_list_CHG,
