@@ -23,7 +23,7 @@ chromosome_plot <- function(profile_vars, chr.n, y_max, y_mid, y_min, col, cntx)
         methylationProfiles[[i]] <- profile_vars[[i]]
     }
 
-    lwd_f <- ifelse(length(profile_vars) > 2, 0.75, 1)
+    lwd_f <- ifelse(length(profile_vars) > 2, 1, 1.25)
 
     pos <- (start(methylationProfiles[[1]]) + end(methylationProfiles[[1]])) / 2
     plot(pos, methylationProfiles[[1]]$mean_value,
@@ -62,7 +62,6 @@ chromosome_plot <- function(profile_vars, chr.n, y_max, y_mid, y_min, col, cntx)
 
 ChrPlots_CX_all <- function(
     meth_var_list,
-    meth_names,
     y_max_cg = 1,
     y_max_chg = 0.5,
     y_max_chh = 0.2,
@@ -72,6 +71,7 @@ ChrPlots_CX_all <- function(
     y_min_cg = 0,
     y_min_chg = 0,
     y_min_chh = 0,
+    legend_names = NULL,
     italic_legend_names = TRUE,
     ylab_suffix = NULL,
     y_title_cex = 1,
@@ -133,7 +133,10 @@ ChrPlots_CX_all <- function(
         meth_vars_context <- lapply(meth_var_list, function(inner_list) inner_list[[tolower(cntx)]])
 
         if (is_subCX) {
-           meth_vars_context = meth_vars_context[[1]]
+            meth_vars_context <- meth_vars_context[[1]]
+            legend_col <- "gray20"
+        } else {
+            legend_col <- col_vec
         }
 
         if (cntx != "TE") {
@@ -186,7 +189,29 @@ ChrPlots_CX_all <- function(
             ## chromosome
             par(mar = c(0, 0, 0, 0)) # c(1, 0, 2, 0))
             for (chr in seq(chr_amount)) {
-                chromosome_plot(meth_vars_context, chr, y_max_cntx, y_mid_cntx, y_min_cntx, col_vec, cntx)
+                suppressWarnings(chromosome_plot(meth_vars_context, chr, y_max_cntx, y_mid_cntx, y_min_cntx, col_vec, cntx))
+
+                if (chr == 1 & cntx == "CG") {
+                    ## legend
+                    text(
+                        x = 3, y = y_max_cntx,
+                        labels = paste0("\n\n",legend_names[1]),
+                        pos = 4, # right of point
+                        col = legend_col[1],
+                        font = 2, # bold
+                        cex = 1.25
+                    )
+                    if (length(legend_names) > 1) {
+                        text(
+                            x = 3, y = y_max_cntx,
+                            labels = paste0("\n\n\n\n",legend_names[2]),
+                            pos = 4,
+                            col = legend_col[2],
+                            font = 2,
+                            cex = 1.25
+                        )
+                    }
+                }
             }
         } else if (!is.null(TE_as_gr)) {
             te_plot_conf(TE_as_gr, chr_amount)
@@ -208,15 +233,29 @@ ChrPlots_CX_all <- function(
         )
     }
 
-    # ## legend
-    # par(mar = c(0, 0, 0, 0))
-    # plot.new()
-    # legend("top",
-    #     legend = meth_names,
-    #     text.font = ifelse(italic_legend_names, 3, 1),
-    #     col = col_vec,
-    #     lty = 1, bty = "n", cex = 1.2, lwd = 2
-    # )
+    if (is_subCX) {
+        ## legend
+        par(mar = c(0, 0, 0, 0))
+        plot.new()
+        legend(x = 0, y = 1, # 1 - 0.0125,
+            legend = toupper(names(meth_var_list[[1]][["cg"]])),
+            # title = "CG",
+            col = brewer.pal(n = 4, name = "Set1"),
+            lty = 1, bty = "n", cex = 1, lwd = 2
+        )
+        legend(x = 0, y = 0.75, # 1 - 0.25 - (0.0125 * 2),
+            legend = toupper(names(meth_var_list[[1]][["chg"]])),
+            # title = "CHG",
+            col = brewer.pal(n = 3, name = "Set1"),
+            lty = 1, bty = "n", cex = 1, lwd = 2
+        )
+        legend(x = 0, y = 0.468, # 1 - 0.5 - (0.0125 * 5),
+            legend = toupper(names(meth_var_list[[1]][["chh"]])),
+            # title = "CHH",
+            col = brewer.pal(n = 9, name = "Set1"),
+            lty = 1, bty = "n", cex = 1, lwd = 2
+        )
+    }
 }
 
 ###################################################################
@@ -251,17 +290,13 @@ te_plot_conf <- function(x, chr_amount) {
     te_names <- "TE"
 
     for (chr in seq(chr_amount)) {
-        cat(".")
-        chromosome_plot(te_list, chr,
-            y_max_te, y_mid_te, y_min_te,
-            col = "#55555590", cntx = "TE"
-        ) ###
+        suppressWarnings(chromosome_plot(te_list, chr, y_max_te, y_mid_te, y_min_te, col = "#55555590", cntx = "TE"))
     }
 }
 
 ###################################################################
 
-windowSize_mcol <- function(x, mcol_name, windowSize = 1.5e5) {
+windowSize_mcol <- function(x, mcol_name, windowSize = 2.5e5) {
     # chromosome lengths
     seqlens <- vapply(split(end(x), seqnames(x)), max, numeric(1))
     seqlengths(x) <- seqlens[seqlevels(x)]
@@ -282,7 +317,6 @@ windowSize_mcol <- function(x, mcol_name, windowSize = 1.5e5) {
     mcols(windows)$mean_value <- NA_real_
     mcols(windows)$mean_value[as.integer(names(mValue))] <- mValue
 
-    cat(".")
     windows
 }
 
@@ -321,7 +355,7 @@ var_sep <- function(a, subCX = F, num_cores) {
         }
         mclapply(c("CG", "CHG", "CHH"), function(cntx) {
             var_subSep(a, cntx)
-        }, mc.cores = num_cores_1) %>%
+        }, mc.cores = num_cores) %>%
             setNames(c("cg", "chg", "chh"))
     } else {
         var_subSep <- function(gr, cntx) {
@@ -343,16 +377,16 @@ var_sep <- function(a, subCX = F, num_cores) {
 
 ###################################################################
 
-run_ChrPlots_CX <- function(ctrl_name, trnt_name, ctrl_pool, trnt_pool, TE.gr, num_cores) {
+run_ChrPlots_CX <- function(ctrl_name, trnt_name, ctrl_pool, trnt_pool, TE.gr, num_cores, CX_plot = T, subCX_plot = T) {
     cat("\n")
-    cat(paste0("\rCalculate methylated/unmethylated C's ratio... [",ctrl_name,"]          "))
+    cat(paste0("\rCalculate methylated/unmethylated C's ratio... [", ctrl_name, "]          "))
     ctrl_pool <- as.data.frame(ctrl_pool) %>%
         mutate(Proportion = readsM / readsN) %>%
         select(seqnames, start, end, Proportion, context, trinucleotide_context) %>%
         mutate(Proportion = ifelse(is.nan(Proportion), 0, Proportion)) # %>%
     # filter(!is.nan(Proportion)) ###
 
-    cat(paste0("\rCalculate methylated/unmethylated C's ratio... [",trnt_name,"]          "))
+    cat(paste0("\rCalculate methylated/unmethylated C's ratio... [", trnt_name, "]          "))
     trnt_pool <- as.data.frame(trnt_pool) %>%
         mutate(Proportion = readsM / readsN) %>%
         select(seqnames, start, end, Proportion, context, trinucleotide_context) %>%
@@ -369,125 +403,162 @@ run_ChrPlots_CX <- function(ctrl_name, trnt_name, ctrl_pool, trnt_pool, TE.gr, n
         mutate(Proportion = trnt_pool$Proportion - ctrl_pool$Proportion) %>%
         select(seqnames, start, end, Proportion, context, trinucleotide_context) %>%
         filter(!is.nan(Proportion))
-    cat("\ndone\n")
-
-    # normelize Chr pnel size to its length
+    cat(paste0("\rCalculate methylated/unmethylated C's ratio:   done!            "))
+    cat("\n")
+    
+    # normelize Chr panel size to its length
+    cat(paste0("\rNormelize chromosome panel size to its length...    "))
     chr_length <- rbind(ctrl_pool, trnt_pool) %>%
         group_by(seqnames) %>%
-        summarise(max_start = max(start), .groups = 'drop') %>%
+        summarise(max_start = max(start), .groups = "drop") %>%
         pull(max_start)
     max_chr_length <- chr_length / max(chr_length)
     chr_amount <- length(chr_length)
+    cat(paste0("\rNormelize chromosome panel size to its length: done!"))
+    cat("\n-------------\n")
 
     ########################################################################
-    # ChrPlot
-    cat("\nChrPlots...")
-    svg(paste0("ChrPlot_", trnt_name, "_vs_", ctrl_name, ".svg"), width = 7, height = 4, family = "serif")
-    try({
-        ChrPlots_CX_all(
-            meth_var_list = list(var_sep(ctrl_pool, F, num_cores), var_sep(trnt_pool, F, num_cores)),
-            meth_names = c(ctrl_name, trnt_pool),
-            y_max_cg = 1,
-            y_max_chg = 0.6,
-            y_max_chh = 0.25,
-            y_mid_cg = NULL,
-            y_mid_chg = NULL,
-            y_mid_chh = NULL,
-            y_min_cg = 0,
-            y_min_chg = 0,
-            y_min_chh = 0,
-            italic_legend_names = FALSE,
-            ylab_suffix = NULL,
-            y_title_cex = 1,
-            chr_amount = chr_amount,
-            chr_length = max_chr_length,
-            is_subCX = FALSE,
-            TE_as_gr = TE.gr
-        )
-    })
-    dev.off()
-    cat(" done\n")
+    ### ChrPlot
+    if (CX_plot) {
+        cat(paste0("\rChrPlots... [", trnt_name, " & ", ctrl_name, "]"))
+        svg(paste0("ChrPlot_", trnt_name, "_vs_", ctrl_name, ".svg"), width = 7, height = 4, family = "serif")
+        try({
+            ChrPlots_CX_all(
+                meth_var_list = list(var_sep(ctrl_pool, F, num_cores), var_sep(trnt_pool, F, num_cores)),
+                y_max_cg = 1,
+                y_max_chg = 0.6,
+                y_max_chh = 0.25,
+                y_mid_cg = NULL,
+                y_mid_chg = NULL,
+                y_mid_chh = NULL,
+                y_min_cg = 0,
+                y_min_chg = 0,
+                y_min_chh = 0,
+                legend_names = c(ctrl_name, trnt_name),
+                italic_legend_names = FALSE,
+                ylab_suffix = NULL,
+                y_title_cex = 1,
+                chr_amount = chr_amount,
+                chr_length = max_chr_length,
+                is_subCX = FALSE,
+                TE_as_gr = TE.gr
+            )
+        })
+        dev.off()
 
-    cat("ChrPlots (difference)...")
-    svg(paste0("ChrPlot_difference_", trnt_name, "_vs_", ctrl_name, ".svg"), width = 7, height = 4, family = "serif")
-    try({
-        ChrPlots_CX_all(
-            meth_var_list = list(var_sep(delta_pool, F, num_cores)),
-            meth_names = paste0(trnt_name, "_vs_", ctrl_name),
-            y_max_cg = 0.1,
-            y_max_chg = 0.1,
-            y_max_chh = 0.1,
-            y_mid_cg = 0,
-            y_mid_chg = 0,
-            y_mid_chh = 0,
-            y_min_cg = -0.1,
-            y_min_chg = -0.1,
-            y_min_chh = -0.1,
-            italic_legend_names = FALSE,
-            ylab_suffix = "(Δ)",
-            y_title_cex = 1,
-            chr_amount = chr_amount,
-            chr_length = max_chr_length,
-            is_subCX = FALSE,
-            TE_as_gr = TE.gr
-        )
-    })
-    dev.off()
-    cat(" done\n")
-
+        # delta
+        cat(paste0("\rChrPlots... [delta]            "))
+        svg(paste0("ChrPlot_difference_", trnt_name, "_vs_", ctrl_name, ".svg"), width = 7, height = 4, family = "serif")
+        try({
+            ChrPlots_CX_all(
+                meth_var_list = list(var_sep(delta_pool, F, num_cores)),
+                y_max_cg = 0.1,
+                y_max_chg = 0.1,
+                y_max_chh = 0.1,
+                y_mid_cg = 0,
+                y_mid_chg = 0,
+                y_mid_chh = 0,
+                y_min_cg = -0.1,
+                y_min_chg = -0.1,
+                y_min_chh = -0.1,
+                legend_names = paste0(trnt_name, " vs ", ctrl_name),
+                italic_legend_names = FALSE,
+                ylab_suffix = "(Δ)",
+                y_title_cex = 1,
+                chr_amount = chr_amount,
+                chr_length = max_chr_length,
+                is_subCX = FALSE,
+                TE_as_gr = TE.gr
+            )
+        })
+        dev.off()
+        cat(paste0("\rChrPlots:   done!              "))
+        cat("\n")
+    }
     ########################################################################
-    # ChrPlot sub-CX
-    cat("\nChrPlots for sub-contexts...")
-    svg(paste0("subCX/ChrPlot_subCX_", trnt_name, "_vs_", ctrl_name, ".svg"), width = 7, height = 4, family = "serif")
-    try({
-        ChrPlots_CX_all(
-            meth_var_list = list(var_sep(ctrl_pool, T, num_cores), var_sep(trnt_pool, T, num_cores)),
-            meth_names = c(ctrl_name, trnt_pool),
-            y_max_cg = 1,
-            y_max_chg = 0.6,
-            y_max_chh = 0.25,
-            y_mid_cg = NULL,
-            y_mid_chg = NULL,
-            y_mid_chh = NULL,
-            y_min_cg = 0,
-            y_min_chg = 0,
-            y_min_chh = 0,
-            italic_legend_names = FALSE,
-            ylab_suffix = NULL,
-            y_title_cex = 1,
-            chr_amount = chr_amount,
-            chr_length = max_chr_length,
-            is_subCX = TRUE,
-            TE_as_gr = TE.gr
-        )
-    })
-    dev.off()
-    cat(" done\n")
+    ### ChrPlot sub-CX
+    if (subCX_plot) {
+        # var1
+        cat(paste0("\rChrPlots for sub-contexts... [", ctrl_name, "]          "))
+        svg(paste0("subCX/ChrPlot_subCX_", ctrl_name, ".svg"), width = 7, height = 4, family = "serif")
+        try({
+            ChrPlots_CX_all(
+                meth_var_list = list(var_sep(ctrl_pool, T, num_cores), var_sep(trnt_pool, T, num_cores)),
+                y_max_cg = 1,
+                y_max_chg = 0.6,
+                y_max_chh = 0.25,
+                y_mid_cg = NULL,
+                y_mid_chg = NULL,
+                y_mid_chh = NULL,
+                y_min_cg = 0,
+                y_min_chg = 0,
+                y_min_chh = 0,
+                legend_names = ctrl_name,
+                italic_legend_names = FALSE,
+                ylab_suffix = NULL,
+                y_title_cex = 1,
+                chr_amount = chr_amount,
+                chr_length = max_chr_length,
+                is_subCX = TRUE,
+                TE_as_gr = TE.gr
+            )
+        })
+        dev.off()
 
-    cat("ChrPlots for sub-contexts (difference)...")
-    svg(paste0("subCX/ChrPlot_difference_subCX_", trnt_name, "_vs_", ctrl_name, ".svg"), width = 7, height = 4, family = "serif")
-    try({
-        ChrPlots_CX_all(
-            meth_var_list = list(var_sep(delta_pool, T, num_cores)),
-            meth_names = paste0(trnt_name, "_vs_", ctrl_name),
-            y_max_cg = 0.1,
-            y_max_chg = 0.1,
-            y_max_chh = 0.1,
-            y_mid_cg = 0,
-            y_mid_chg = 0,
-            y_mid_chh = 0,
-            y_min_cg = -0.1,
-            y_min_chg = -0.1,
-            y_min_chh = -0.1,
-            italic_legend_names = FALSE,
-            ylab_suffix = "(Δ)",
-            y_title_cex = 1,
-            chr_amount = chr_amount,
-            chr_length = max_chr_length,
-            is_subCX = TRUE,
-            TE_as_gr = TE.gr
-        )
-    })
-    dev.off()
-    cat(" done\n")
+        # var2
+        cat(paste0("\rChrPlots for sub-contexts... [", trnt_name, "]          "))
+        svg(paste0("subCX/ChrPlot_subCX_", trnt_name, ".svg"), width = 7, height = 4, family = "serif")
+        try({
+            ChrPlots_CX_all(
+                meth_var_list = list(var_sep(trnt_pool, T, num_cores)),
+                y_max_cg = 1,
+                y_max_chg = 0.6,
+                y_max_chh = 0.25,
+                y_mid_cg = NULL,
+                y_mid_chg = NULL,
+                y_mid_chh = NULL,
+                y_min_cg = 0,
+                y_min_chg = 0,
+                y_min_chh = 0,
+                legend_names = trnt_name,
+                italic_legend_names = FALSE,
+                ylab_suffix = NULL,
+                y_title_cex = 1,
+                chr_amount = chr_amount,
+                chr_length = max_chr_length,
+                is_subCX = TRUE,
+                TE_as_gr = TE.gr
+            )
+        })
+        dev.off()
+
+        # delta
+        cat("\rChrPlots for sub-contexts... [delta]          ")
+        svg(paste0("subCX/ChrPlot_difference_subCX_", trnt_name, "_vs_", ctrl_name, ".svg"), width = 7, height = 4, family = "serif")
+        try({
+            ChrPlots_CX_all(
+                meth_var_list = list(var_sep(delta_pool, T, num_cores)),
+                y_max_cg = 0.1,
+                y_max_chg = 0.1,
+                y_max_chh = 0.1,
+                y_mid_cg = 0,
+                y_mid_chg = 0,
+                y_mid_chh = 0,
+                y_min_cg = -0.1,
+                y_min_chg = -0.1,
+                y_min_chh = -0.1,
+                legend_names = paste0(trnt_name, " vs ", ctrl_name),
+                italic_legend_names = FALSE,
+                ylab_suffix = "(Δ)",
+                y_title_cex = 1,
+                chr_amount = chr_amount,
+                chr_length = max_chr_length,
+                is_subCX = TRUE,
+                TE_as_gr = TE.gr
+            )
+        })
+        dev.off()
+        cat("\rChrPlots for sub-contexts:   done!            ")
+    }
+    cat("\n")
 }

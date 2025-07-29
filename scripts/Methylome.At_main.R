@@ -230,8 +230,6 @@ Methylome.At_main <- function(var1, # control
   message("generating chromosome methylation plots (ChrPlots): ", appendLF = F)
   tryCatch(
     {
-      # suppressWarnings(ChrPlots_CX(comparison_name, meth_var1, meth_var2, var1, var2, scripts_dir, n.cores))
-      # run_ChrPlots_CX(comparison_name, meth_var1, meth_var2, var1, var2, TE_file)
       run_ChrPlots_CX(var1, var2, meth_var1, meth_var2, TE_file, n.cores)
       message("done")
     },
@@ -242,26 +240,6 @@ Methylome.At_main <- function(var1, # control
   )
 
   setwd(exp_path)
-
-  # ##### ChrPlots for sub-CX methylation #####
-  # dir.create(ChrPlot_subCX_path, showWarnings = F)
-  # setwd(ChrPlot_subCX_path)
-  # 
-  # message("generating chromosome methylation plots to sub-contexts (ChrPlots): ", appendLF = F)
-  # tryCatch(
-  #   {
-  #     source(paste0(scripts_dir, "ChrPlots_sub_CX.R"))
-  #     chr_names <- unique(as.character(seqnames(annotation.gr)))
-  #     run_ChrPlots_sub_CX(var1, var2, meth_var1, meth_var2, n.cores, chr_names)
-  #     message("done\n")
-  #   },
-  #   error = function(cond) {
-  #     cat("\n\n* sub-context ChrPlots:\n", as.character(cond), "\n*\n")
-  #     message("fail\n")
-  #   }
-  # )
-  # 
-  # setwd(exp_path)
 
   ###########################################################################
 
