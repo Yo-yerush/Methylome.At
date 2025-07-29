@@ -228,5 +228,5 @@ Genes_features_metaPlot <- function(methylationPool_var1, methylationPool_var2, 
     dev.off()
   } 
   
-  message(paste("Processed average metaPlot for", length(Genes), "Protein Coding Genes\n"))
+  message(paste("Processed average metaPlot for", length(n.random), "Protein Coding Genes\n"))
 }
