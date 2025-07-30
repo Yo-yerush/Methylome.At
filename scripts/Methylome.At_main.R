@@ -137,6 +137,8 @@ Methylome.At_main <- function(var1, # control
   exp_path <- paste0(Methylome.At_path, "/results/", comparison_name)
   ChrPlot_CX_path <- paste0(exp_path, "/ChrPlot_CX")
   ChrPlot_subCX_path <- paste0(ChrPlot_CX_path, "/subCX")
+  dH_CX_path <- paste0(exp_path, "/deltaH")
+  dH_subCX_path <- paste0(dH_CX_path, "/subCX")
   PCA_plots_path <- paste0(exp_path, "/PCA_plots")
   meth_levels_path <- paste0(exp_path, "/methylation_levels")
   metaPlot_path <- paste0(exp_path, "/metaPlots")
@@ -235,6 +237,24 @@ Methylome.At_main <- function(var1, # control
     },
     error = function(cond) {
       cat("\n\n* ChrPlots:\n", as.character(cond), "\n*\n")
+      message("fail")
+    }
+  )
+
+  ##### Scatter and ChrPlots for delta-mean-mC vs. delta-mean-entropy #####
+  dir.create(dH_CX_path, showWarnings = F)
+  dir.create(dH_subCX_path, showWarnings = F)
+  setwd(dH_CX_path)
+  source(paste0(scripts_dir, "mean_deltaH_CX.R"))
+
+  message("generating ChrPlot (mean of dH) and scatter-plot (dH vs dmC): ", appendLF = F)
+  tryCatch(
+    {
+      suppressWarnings(run_mean_deltaH_CX(var1, var2, meth_var1, meth_var2, TE_file, n.cores))
+      message("done")
+    },
+    error = function(cond) {
+      cat("\n\n* mean dH:\n", as.character(cond), "\n*\n")
       message("fail")
     }
   )
