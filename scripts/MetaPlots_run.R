@@ -119,7 +119,7 @@ tryCatch({
 error = function(cond) {stop("load and pool replicates data: fail\n")}
 )
 
-cat("\n")
+cat("\n-------------------------------------\n")
 
 ###########################################################################
 
@@ -129,17 +129,19 @@ if (analyze_Gene_n_TEs) {
   source(paste0(scripts_dir,"Genes_metaPlot_fun.R"))
   
   tryCatch({
-    message("generate metaPlot to protein-coding Genes...")
+    message(paste("generate metaPlot to", metaPlot.random.genes,"protein-coding Genes..."))
     setwd(metaPlot_path)
     Genes_metaPlot(meth_var1,meth_var2,var1,var2,annotation.gr,metaPlot.random.genes,minReadsPerCytosine,n.cores)
   }, error = function(cond) {message(paste0("process average metaPlot to ",metaPlot.random.genes," Protein Coding Genes: fail"))})
   
   tryCatch({
-    message("\ngenerate metaPlot to Transposable Elements...")
+    message(paste("\ngenerate metaPlot to", metaPlot.random.genes," Transposable Elements..."))
     setwd(metaPlot_path)
     Genes_metaPlot(meth_var1,meth_var2,var1,var2,TE.gr,metaPlot.random.genes,minReadsPerCytosine,n.cores,is_TE=T)
   }, error = function(cond) {message(paste0("process average metaPlot to ",metaPlot.random.genes," Transposable Elements: fail\n"))})
 }
+
+cat("\n-------------------------------------\n")
 
 ###########################################################################
 
@@ -148,7 +150,7 @@ if (analyze_GeneFeatures) {
   source(paste0(scripts_dir,"Gene_features_metaPlot_fun.R"))
   
   tryCatch({
-    message("\ngenerate metaPlot to protein-coding Gene Features...")
+    message(paste("\ngenerate metaPlot to", metaPlot.random.genes,"protein-coding Gene Features..."))
     setwd(metaPlot_path)
     Genes_features_metaPlot(meth_var1,meth_var2,var1,var2,annotation.gr,metaPlot.random.genes,minReadsPerCytosine,binSize,n.cores)
   }, error = function(cond) {message(paste0("process average metaPlot to ",metaPlot.random.genes," Protein Coding Genes: fail"))})

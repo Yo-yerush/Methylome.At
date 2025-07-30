@@ -38,9 +38,10 @@ Genes_features_metaPlot <- function(methylationPool_var1, methylationPool_var2, 
   region_names = names(regions_list)
   contexts = c("CG", "CHG", "CHH")
   
+  cat(paste0("\nbin ", length(regions_list[[1]]), " protein coding genes in ", binSize, "bp size and compute average methylation:\n"))
+
   # Function to process methylation data for each region and context
-  genes_metaPlot_fun <- function(methylationData, regions_list, n.cores.f = n.cores) {
-    
+  genes_metaPlot_fun <- function(methylationData, regions_list, group_name, n.cores.f = n.cores) {
     # Filter positions below minReadsC
     methylationData = methylationData[which(methylationData$readsN >= minReadsC)]
     methylationData$Proportion = methylationData$readsM / methylationData$readsN
@@ -51,13 +52,10 @@ Genes_features_metaPlot <- function(methylationPool_var1, methylationPool_var2, 
       methylationData_contexts[[cntx]] = methylationData[which(methylationData$context == cntx)]
     }
     
-    
     result_list = list()
     
     for (region_name in region_names) {
       ann.obj = regions_list[[region_name]]
-      
-      #cat("\nProcessing region:", region_name, "with", length(ann.obj), "features\n")
       
       gene_2_bins_run <- function(feature.num) {
         tryCatch({
@@ -110,8 +108,8 @@ Genes_features_metaPlot <- function(methylationPool_var1, methylationPool_var2, 
           }
           
           # print percentage every 100 genes
-          if (gene.num %% 100 == 0) {
-            cat("\rProcessed", length(ann.obj),  "features in", region_name, paste0("region [", round((feature.num/length(ann.obj))*100, 0), "%]  "))
+          if (feature.num %% 100 == 0) {
+            cat(paste0("\r", group_name, " > processing average for each ", gsub("s","",region_name), "s region [", round((feature.num/length(ann.obj))*100, 0), "%]     "))
           }
 
           return(context_results)
@@ -120,8 +118,7 @@ Genes_features_metaPlot <- function(methylationPool_var1, methylationPool_var2, 
         })
       }
 
-      cat("\n")
-      cat("\rProcessed", length(ann.obj),  "features in", region_name, "region [0%]  ")
+      cat(paste0("\r", group_name, " > processing average for each ", gsub("s","",region_name), "s region [0%]     "))
       #cat("\n\nPreparing", length(ann.obj), "bins for region:", region_name, "\n")
       results = mclapply(1:length(ann.obj), gene_2_bins_run, mc.cores = n.cores.f)
       results = results[!sapply(results, is.null)]
@@ -150,11 +147,10 @@ Genes_features_metaPlot <- function(methylationPool_var1, methylationPool_var2, 
     return(result_list)
   }
   
-  # Process methylation data for var1 and var2
-  var1_metaPlot = genes_metaPlot_fun(methylationPool_var1, regions_list, n.cores.f = n.cores)
-  cat(paste0("Finished calculating 'Genes_metaPlot' values for ", var1, "\n"))
-  var2_metaPlot = genes_metaPlot_fun(methylationPool_var2, regions_list, n.cores.f = n.cores)
-  cat(paste0("Finished calculating 'Genes_metaPlot' values for ", var2, "\n"))
+  ############################################
+  # run main loop
+  var1_metaPlot = genes_metaPlot_fun(methylationPool_var1, regions_list, var1, n.cores.f = n.cores)
+  var2_metaPlot = genes_metaPlot_fun(methylationPool_var2, regions_list, var2, n.cores.f = n.cores)
   
   # Save the data
   dir.create("features_metaPlot_tables", showWarnings = F)

@@ -1,5 +1,4 @@
 Genes_metaPlot <- function(methylationPool_var1,methylationPool_var2,var1,var2,annotations_file,n.random,minReadsC,n.cores,is_TE=F) {
-  
   if (is_TE) {
     new_path.f = "TEs"
     coding.Genes = annotations_file
@@ -21,9 +20,10 @@ Genes_metaPlot <- function(methylationPool_var1,methylationPool_var2,var1,var2,a
   dir.create(new_path.f, showWarnings = F)
   setwd(new_path.f)
   
+  cat("\nbin", length(coding.Genes), new_path.f, "body ±2kb in 20bp size and compute average methylation:\n")
   
   # make windowSize ranges with the average value
-  genes_metaPlot_fun <- function(methylationData, ann.obj, n.cores.f = n.cores) {
+  genes_metaPlot_fun <- function(methylationData, ann.obj, group_name, n.cores.f = n.cores) {
     
     # filter CX position below 6 reads in total
     methylationData = methylationData[which(methylationData$readsN >= minReadsC)]
@@ -114,8 +114,8 @@ Genes_metaPlot <- function(methylationPool_var1,methylationPool_var2,var1,var2,a
         }
         
         # print percentage every 100 genes
-        if (gene.num %% 100 == 0) {
-          cat("\rcaculate average methylation in 20bp proportional bins over", length(ann.obj), new_path.f, "body and 2Kb up-/down-stream regions", paste0("[", round((gene.num/length(ann.obj)*100), 0), "%]  "))
+        if (gene.num %% 100 == 0 | gene.num %% length(ann.obj) == 0) {
+          cat(paste0("\r", group_name, " > processing average for each ", gsub("s","",new_path.f), "... [", round((gene.num/length(ann.obj)*100), 0), "%]     "))
         }
 
         return(list(CG_list=CG_list,
@@ -127,9 +127,7 @@ Genes_metaPlot <- function(methylationPool_var1,methylationPool_var2,var1,var2,a
         })
     }
 
-    cat("\n")
-    cat("\rcaculate average methylation in 20bp proportional bins over", length(ann.obj), new_path.f, "body and 2Kb up-/down-stream regions [0%]  ")
-    #cat("\nprepare 20bp proportional bins to",length(ann.obj),new_path.f,"\n")
+    cat(paste0("\r", group_name, " > processing average for each ", gsub("s","",new_path.f), "... [0%]     "))
     results = mclapply(1:length(ann.obj) , gene_2_bins_run, mc.cores = n.cores.f)
     results = results[!sapply(results, is.null)]
     cat("\n")
@@ -159,7 +157,7 @@ Genes_metaPlot <- function(methylationPool_var1,methylationPool_var2,var1,var2,a
     
     for (string_loc in 1:3) {
       # Parallel processing using mclapply
-      cat(paste0("processing average of ", gsub("\\.","-",string_loc), " bins... "))
+      cat(paste0(group_name, " > processing average of ", gsub("\\.","-",names(gr_list_CG)[string_loc]), " bins... "))
       results_parallel = mclapply(1:20, function(row_num) process_row(row_num, results,string_loc), mc.cores = ifelse(n.cores.f >= 20, 20, n.cores.f))
 
       # Assigning results back to your lists
@@ -176,10 +174,10 @@ Genes_metaPlot <- function(methylationPool_var1,methylationPool_var2,var1,var2,a
     
   }
   
-  var1_metaPlot = genes_metaPlot_fun(methylationPool_var1, coding.Genes)
-  cat(paste0("finish calculating 'Genes_metaPlot' values to ",var1,"\n\n"))
-  var2_metaPlot = genes_metaPlot_fun(methylationPool_var2, coding.Genes)
-  cat(paste0("finish calculating 'Genes_metaPlot' values to ",var2,"\n\n"))
+  ############################################
+  # run main loop
+  var1_metaPlot = genes_metaPlot_fun(methylationPool_var1, coding.Genes, var1)
+  var2_metaPlot = genes_metaPlot_fun(methylationPool_var2, coding.Genes, var2)
 
   v1.CG = var1_metaPlot$gr_list_CG
   v1.CHG = var1_metaPlot$gr_list_CHG
@@ -227,7 +225,7 @@ Genes_metaPlot <- function(methylationPool_var1,methylationPool_var2,var1,var2,a
       legend_labels = c(paste0("\n",var1),paste0("\n\n",var2))
     }
 
-    main_title = ifelse(is_TE, "TE", "Gene body")
+    main_title = ifelse(is_TE, "TEs", "Gene bodies")
     breaks_and_labels <- list(breaks = c(1, 20, 40, 60), labels = c("    -2kb", "TSS", "TTS", "+2kb    "))
     
     plot_out = ggplot(data = v.cntx.stream, aes(x = pos, y = Proportion, color = V, group = V)) +
