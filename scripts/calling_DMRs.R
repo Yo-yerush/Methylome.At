@@ -32,24 +32,29 @@ calling_DMRs <- function(methylationDataReplicates_joints, meth_var1, meth_var2,
         if (is_Replicates) {
           # Define a function for replicates
           runReplicates <- function(cores) {
-            computeDMRsReplicates(
-              methylationDataReplicates_joints,
-              condition = condition,
-              regions = chromosome_ranges[i_chr],
-              context = context,
-              method = "bins",
-              binSize = binSize,
-              test = "betareg", # for replicates
-              pseudocountM = 1,
-              pseudocountN = 2,
-              pValueThreshold = 0.05,
-              minCytosinesCount = minCytosinesCount,
-              minProportionDifference = minProportionDifference_var,
-              minGap = 0,
-              minSize = 1,
-              minReadsPerCytosine = minReadsPerCytosine,
-              cores = cores
+            invisible(
+              capture.output(
+                x <- computeDMRsReplicates(
+                  methylationDataReplicates_joints,
+                  condition = condition,
+                  regions = chromosome_ranges[i_chr],
+                  context = context,
+                  method = "bins",
+                  binSize = binSize,
+                  test = "betareg", # for replicates
+                  pseudocountM = 1,
+                  pseudocountN = 2,
+                  pValueThreshold = 0.05,
+                  minCytosinesCount = minCytosinesCount,
+                  minProportionDifference = minProportionDifference_var,
+                  minGap = 0,
+                  minSize = 1,
+                  minReadsPerCytosine = minReadsPerCytosine,
+                  cores = cores
+                )
+              )
             )
+            return(x)
           }
 
           DMRs_gr.loop <- tryCatch(
@@ -72,22 +77,27 @@ calling_DMRs <- function(methylationDataReplicates_joints, meth_var1, meth_var2,
           # one or both of treatment are single sample
           # use pooled data
           runPooled <- function(cores) {
-            computeDMRs(
-              meth_var1,
-              meth_var2,
-              regions = chromosome_ranges[i_chr],
-              context = context,
-              method = "bins",
-              binSize = binSize,
-              test = "fisher", # for single samples
-              pValueThreshold = 0.05,
-              minCytosinesCount = minCytosinesCount,
-              minProportionDifference = minProportionDifference_var,
-              minGap = 0,
-              minSize = 1,
-              minReadsPerCytosine = minReadsPerCytosine,
-              cores = cores
+            invisible(
+              capture.output(
+                x <- computeDMRs(
+                  meth_var1,
+                  meth_var2,
+                  regions = chromosome_ranges[i_chr],
+                  context = context,
+                  method = "bins",
+                  binSize = binSize,
+                  test = "fisher", # for single samples
+                  pValueThreshold = 0.05,
+                  minCytosinesCount = minCytosinesCount,
+                  minProportionDifference = minProportionDifference_var,
+                  minGap = 0,
+                  minSize = 1,
+                  minReadsPerCytosine = minReadsPerCytosine,
+                  cores = cores
+                )
+              )
             )
+            return(x)
           }
 
           DMRs_gr.loop <- tryCatch(
@@ -117,7 +127,7 @@ calling_DMRs <- function(methylationDataReplicates_joints, meth_var1, meth_var2,
     )
   }
 
-  if(length(DMRs_gr) != 0) {
+  if (length(DMRs_gr) != 0) {
     mcols(DMRs_gr)[, paste0("proportionsR", 1:5)] <- NULL # remove 'NA' cols
     DMRs_gr$log2FC <- log2(DMRs_gr$proportion2 / DMRs_gr$proportion1)
 

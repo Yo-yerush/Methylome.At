@@ -229,6 +229,7 @@ Methylome.At_main <- function(var1, # control
   setwd(ChrPlot_CX_path)
   source(paste0(scripts_dir, "ChrPlots_CX.R"))
 
+  cat("\n* chromosome methylation plots (ChrPlots):")
   message("generating chromosome methylation plots (ChrPlots): ", appendLF = F)
   tryCatch(
     {
@@ -247,15 +248,16 @@ Methylome.At_main <- function(var1, # control
   setwd(dH_CX_path)
   source(paste0(scripts_dir, "mean_deltaH_CX.R"))
 
+  cat("\n* chromosome dH plots (ChrPlots):")
   message("generating ChrPlot (mean of dH) and scatter-plot (dH vs dmC): ", appendLF = F)
   tryCatch(
     {
       suppressWarnings(run_mean_deltaH_CX(var1, var2, meth_var1, meth_var2, TE_file, n.cores))
-      message("done")
+      message("done\n")
     },
     error = function(cond) {
       cat("\n\n* mean dH:\n", as.character(cond), "\n*\n")
-      message("fail")
+      message("fail\n")
     }
   )
 

@@ -95,12 +95,6 @@ ChrPlots_CX_all <- function(
     y_mid_chg <- ifelse(is.null(y_mid_chg), (y_max_chg + y_min_chg) / 2, y_mid_chg)
     y_mid_chh <- ifelse(is.null(y_mid_chh), (y_max_chh + y_min_chh) / 2, y_mid_chh)
 
-    ### ylab suffix - in addition to 'CNTX methylation'
-    ### add 'ylab_suffix=(delta)' to get 'CG methylation (delta)'
-    if (!is.null(ylab_suffix)) {
-        ylab_suffix <- paste0(" ", ylab_suffix)
-    }
-
     ### Low resolution profiles plot ###
     ## column 1: y-axis strip
     ## columns 2-6: chromosomes 1-5
@@ -141,7 +135,8 @@ ChrPlots_CX_all <- function(
 
         if (cntx != "TE") {
             ## y-axis
-            y_title <- paste0(cntx, " methylation", ylab_suffix)
+            names_y_axis <- unlist(strsplit(legend_names, " vs "))
+            y_title <- paste0(cntx, "ΔH [H(", names_y_axis[1], ") - H(", names_y_axis[2], ")]")
             y_max_cntx <- ifelse(cntx == "CG", y_max_cg, ifelse(cntx == "CHG", y_max_chg, y_max_chh))
             y_mid_cntx <- ifelse(cntx == "CG", y_mid_cg, ifelse(cntx == "CHG", y_mid_chg, y_mid_chh))
             y_min_cntx <- ifelse(cntx == "CG", y_min_cg, ifelse(cntx == "CHG", y_min_chg, y_min_chh))
@@ -325,7 +320,7 @@ windowSize_mcol <- function(x, mcol_name, windowSize = 2.5e5) {
 
 ###################################################################
 
-var_sep <- function(a, subCX = F, num_cores) {
+var_sep <- function(a, subCX = F, term, num_cores) {
     subContext_list <- list(
         CG = c("CGA", "CGT", "CGC", "CGG"),
         CHG = c("CAG", "CTG", "CCG"),
@@ -354,7 +349,7 @@ var_sep <- function(a, subCX = F, num_cores) {
         var_subSep <- function(gr, cntx) {
             gr[gr$context == cntx, ] %>%
                 makeGRangesFromDataFrame(keep.extra.columns = T) %>%
-                windowSize_mcol("Proportion")
+                windowSize_mcol(term)
         }
         mclapply(c("CG", "CHG", "CHH"), function(cntx) {
             var_subSep(a, cntx)
@@ -364,7 +359,7 @@ var_sep <- function(a, subCX = F, num_cores) {
         var_subSep <- function(gr, cntx) {
             gr[gr$trinucleotide_context == cntx, ] %>%
                 makeGRangesFromDataFrame(keep.extra.columns = T) %>%
-                windowSize_mcol("Proportion")
+                windowSize_mcol(term)
         }
         mclapply(names(subContext_list), function(cx) {
             setNames(
@@ -386,25 +381,21 @@ entropy_bin <- function(p) {
 
 ###################################################################
 
-run_mean_deltaH_CX <- function(ctrl_name, trnt_name, ctrl_pool, trnt_pool, TE.gr, num_cores, CX_plot = T, subCX_plot = T) {
+run_mean_deltaH_CX <- function(ctrl_name, trnt_name, ctrl_pool, trnt_pool, TE.gr, num_cores, scatter_plot = T, CX_plot = T, subCX_plot = T) {
     cat("\n")
     cat(paste0("\rCalculate methylated/unmethylated C's ratio... [", ctrl_name, "]          "))
     ctrl_pool <- as.data.frame(ctrl_pool) %>%
-        mutate(Proportion_0 = readsM / readsN) %>%
-        mutate(Proportion = entropy_bin(Proportion_0)) %>%
-        select(seqnames, start, end, Proportion_0, Proportion, context, trinucleotide_context) %>%
-        filter(!is.na(Proportion))
-    # mutate(Proportion = ifelse(is.nan(Proportion), 0, Proportion)) %>%
-    # filter(!is.nan(Proportion)) ###
+        mutate(Proportion = readsM / readsN) %>%
+        mutate(deltaH = entropy_bin(Proportion)) %>%
+        select(seqnames, start, end, Proportion, deltaH, context, trinucleotide_context) %>%
+        filter(!is.na(deltaH))
 
     cat(paste0("\rCalculate methylated/unmethylated C's ratio... [", trnt_name, "]          "))
     trnt_pool <- as.data.frame(trnt_pool) %>%
-        mutate(Proportion_0 = readsM / readsN) %>%
-        mutate(Proportion = entropy_bin(Proportion_0)) %>%
-        select(seqnames, start, end, Proportion_0, Proportion, context, trinucleotide_context) %>%
-        filter(!is.na(Proportion))
-    # mutate(Proportion = ifelse(is.nan(Proportion), 0, Proportion)) # %>%
-    # filter(!is.nan(Proportion)) ###
+        mutate(Proportion = readsM / readsN) %>%
+        mutate(deltaH = entropy_bin(Proportion)) %>%
+        select(seqnames, start, end, Proportion, deltaH, context, trinucleotide_context) %>%
+        filter(!is.na(deltaH))
 
     # change chr names
     ctrl_pool$seqnames <- gsub("Chr", "", ctrl_pool$seqnames)
@@ -413,10 +404,10 @@ run_mean_deltaH_CX <- function(ctrl_name, trnt_name, ctrl_pool, trnt_pool, TE.gr
     # delta df
     cat(paste0("\rCalculate methylated/unmethylated C's ratio... [delta]          "))
     delta_pool <- inner_join(ctrl_pool, trnt_pool, by = c("seqnames", "start", "end", "context", "trinucleotide_context"), suffix = c("_ctrl", "_trnt")) %>%
-        mutate(Proportion_0 = Proportion_0_trnt - Proportion_0_ctrl) %>%
         mutate(Proportion = Proportion_trnt - Proportion_ctrl) %>%
-        select(seqnames, start, end, Proportion_0, Proportion, context, trinucleotide_context) %>%
-        filter(!is.nan(Proportion))
+        mutate(deltaH = deltaH_trnt - deltaH_ctrl) %>%
+        select(seqnames, start, end, Proportion, deltaH, context, trinucleotide_context) %>%
+        filter(!is.nan(deltaH))
     cat(paste0("\rCalculate methylated/unmethylated C's ratio:   done!            "))
     cat("\n")
 
@@ -432,92 +423,63 @@ run_mean_deltaH_CX <- function(ctrl_name, trnt_name, ctrl_pool, trnt_pool, TE.gr
     cat("\n-------------\n")
 
     ########################################################################
-    ### scatter plot to delta values (5Mc/H)
-    delta_scatter_entr <- delta_pool %>% select(-Proportion_0)
-    delta_scatter_meth <- delta_pool %>%
-        select(-Proportion) %>%
-        dplyr::rename(Proportion = Proportion_0)
+    if (scatter_plot) {
+        ### scatter plot to delta values (5Mc/H)
+        scatter_cg_entr <- var_sep(delta_scatter_entr, F, "deltaH", num_cores)$cg
+        scatter_chg_entr <- var_sep(delta_scatter_entr, F, "deltaH", num_cores)$chg
+        scatter_chh_entr <- var_sep(delta_scatter_entr, F, "deltaH", num_cores)$chh
 
-    scatter_cg_entr <- var_sep(delta_scatter_entr, F, num_cores)$cg
-    scatter_chg_entr <- var_sep(delta_scatter_entr, F, num_cores)$chg
-    scatter_chh_entr <- var_sep(delta_scatter_entr, F, num_cores)$chh
+        scatter_cg_meth <- var_sep(delta_scatter_meth, F, "Proportion", num_cores)$cg
+        scatter_chg_meth <- var_sep(delta_scatter_meth, F, "Proportion", num_cores)$chg
+        scatter_chh_meth <- var_sep(delta_scatter_meth, F, "Proportion", num_cores)$chh
 
-    scatter_cg_meth <- var_sep(delta_scatter_meth, F, num_cores)$cg
-    scatter_chg_meth <- var_sep(delta_scatter_meth, F, num_cores)$chg
-    scatter_chh_meth <- var_sep(delta_scatter_meth, F, num_cores)$chh
+        svg(paste0("scatter_plot_difference_subCX_", trnt_name, "_vs_", ctrl_name, ".svg"), width = 6.5, height = 2.75, family = "serif")
+        par(mfrow = c(1, 3))
 
-    svg(paste0("scatter_plot_difference_subCX_", trnt_name, "_vs_", ctrl_name, ".svg"), width = 6.5, height = 2.75, family = "serif")
-    par(mfrow = c(1, 3))
+        plot(
+            as.numeric(scatter_cg_entr$mean_value),
+            as.numeric(scatter_cg_meth$mean_value),
+            ylim = c(-0.1, 0.1),
+            pch = 20, cex = 0.6,
+            xlab = "ΔH (mean)",
+            ylab = "Δ5-mC (mean)",
+            main = "CG"
+        )
+        abline(h = 0, v = 0, col = "grey70")
 
-    plot(
-        as.numeric(scatter_cg_entr$mean_value),
-        as.numeric(scatter_cg_meth$mean_value),
-        ylim = c(-0.1, 0.1),
-        pch = 20, cex = 0.6,
-        xlab = "Δ H (mean)",
-        ylab = "Δ methylation level (mean)",
-        main = "CG"
-    )
-    abline(h = 0, v = 0, col = "grey70")
+        plot(
+            as.numeric(scatter_chg_entr$mean_value),
+            as.numeric(scatter_chg_meth$mean_value),
+            ylim = c(-0.1, 0.1),
+            pch = 20, cex = 0.6,
+            xlab = "ΔH (mean)",
+            ylab = "Δ5-mC (mean)",
+            main = "CHG"
+        )
+        abline(h = 0, v = 0, col = "grey70")
 
-    plot(
-        as.numeric(scatter_chg_entr$mean_value),
-        as.numeric(scatter_chg_meth$mean_value),
-        ylim = c(-0.1, 0.1),
-        pch = 20, cex = 0.6,
-        xlab = "Δ H (mean)",
-        ylab = "Δ methylation level (mean)",
-        main = "CHG"
-    )
-    abline(h = 0, v = 0, col = "grey70")
-
-    plot(
-        as.numeric(scatter_chh_entr$mean_value),
-        as.numeric(scatter_chh_meth$mean_value),
-        ylim = c(-0.1, 0.1),
-        pch = 20, cex = 0.6,
-        xlab = "Δ H (mean)",
-        ylab = "Δ methylation level (mean)",
-        main = "CHH"
-    )
-    abline(h = 0, v = 0, col = "grey70")
-    dev.off()
+        plot(
+            as.numeric(scatter_chh_entr$mean_value),
+            as.numeric(scatter_chh_meth$mean_value),
+            ylim = c(-0.1, 0.1),
+            pch = 20, cex = 0.6,
+            xlab = "ΔH (mean)",
+            ylab = "Δ5-mC (mean)",
+            main = "CHH"
+        )
+        abline(h = 0, v = 0, col = "grey70")
+        dev.off()
+    }
 
     ########################################################################
     ### ChrPlot
     if (CX_plot) {
-        cat(paste0("\rChrPlots... [", trnt_name, " & ", ctrl_name, "]"))
-#        svg(paste0("ChrPlot_", trnt_name, "_vs_", ctrl_name, ".svg"), width = 7, height = 4, family = "serif")
-#        try({
-#            ChrPlots_CX_all(
-#                meth_var_list = list(var_sep(ctrl_pool, F, num_cores), var_sep(trnt_pool, F, num_cores)),
-#                y_max_cg = 1,
-#                y_max_chg = 1,
-#                y_max_chh = 1,
-#                y_mid_cg = NULL,
-#                y_mid_chg = NULL,
-#                y_mid_chh = NULL,
-#                y_min_cg = 0,
-#                y_min_chg = 0,
-#                y_min_chh = 0,
-#                legend_names = c(ctrl_name, trnt_name),
-#                italic_legend_names = FALSE,
-#                ylab_suffix = NULL,
-#                y_title_cex = 1,
-#                chr_amount = chr_amount,
-#                chr_length = max_chr_length,
-#                is_subCX = FALSE,
-#                TE_as_gr = TE.gr
-#            )
-#        })
-#        dev.off()
-
         # delta
         cat(paste0("\rChrPlots... [delta]            "))
         svg(paste0("ChrPlot_difference_", trnt_name, "_vs_", ctrl_name, ".svg"), width = 7, height = 4, family = "serif")
         try({
             ChrPlots_CX_all(
-                meth_var_list = list(var_sep(delta_pool, F, num_cores)),
+                meth_var_list = list(var_sep(delta_pool, F, "deltaH", num_cores)),
                 y_max_cg = 0.2,
                 y_max_chg = 0.2,
                 y_max_chh = 0.2,
@@ -529,7 +491,7 @@ run_mean_deltaH_CX <- function(ctrl_name, trnt_name, ctrl_pool, trnt_pool, TE.gr
                 y_min_chh = -0.2,
                 legend_names = paste0(trnt_name, " vs ", ctrl_name),
                 italic_legend_names = FALSE,
-                ylab_suffix = "(?)",
+                ylab_suffix = NULL,
                 y_title_cex = 1,
                 chr_amount = chr_amount,
                 chr_length = max_chr_length,
@@ -544,66 +506,11 @@ run_mean_deltaH_CX <- function(ctrl_name, trnt_name, ctrl_pool, trnt_pool, TE.gr
     ########################################################################
     ### ChrPlot sub-CX
     if (subCX_plot) {
-#        # var1
-#        cat(paste0("\rChrPlots for sub-contexts... [", ctrl_name, "]          "))
-#        svg(paste0("subCX/ChrPlot_subCX_", ctrl_name, ".svg"), width = 7, height = 4, family = "serif")
-#        try({
-#            ChrPlots_CX_all(
-#                meth_var_list = list(var_sep(ctrl_pool, T, num_cores), var_sep(trnt_pool, T, num_cores)),
-#                y_max_cg = 1,
-#                y_max_chg = 1,
-#                y_max_chh = 1,
-#                y_mid_cg = NULL,
-#                y_mid_chg = NULL,
-#                y_mid_chh = NULL,
-#                y_min_cg = 0,
-#                y_min_chg = 0,
-#                y_min_chh = 0,
-#                legend_names = ctrl_name,
-#                italic_legend_names = FALSE,
-#                ylab_suffix = NULL,
-#                y_title_cex = 1,
-#                chr_amount = chr_amount,
-#                chr_length = max_chr_length,
-#                is_subCX = TRUE,
-#                TE_as_gr = TE.gr
-#            )
-#        })
-#        dev.off()
-#
-#        # var2
-#        cat(paste0("\rChrPlots for sub-contexts... [", trnt_name, "]          "))
-#        svg(paste0("subCX/ChrPlot_subCX_", trnt_name, ".svg"), width = 7, height = 4, family = "serif")
-#        try({
-#            ChrPlots_CX_all(
-#                meth_var_list = list(var_sep(trnt_pool, T, num_cores)),
-#                y_max_cg = 1,
-#                y_max_chg = 1,
-#                y_max_chh = 1,
-#                y_mid_cg = NULL,
-#                y_mid_chg = NULL,
-#                y_mid_chh = NULL,
-#                y_min_cg = 0,
-#                y_min_chg = 0,
-#                y_min_chh = 0,
-#                legend_names = trnt_name,
-#                italic_legend_names = FALSE,
-#                ylab_suffix = NULL,
-#                y_title_cex = 1,
-#                chr_amount = chr_amount,
-#                chr_length = max_chr_length,
-#                is_subCX = TRUE,
-#                TE_as_gr = TE.gr
-#            )
-#        })
-#        dev.off()
-
-        # delta
         cat("\rChrPlots for sub-contexts... [delta]          ")
         svg(paste0("ChrPlot_delta_H_subCX_", trnt_name, "_vs_", ctrl_name, ".svg"), width = 7, height = 4, family = "serif")
         try({
             ChrPlots_CX_all(
-                meth_var_list = list(var_sep(delta_pool, T, num_cores)),
+                meth_var_list = list(var_sep(delta_pool, T, "deltaH", num_cores)),
                 y_max_cg = 0.2,
                 y_max_chg = 0.2,
                 y_max_chh = 0.2,
@@ -615,7 +522,7 @@ run_mean_deltaH_CX <- function(ctrl_name, trnt_name, ctrl_pool, trnt_pool, TE.gr
                 y_min_chh = -0.2,
                 legend_names = paste0(trnt_name, " vs ", ctrl_name),
                 italic_legend_names = FALSE,
-                ylab_suffix = "(?)",
+                ylab_suffix = NULL,
                 y_title_cex = 1,
                 chr_amount = chr_amount,
                 chr_length = max_chr_length,

@@ -38,7 +38,7 @@ Genes_features_metaPlot <- function(methylationPool_var1, methylationPool_var2, 
   region_names = names(regions_list)
   contexts = c("CG", "CHG", "CHH")
   
-  cat(paste0("\nbin ", length(regions_list[[1]]), " protein coding genes in ", binSize, "bp size and compute average methylation:\n"))
+  cat(paste0("\nbin ", length(regions_list[[1]]), " protein coding gene fetures in ", binSize, "bp size and compute average methylation:\n"))
 
   # Function to process methylation data for each region and context
   genes_metaPlot_fun <- function(methylationData, regions_list, group_name, n.cores.f = n.cores) {
