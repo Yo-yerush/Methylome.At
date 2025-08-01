@@ -1,4 +1,4 @@
-run_sum_deltaH_CX <- function(ctrl_name, trnt_name, ctrl_pool, trnt_pool, fdr = 0.95) {
+run_sum_deltaH_CX <- function(ctrl_name, trnt_name, ctrl_pool, trnt_pool, annotation.gr, TE.gr, num_cores, fdr = 0.95) {
     ctrl_pool <- as.data.frame(ctrl_pool) %>%
         # filter(readsN > 6) %>%
         select(seqnames, start, context, m_ctrl = readsM, n_ctrl = readsN)
@@ -13,56 +13,63 @@ run_sum_deltaH_CX <- function(ctrl_name, trnt_name, ctrl_pool, trnt_pool, fdr = 
 
     # main loop
     cat("sum dH in 100bp windowsize\n")
-    hd_list <- mclapply(c("CG", "CHG", "CHH"), function(cntx) {
-        dH_bins(merged_pool, cntx)
-    }, mc.cores = 3)
+    hd_list <- mclapply(
+        c("CG", "CHG", "CHH"), function(cntx) {
+            dH_bins(merged_pool, cntx)
+        },
+        mc.cores = ifelse(num_cores >= 3, 3, num_cores)
+    )
     cg_hd <- hd_list[[1]]
     chg_hd <- hd_list[[2]]
     chh_hd <- hd_list[[3]]
 
-    # FDR cut-off
+    # filter by FDR threshold
     q_cg <- quantile(cg_hd$sum_surprisal, fdr) %>% as.numeric()
     q_chg <- quantile(chg_hd$sum_surprisal, fdr) %>% as.numeric()
     q_chh <- quantile(chh_hd$sum_surprisal, fdr) %>% as.numeric()
-
-    # filter by FDR threshold
     cg_filtered <- cg_hd %>% filter(sum_surprisal > q_cg)
     chg_filtered <- chg_hd %>% filter(sum_surprisal > q_chg)
     chh_filtered <- chh_hd %>% filter(sum_surprisal > q_chh)
 
-    cat("\nsignificants dH:\n")
     print(knitr::kable(
         data.frame(
             context = c("CG", "CHG", "CHH"),
             total_regions = c(nrow(cg_hd), nrow(chg_hd), nrow(chh_hd)),
-            "5_percent_top_regions" = c(nrow(cg_filtered), nrow(chg_filtered), nrow(chh_filtered)),
+            top_5_percent = c(nrow(cg_filtered), nrow(chg_filtered), nrow(chh_filtered)),
             sValue_threshold = paste("S >", c(round(q_cg, 1), round(q_chg, 1), round(q_chh, 1)))
         )
     ))
 
     # genome density plot
-    dHRs_circular_plot(cg_filtered, chg_filtered, chh_filtered, annotation.gr, TE_file, paste0(trnt_name, "_vs_", ctrl_name))
+    dHRs_circular_plot(cg_filtered, chg_filtered, chh_filtered, annotation.gr, TE.gr, paste0(trnt_name, "_vs_", ctrl_name))
 
     # manhattan plots
-    mclapply(
+    manH_par <- mclapply(
         list(list(cg_hd, "CG", fdr), list(chg_hd, "CHG", fdr), list(chh_hd, "CHH", fdr)),
         function(x) {
-            plots_test(x[[1]], x[[2]], x[[3]])
+            mannh_plots(x[[1]], x[[2]], x[[3]])
         },
-        mc.cores = 3
+        mc.cores = ifelse(num_cores >= 3, 3, num_cores)
     )
+    png(paste0("sum_dH_manhattan_plot_", trnt_name, "_vs_", ctrl_name, ".png"), width = 10, height = 2.75, units = "in", res = 300, family = "serif")
+    multiplot(
+        print(manH_par[[1]]), print(manH_par[[2]]), print(manH_par[[3]]),
+        cols = 3
+    )
+    dev.off()
 
-    # NAs # # write bigWig file
-    # NAs # write_bw <- function(x, cntx) {
-    # NAs #     x %>%
-    # NAs #         select(seqnames, start, end, sum_surprisal) %>%
-    # NAs #         na.omit() %>%
-    # NAs #         makeGRangesFromDataFrame(., keep.extra.columns = TRUE) %>%
-    # NAs #     rtracklayer::export.bw(. con = paste0("surprisal_", cntx, "_", trnt_name, "_vs_", ctrl_name, ".bw"))
-    # NAs # }
-    # NAs # write_bw(cg_filtered, "CG")
-    # NAs # write_bw(chg_filtered, "CHG")
-    # NAs # write_bw(chh_filtered, "CHH")
+    # write bigWig file
+    write_bw <- function(x, cntx) {
+        x %>%
+            select(seqnames, start, end, sum_surprisal) %>%
+            filter(!is.na(sum_surprisal)) %>%
+            mutate(sum_surprisal = as.numeric(sum_surprisal)) %>%
+            makeGRangesFromDataFrame(., keep.extra.columns = TRUE) %>%
+            rtracklayer::export.bw(con = paste0("surprisal_", cntx, "_", trnt_name, "_vs_", ctrl_name, ".bw"))
+    }
+    write_bw(cg_filtered, "CG")
+    write_bw(chg_filtered, "CHG")
+    write_bw(chh_filtered, "CHH")
 }
 
 ########################################################################
@@ -179,10 +186,8 @@ dHRs_circular_plot <- function(CG_df, CHG_df, CHH_df, ann.file, TE_4_dens, compa
 
 ########################################################################
 
-plots_test <- function(df, cntx, fdr = 0.95) {
+mannh_plots <- function(df, cntx, fdr = 0.95) {
     S_threshold <- as.numeric(quantile(df$sum_surprisal, fdr))
-
-    png(paste0(cntx, "_test_plots_310725.png"), width = 3.5, height = 2.75, units = "in", res = 300, family = "serif")
 
     # add cumulative genome coordinate
     chr_lengths <- tapply(df$end, df$seqnames, max)
@@ -191,22 +196,20 @@ plots_test <- function(df, cntx, fdr = 0.95) {
 
     df$coord <- df$start + chr_offset[df$seqnames]
 
-    print(
-        ggplot(df, aes(coord, sum_surprisal,
-            colour = as.factor(as.integer(seqnames) %% 2)
-        )) +
-            geom_point(size = 0.025) +
-            geom_hline(yintercept = S_threshold, color = "#bf6828", linetype = "dashed", size = 0.7) +
-            scale_colour_manual(values = c("grey40", "#7ca182"), guide = "none") +
-            scale_x_continuous(
-                breaks = chr_offset,
-                labels = paste0("Chr", seq_along(chr_offset))
-            ) +
-            labs(
-                x = "Chromosome",
-                y = "Window surprisal"
-            ) +
-            theme_bw()
-    )
-    dev.off()
+    manH_p <- ggplot(df, aes(coord, sum_surprisal,
+        colour = as.factor(as.integer(seqnames) %% 2)
+    )) +
+        geom_point(size = 0.025) +
+        geom_hline(yintercept = S_threshold, color = "#bf6828", linetype = "dashed", size = 0.7) +
+        scale_colour_manual(values = c("grey40", "#7ca182"), guide = "none") +
+        scale_x_continuous(
+            breaks = chr_offset + chr_lengths / 2,
+            labels = paste0("Chr", seq_along(chr_offset))
+        ) +
+        labs(
+            x = "Chromosome",
+            y = "Window surprisal"
+        ) +
+        theme_bw()
+    manH_p
 }

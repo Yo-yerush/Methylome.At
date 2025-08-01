@@ -20,6 +20,10 @@ Methylome.At_main <- function(var1, # control
   start_time <- Sys.time()
   scripts_dir <- paste0(Methylome.At_path, "/scripts/")
   source(paste0(scripts_dir, "trimm_and_rename_seq.R"))
+  source(paste0(scripts_dir, "multiplot_ggplot2.R"))
+  #script_files <- list.files(scripts_dir, pattern = "\\.R$", full.names = TRUE)
+  #script_files <- script_files[!grepl("install_R_packages\\.R$", script_files)]
+  #invisible(lapply(script_files, source))
 
   ###########################################################################
 
@@ -260,15 +264,14 @@ Methylome.At_main <- function(var1, # control
     }
   )
 
-  cat("\n* sum dH regions:\n")
   message("generating sum dH analysis: ", appendLF = F)
   tryCatch(
     {
-      suppressWarnings(run_sum_deltaH_CX(var1, var2, meth_var1, meth_var2, fdr = 0.95))
+      suppressWarnings(run_sum_deltaH_CX(var1, var2, meth_var1, meth_var2, annotation.gr, TE_file, n.cores, fdr = 0.95))
       message("done\n")
     },
     error = function(cond) {
-      cat("\n*\n mean dH:\n", as.character(cond), "\n*\n")
+      cat("\n*\n sum dH:\n", as.character(cond), "\n*\n")
       message("fail\n")
     }
   )
@@ -436,8 +439,6 @@ Methylome.At_main <- function(var1, # control
   )
 
   ###########################################################################
-
-  source(paste0(scripts_dir, "multiplot_ggplot2.R"))
 
   ##### GO analysis for annotated DMRs #####
   if (GO_analysis) {

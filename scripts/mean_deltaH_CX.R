@@ -424,14 +424,15 @@ run_mean_deltaH_CX <- function(ctrl_name, trnt_name, ctrl_pool, trnt_pool, TE.gr
 
     ########################################################################
     if (scatter_plot) {
+        cat("\rscatter plot...\t[ΔH ~ Δ5mC]")
         ### scatter plot to delta values (5Mc/H)
-        scatter_cg_entr <- var_sep(delta_scatter_entr, F, "deltaH", num_cores)$cg
-        scatter_chg_entr <- var_sep(delta_scatter_entr, F, "deltaH", num_cores)$chg
-        scatter_chh_entr <- var_sep(delta_scatter_entr, F, "deltaH", num_cores)$chh
+        scatter_cg_entr <- var_sep(delta_pool, F, "deltaH", num_cores)$cg
+        scatter_chg_entr <- var_sep(delta_pool, F, "deltaH", num_cores)$chg
+        scatter_chh_entr <- var_sep(delta_pool, F, "deltaH", num_cores)$chh
 
-        scatter_cg_meth <- var_sep(delta_scatter_meth, F, "Proportion", num_cores)$cg
-        scatter_chg_meth <- var_sep(delta_scatter_meth, F, "Proportion", num_cores)$chg
-        scatter_chh_meth <- var_sep(delta_scatter_meth, F, "Proportion", num_cores)$chh
+        scatter_cg_meth <- var_sep(delta_pool, F, "Proportion", num_cores)$cg
+        scatter_chg_meth <- var_sep(delta_pool, F, "Proportion", num_cores)$chg
+        scatter_chh_meth <- var_sep(delta_pool, F, "Proportion", num_cores)$chh
 
         svg(paste0("scatter_plot_difference_subCX_", trnt_name, "_vs_", ctrl_name, ".svg"), width = 6.5, height = 2.75, family = "serif")
         par(mfrow = c(1, 3))
@@ -469,13 +470,15 @@ run_mean_deltaH_CX <- function(ctrl_name, trnt_name, ctrl_pool, trnt_pool, TE.gr
         )
         abline(h = 0, v = 0, col = "grey70")
         dev.off()
+        cat("\rscatter plot:\tdone!        ")
+        cat("\n")
     }
 
     ########################################################################
     ### ChrPlot
     if (CX_plot) {
         # delta
-        cat(paste0("\rChrPlots... [delta]            "))
+        cat("\rChrPlots...\t[delta]")
         svg(paste0("ChrPlot_difference_", trnt_name, "_vs_", ctrl_name, ".svg"), width = 7, height = 4, family = "serif")
         try({
             ChrPlots_CX_all(
@@ -500,13 +503,13 @@ run_mean_deltaH_CX <- function(ctrl_name, trnt_name, ctrl_pool, trnt_pool, TE.gr
             )
         })
         dev.off()
-        cat(paste0("\rChrPlots:   done!              "))
+        cat("\rChrPlots:\tdone!    ")
         cat("\n")
     }
     ########################################################################
     ### ChrPlot sub-CX
     if (subCX_plot) {
-        cat("\rChrPlots for sub-contexts... [delta]          ")
+        cat("\rChrPlots for sub-contexts...\t[delta]")
         svg(paste0("ChrPlot_delta_H_subCX_", trnt_name, "_vs_", ctrl_name, ".svg"), width = 7, height = 4, family = "serif")
         try({
             ChrPlots_CX_all(
@@ -531,7 +534,8 @@ run_mean_deltaH_CX <- function(ctrl_name, trnt_name, ctrl_pool, trnt_pool, TE.gr
             )
         })
         dev.off()
-        cat("\rChrPlots for sub-contexts:   done!            ")
+        cat("\rChrPlots for sub-contexts...\t[delta]")
+        cat("\rChrPlots for sub-contexts:\tdone!    ")
+        cat("\n")
     }
-    cat("\n")
 }
