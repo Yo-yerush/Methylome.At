@@ -138,7 +138,6 @@ Methylome.At_main <- function(var1, # control
   ChrPlot_CX_path <- paste0(exp_path, "/ChrPlot_CX")
   ChrPlot_subCX_path <- paste0(ChrPlot_CX_path, "/subCX")
   dH_CX_path <- paste0(exp_path, "/deltaH")
-  dH_subCX_path <- paste0(dH_CX_path, "/subCX")
   PCA_plots_path <- paste0(exp_path, "/PCA_plots")
   meth_levels_path <- paste0(exp_path, "/methylation_levels")
   metaPlot_path <- paste0(exp_path, "/metaPlots")
@@ -165,7 +164,7 @@ Methylome.At_main <- function(var1, # control
       print(kable(conR_b))
     },
     error = function(cond) {
-      cat("\n\n* conversion rate:\n", as.character(cond), "\n*\n")
+      cat("\n*\n conversion rate:\n", as.character(cond), "\n*\n")
       message("fail")
       cat(" fail\n")
     }
@@ -191,7 +190,7 @@ Methylome.At_main <- function(var1, # control
         message("done")
       },
       error = function(cond) {
-        cat("\n\n* PCA plot:\n", as.character(cond), "\n*\n")
+        cat("\n*\n PCA plot:\n", as.character(cond), "\n*\n")
         message("fail")
       }
     )
@@ -217,7 +216,7 @@ Methylome.At_main <- function(var1, # control
       cat(" done\n")
     },
     error = function(cond) {
-      cat("\n\n* total methylation levels:\n", as.character(cond), "\n*\n")
+      cat("\n*\n total methylation levels:\n", as.character(cond), "\n*\n")
       message("fail")
       cat(" fail\n")
     }
@@ -237,26 +236,39 @@ Methylome.At_main <- function(var1, # control
       message("done")
     },
     error = function(cond) {
-      cat("\n\n* ChrPlots:\n", as.character(cond), "\n*\n")
+      cat("\n*\n ChrPlots:\n", as.character(cond), "\n*\n")
       message("fail")
     }
   )
 
-  ##### Scatter and ChrPlots for delta-mean-mC vs. delta-mean-entropy #####
+  ##### dH analysis over CX methylation #####
   dir.create(dH_CX_path, showWarnings = F)
-  dir.create(dH_subCX_path, showWarnings = F)
   setwd(dH_CX_path)
   source(paste0(scripts_dir, "mean_deltaH_CX.R"))
+  source(paste0(scripts_dir, "sum_deltaH_CX.R"))
 
   cat("\n* chromosome dH plots (ChrPlots):")
   message("generating ChrPlot (mean of dH) and scatter-plot (dH vs dmC): ", appendLF = F)
   tryCatch(
     {
       suppressWarnings(run_mean_deltaH_CX(var1, var2, meth_var1, meth_var2, TE_file, n.cores))
+      message("done")
+    },
+    error = function(cond) {
+      cat("\n*\n mean dH:\n", as.character(cond), "\n*\n")
+      message("fail")
+    }
+  )
+
+  cat("\n* sum dH regions:\n")
+  message("generating sum dH analysis: ", appendLF = F)
+  tryCatch(
+    {
+      suppressWarnings(run_sum_deltaH_CX(var1, var2, meth_var1, meth_var2, fdr = 0.95))
       message("done\n")
     },
     error = function(cond) {
-      cat("\n\n* mean dH:\n", as.character(cond), "\n*\n")
+      cat("\n*\n mean dH:\n", as.character(cond), "\n*\n")
       message("fail\n")
     }
   )
@@ -281,7 +293,8 @@ Methylome.At_main <- function(var1, # control
   ### ### main loop for 'DMRs' and its downstream results ### ###
 
   for (context in c("CG", "CHG", "CHH")) {
-    cat("\n*\tDMRs in", context, "context\t*\n")
+    cat("\n-------------------------\n")
+    cat("\ncalculate DMRs in", context, "context...\n")
     message(paste0("DMRs in ", context, " context..."))
 
     ##############################
@@ -293,6 +306,7 @@ Methylome.At_main <- function(var1, # control
       context, minProportionDiff, binSize, pValueThreshold,
       minCytosinesCount, minReadsPerCytosine, n.cores, is_Replicates
     )
+    cat(paste0("statistically significant DMRs: ", length(DMRs_bins), "\nDMRs plots...\n"))
     message(paste0("\tstatistically significant DMRs: ", length(DMRs_bins)))
     message(paste0("\tDMRs caller in ", context, " context: done"))
 
@@ -344,6 +358,7 @@ Methylome.At_main <- function(var1, # control
     setwd(exp_path)
 
     ##### Annotate DMRs and total-methylations #####
+    cat("genome annotations for DMRs...\n")
     message("\tgenome annotations for DMRs...")
     source(paste0(scripts_dir, "genome_ann.R"))
     source(paste0(scripts_dir, "DMRs_ann.R"))
@@ -395,6 +410,7 @@ Methylome.At_main <- function(var1, # control
       ))
     }
     message("\tsaved all DMRs also as bigWig files\n")
+    cat("done\n")
   }
 
   ### ### # finish main loop  ### ### ### ### ### ### ### ### ###
