@@ -259,11 +259,10 @@ Methylome.At_main <- function(var1, # control
     }
   )
 
-  message("generating sum dH analysis: ", appendLF = F)
+  message("generating sum dH analysis:\n", appendLF = F) # , rep("-", 29)
   tryCatch(
     {
       suppressWarnings(run_sum_deltaH_CX(var1, var2, meth_var1, meth_var2, annotation.gr, TE_file, n.cores, fdr = 0.95))
-      message("done\n")
     },
     error = function(cond) {
       cat("\n*\n sum dH:\n", as.character(cond), "\n*\n")

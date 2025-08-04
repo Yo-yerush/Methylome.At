@@ -94,6 +94,12 @@ if [ -z "$samples_file" ]; then
   usage
 fi
 
+# ensure files unix line endings [sed -i 's/\r$//' "$samples_file"]
+dos2unix "$samples_file" 2>/dev/null
+dos2unix "$annotation_file" 2>/dev/null
+dos2unix "$description_file" 2>/dev/null
+dos2unix "$TEs_file" 2>/dev/null
+
 # Change to the Methylome_At_path directory
 cd "$Methylome_At_path" || {
     echo "Error: Cannot change directory to $Methylome_At_path"

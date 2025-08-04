@@ -109,7 +109,7 @@ read_CX <- function(cx_path, name) {
     readsN = as.integer(cx_df$readsM) + as.integer(cx_df$readsUnM),
     trinucleotide_context = as.character(cx_df$trinucleotide_context)
   )
-  message(paste0("\tread ", nrow(cx_df), " cytosine sites [", name, "]"))
+  message(paste0("\tread ", nrow(cx_df), " cytosine sites\t[", name, "]"))
 
   cx_gr
 }
@@ -138,7 +138,7 @@ read_CGmap <- function(cgmap_path, name) {
     readsN = as.integer(cgmap_df$readsN),
     trinucleotide_context = as.character(rep("-", nrow(cgmap_df)))
   )
-  message(paste0("\tread ", nrow(cgmap_df), " cytosine sites [", name, "]"))
+  message(paste0("\tread ", nrow(cgmap_df), " cytosine sites\t[", name, "]"))
 
   cgmap_gr
 }
@@ -181,7 +181,7 @@ read_bedMethyl <- function(bed_path, name) {
       "-"
     }
   )
-  message(paste0("\tread ", nrow(bed_df), " cytosine sites [", name, "]"))
+  message(paste0("\tread ", nrow(bed_df), " cytosine sites\t[", name, "]"))
 
   bed_gr
 }

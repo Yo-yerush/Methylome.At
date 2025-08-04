@@ -39,14 +39,14 @@ run_sum_deltaH_CX <- function(ctrl_name, trnt_name, ctrl_pool, trnt_pool, annota
         context = c("CG", "CHG", "CHH"),
         total = c(nrow(cg_hd), nrow(chg_hd), nrow(chh_hd)),
         top_5 = c(nrow(cg_filtered), nrow(chg_filtered), nrow(chh_filtered)),
-        threshold = paste("S >", c(round(q_cg, 1), round(q_chg, 1), round(q_chh, 1)))
+        threshold = paste0("S>", c(round(q_cg, 1), round(q_chg, 1), round(q_chh, 1)))
     )
     print(knitr::kable(df_2_print))
     message("\n", paste(
         c(
-            paste(names(df_2_print), collapse = "\t"),
-            paste(sapply(names(df_2_print), function(nm) paste(rep("-", nchar(nm)), collapse = "")), collapse = "\t"),
-            apply(df_2_print, 1, function(row) paste(row, collapse = "\t"))
+            paste(names(df_2_print), collapse = "\t\t"),
+            paste(sapply(names(df_2_print), function(nm) paste(rep("=", nchar(nm)), collapse = "")), collapse = "\t\t"),
+            apply(df_2_print, 1, function(row) paste(row, collapse = "\t\t"))
         ),
         collapse = "\n"
     ), "\n")
@@ -235,38 +235,7 @@ mannh_plots <- function(df, cntx, fdr = 0.95) {
             x = "", # "Chromosome",
             y = "Window surprisal"
         ) +
-        yo_theme_base()
+        theme_bw()
+
     manH_p
-}
-
-########################################################################
-
-yo_theme_base <- function(
-    base_size = 12, base_family = "", base_line_size = base_size / 22,
-    base_rect_size = base_size / 22) {
-    half_line <- base_size / 2
-    theme_bw(
-        base_size = base_size, base_family = base_family,
-        base_line_size = base_line_size, base_rect_size = base_rect_size
-    ) %+replace%
-        theme(
-            axis.text = element_text(colour = "black", size = rel(0.8)),
-            axis.ticks = element_line(colour = "black", linewidth = rel(0.5)),
-            panel.border = element_rect(
-                fill = NA, colour = "black",
-                linewidth = rel(1)
-            ),
-            panel.grid = element_blank(),
-            # panel.grid.major = element_line(linewidth = rel(0.1)),
-            # panel.grid.minor = element_line(linewidth = rel(0.05)),
-            # strip.background = element_rect(fill = "black"),
-            strip.text = element_text(
-                colour = "white", size = rel(0.8),
-                margin = margin(
-                    0.8 * half_line, 0.8 * half_line,
-                    0.8 * half_line, 0.8 * half_line
-                )
-            ),
-            complete = TRUE
-        )
 }

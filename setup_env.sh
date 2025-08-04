@@ -46,8 +46,10 @@ echo "" >> "$log_file"
 echo "Install R packages..." >> "$log_file"
 Rscript scripts/install_R_packages.R 2>> "$log_file"
 
+# Ensure unix line endings (can also try: sed -i 's/\r$//' "$sample_table")
+dos2unix ./*.sh 2>/dev/null
+dos2unix ./scripts/*.sh 2>/dev/null
+
 # Permission
-chmod +x ./Methylome.At.sh
-chmod +x ./Methylome.At_metaPlots.sh
-chmod +x ./Methylome.At_UI.sh
+chmod +x ./Methylome.A*.sh
 chmod +x scripts/*.sh
