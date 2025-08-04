@@ -3,7 +3,7 @@ lib_packages <- c(
   "dplyr", "tidyr", "ggplot2", "DMRcaller", "rtracklayer", "lattice",
   "PeakSegDisk", "topGO", "KEGGREST", "Rgraphviz", "org.At.tair.db",
   "GenomicFeatures", "geomtextpath", "plyranges", "parallel",
-  "RColorBrewer", "circlize", "cowplot", "knitr"
+  "RColorBrewer", "circlize", "cowplot", "knitr", "data.table"
 )
 for (n.pkg in seq(lib_packages)) {
   tryCatch(

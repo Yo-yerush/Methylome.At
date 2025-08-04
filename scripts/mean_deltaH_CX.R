@@ -424,7 +424,7 @@ run_mean_deltaH_CX <- function(ctrl_name, trnt_name, ctrl_pool, trnt_pool, TE.gr
 
     ########################################################################
     if (scatter_plot) {
-        cat("\rscatter plot...\t[ΔH ~ Δ5mC]")
+        cat("\rscatter plot... [ΔH ~ Δ5mC]")
         ### scatter plot to delta values (5Mc/H)
         scatter_cg_entr <- var_sep(delta_pool, F, "deltaH", num_cores)$cg
         scatter_chg_entr <- var_sep(delta_pool, F, "deltaH", num_cores)$chg
@@ -470,7 +470,7 @@ run_mean_deltaH_CX <- function(ctrl_name, trnt_name, ctrl_pool, trnt_pool, TE.gr
         )
         abline(h = 0, v = 0, col = "grey70")
         dev.off()
-        cat("\rscatter plot:\tdone!        ")
+        cat("\rscatter plot:         done!")
         cat("\n")
     }
 
@@ -478,7 +478,7 @@ run_mean_deltaH_CX <- function(ctrl_name, trnt_name, ctrl_pool, trnt_pool, TE.gr
     ### ChrPlot
     if (CX_plot) {
         # delta
-        cat("\rChrPlots...\t[delta]")
+        cat("\rChrPlots... [delta]")
         svg(paste0("ChrPlot_difference_", trnt_name, "_vs_", ctrl_name, ".svg"), width = 7, height = 4, family = "serif")
         try({
             ChrPlots_CX_all(
@@ -503,13 +503,13 @@ run_mean_deltaH_CX <- function(ctrl_name, trnt_name, ctrl_pool, trnt_pool, TE.gr
             )
         })
         dev.off()
-        cat("\rChrPlots:\tdone!    ")
+        cat("\rChrPlots:     done!")
         cat("\n")
     }
     ########################################################################
     ### ChrPlot sub-CX
     if (subCX_plot) {
-        cat("\rChrPlots for sub-contexts...\t[delta]")
+        cat("\rChrPlots for sub-contexts... [delta]")
         svg(paste0("ChrPlot_delta_H_subCX_", trnt_name, "_vs_", ctrl_name, ".svg"), width = 7, height = 4, family = "serif")
         try({
             ChrPlots_CX_all(
@@ -534,8 +534,7 @@ run_mean_deltaH_CX <- function(ctrl_name, trnt_name, ctrl_pool, trnt_pool, TE.gr
             )
         })
         dev.off()
-        cat("\rChrPlots for sub-contexts...\t[delta]")
-        cat("\rChrPlots for sub-contexts:\tdone!    ")
+        cat("\rChrPlots for sub-contexts:     done!")
         cat("\n")
     }
 }

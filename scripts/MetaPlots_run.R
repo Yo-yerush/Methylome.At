@@ -3,7 +3,7 @@ start_time <- Sys.time()
 # upload libraries
 lib_packages <- c(
   "dplyr", "ggplot2", "DMRcaller", "org.At.tair.db",
-  "GenomicFeatures", "plyranges", "parallel"
+  "GenomicFeatures", "plyranges", "parallel", "data.table"
   )
 for (n.pkg in seq(lib_packages)) {
     suppressWarnings(suppressMessages(library(lib_packages[n.pkg], character.only = TRUE)))

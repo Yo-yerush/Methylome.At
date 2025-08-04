@@ -1,15 +1,18 @@
 run_sum_deltaH_CX <- function(ctrl_name, trnt_name, ctrl_pool, trnt_pool, annotation.gr, TE.gr, num_cores, fdr = 0.95) {
     ctrl_pool <- as.data.frame(ctrl_pool) %>%
-        # filter(readsN > 6) %>%
         select(seqnames, start, context, m_ctrl = readsM, n_ctrl = readsN)
     trnt_pool <- as.data.frame(trnt_pool) %>%
-        # filter(readsN > 6) %>%
         select(seqnames, start, context, m_trnt = readsM, n_trnt = readsN)
 
     merged_pool <- inner_join(
         ctrl_pool, trnt_pool,
         by = c("seqnames", "start", "context")
     )
+
+    seqlengths_merged <- merged_pool %>%
+        group_by(seqnames) %>%
+        summarise(seqlength = max(start)) %>%
+        arrange(match(seqnames, unique(merged_pool$seqnames)))
 
     # main loop
     cat("sum dH in 100bp windowsize\n")
@@ -31,14 +34,22 @@ run_sum_deltaH_CX <- function(ctrl_name, trnt_name, ctrl_pool, trnt_pool, annota
     chg_filtered <- chg_hd %>% filter(sum_surprisal > q_chg)
     chh_filtered <- chh_hd %>% filter(sum_surprisal > q_chh)
 
-    print(knitr::kable(
-        data.frame(
-            context = c("CG", "CHG", "CHH"),
-            total_regions = c(nrow(cg_hd), nrow(chg_hd), nrow(chh_hd)),
-            top_5_percent = c(nrow(cg_filtered), nrow(chg_filtered), nrow(chh_filtered)),
-            sValue_threshold = paste("S >", c(round(q_cg, 1), round(q_chg, 1), round(q_chh, 1)))
-        )
-    ))
+    # print df (both to terminal and .log file)
+    df_2_print <- data.frame(
+        context = c("CG", "CHG", "CHH"),
+        total = c(nrow(cg_hd), nrow(chg_hd), nrow(chh_hd)),
+        top_5 = c(nrow(cg_filtered), nrow(chg_filtered), nrow(chh_filtered)),
+        threshold = paste("S >", c(round(q_cg, 1), round(q_chg, 1), round(q_chh, 1)))
+    )
+    print(knitr::kable(df_2_print))
+    message("\n", paste(
+        c(
+            paste(names(df_2_print), collapse = "\t"),
+            paste(sapply(names(df_2_print), function(nm) paste(rep("-", nchar(nm)), collapse = "")), collapse = "\t"),
+            apply(df_2_print, 1, function(row) paste(row, collapse = "\t"))
+        ),
+        collapse = "\n"
+    ), "\n")
 
     # genome density plot
     dHRs_circular_plot(cg_filtered, chg_filtered, chh_filtered, annotation.gr, TE.gr, paste0(trnt_name, "_vs_", ctrl_name))
@@ -58,18 +69,26 @@ run_sum_deltaH_CX <- function(ctrl_name, trnt_name, ctrl_pool, trnt_pool, annota
     )
     dev.off()
 
-    # write bigWig file
+    # write bigWig file function
     write_bw <- function(x, cntx) {
-        x %>%
+        x <- x %>%
             select(seqnames, start, end, sum_surprisal) %>%
             filter(!is.na(sum_surprisal)) %>%
-            mutate(sum_surprisal = as.numeric(sum_surprisal)) %>%
-            makeGRangesFromDataFrame(., keep.extra.columns = TRUE) %>%
-            rtracklayer::export.bw(con = paste0("surprisal_", cntx, "_", trnt_name, "_vs_", ctrl_name, ".bw"))
+            mutate(score = as.numeric(sum_surprisal)) %>%
+            makeGRangesFromDataFrame(., keep.extra.columns = TRUE, )
+        seqlengths(x) <- setNames(seqlengths_merged$seqlength, seqlengths_merged$seqnames)
+        rtracklayer::export.bw(x, con = paste0("surprisal_", cntx, "_", trnt_name, "_vs_", ctrl_name, ".bw"))
     }
-    write_bw(cg_filtered, "CG")
-    write_bw(chg_filtered, "CHG")
-    write_bw(chh_filtered, "CHH")
+
+    # annotate regions and write files
+    ann_list <- genome_ann(annotation.gr, TE.gr)
+    write_sum_dH <- function(filtered_df, cntx) {
+        write.csv(filtered_df, paste0("surprisal_", cntx, "_", trnt_name, "_vs_", ctrl_name, ".csv"), row.names = F)
+        write_bw(filtered_df, cntx)
+        setwd("genome_annotation")
+        suppressMessages(DMRs_ann(ann_list, makeGRangesFromDataFrame(filtered_df, keep.extra.columns = T), cntx, description_df))
+        setwd("../")
+    }
 }
 
 ########################################################################
@@ -115,19 +134,24 @@ dH_bins <- function(joint, cntx, min_coverage = 6) {
         group_by(tile_id) %>%
         summarise(
             sum_surprisal = sum(surprisal, na.rm = TRUE),
-            pi_ctrl = sum(m_ctrl) / sum(n_ctrl),
-            pi_trnt = sum(m_trnt) / sum(n_trnt),
-            log2FC = log2(pi_trnt / pi_ctrl),
+            m_ctrl = sum(m_ctrl),
+            n_ctrl = sum(n_ctrl),
+            m_trnt = sum(m_trnt),
+            n_trnt = sum(n_trnt),
+            # adding 1 m_reads and 2 n_reads (total) if the count is 0
+            pi_ctrl = (m_ctrl + (m_ctrl == 0)) / (n_ctrl + 2 * (m_ctrl == 0)),
+            pi_trnt = (m_trnt + (m_trnt == 0)) / (n_trnt + 2 * (m_trnt == 0)),
+            pi_log2FC = log2(pi_trnt / pi_ctrl),
             n_sites = n()
         ) %>%
         ungroup()
 
     # final df
-    out <- cbind(
-        as.data.frame(tiles100)[window_surprisal$tile_id, 1:3],
-        window_surprisal
-    ) %>%
-        filter(n_sites >= min_C_sites)
+    out <- cbind(as.data.frame(tiles100)[window_surprisal$tile_id, 1:3], window_surprisal) %>%
+        filter(n_sites >= min_C_sites) %>%
+        mutate(context = cntx) %>%
+        dplyr::relocate(context, .before = sum_surprisal) %>%
+        select(-tile_id)
     out
 }
 
@@ -146,8 +170,8 @@ dHRs_circular_plot <- function(CG_df, CHG_df, CHH_df, ann.file, TE_4_dens, compa
 
     circos.genomicDensity(
         list(
-            CG_df[CG_df$log2FC > 0, 1:3],
-            CG_df[CG_df$log2FC < 0, 1:3]
+            CG_df[CG_df$pi_log2FC > 0, 1:3],
+            CG_df[CG_df$pi_log2FC < 0, 1:3]
         ),
         bg.col = "#fafcff", bg.border = NA, count_by = "number",
         col = c("#FF000080", "#304ed180"), border = T, track.height = 0.165, track.margin = c(0, 0)
@@ -155,8 +179,8 @@ dHRs_circular_plot <- function(CG_df, CHG_df, CHH_df, ann.file, TE_4_dens, compa
 
     circos.genomicDensity(
         list(
-            CHG_df[CHG_df$log2FC > 0, 1:3],
-            CHG_df[CHG_df$log2FC < 0, 1:3]
+            CHG_df[CHG_df$pi_log2FC > 0, 1:3],
+            CHG_df[CHG_df$pi_log2FC < 0, 1:3]
         ),
         bg.col = "#fafcff", bg.border = NA, count_by = "number",
         col = c("#FF000080", "#304ed180"), border = T, track.height = 0.165, track.margin = c(0, 0)
@@ -164,8 +188,8 @@ dHRs_circular_plot <- function(CG_df, CHG_df, CHH_df, ann.file, TE_4_dens, compa
 
     circos.genomicDensity(
         list(
-            CHH_df[CHH_df$log2FC > 0, 1:3],
-            CHH_df[CHH_df$log2FC < 0, 1:3]
+            CHH_df[CHH_df$pi_log2FC > 0, 1:3],
+            CHH_df[CHH_df$pi_log2FC < 0, 1:3]
         ),
         bg.col = "#fafcff", bg.border = NA, count_by = "number",
         col = c("#FF000080", "#304ed180"), border = T, track.height = 0.165, track.margin = c(0, 0)
@@ -206,10 +230,43 @@ mannh_plots <- function(df, cntx, fdr = 0.95) {
             breaks = chr_offset + chr_lengths / 2,
             labels = paste0("Chr", seq_along(chr_offset))
         ) +
+        expand_limits(y = 0) +
         labs(
-            x = "Chromosome",
+            x = "", # "Chromosome",
             y = "Window surprisal"
         ) +
-        theme_bw()
+        yo_theme_base()
     manH_p
+}
+
+########################################################################
+
+yo_theme_base <- function(
+    base_size = 12, base_family = "", base_line_size = base_size / 22,
+    base_rect_size = base_size / 22) {
+    half_line <- base_size / 2
+    theme_bw(
+        base_size = base_size, base_family = base_family,
+        base_line_size = base_line_size, base_rect_size = base_rect_size
+    ) %+replace%
+        theme(
+            axis.text = element_text(colour = "black", size = rel(0.8)),
+            axis.ticks = element_line(colour = "black", linewidth = rel(0.5)),
+            panel.border = element_rect(
+                fill = NA, colour = "black",
+                linewidth = rel(1)
+            ),
+            panel.grid = element_blank(),
+            # panel.grid.major = element_line(linewidth = rel(0.1)),
+            # panel.grid.minor = element_line(linewidth = rel(0.05)),
+            # strip.background = element_rect(fill = "black"),
+            strip.text = element_text(
+                colour = "white", size = rel(0.8),
+                margin = margin(
+                    0.8 * half_line, 0.8 * half_line,
+                    0.8 * half_line, 0.8 * half_line
+                )
+            ),
+            complete = TRUE
+        )
 }
