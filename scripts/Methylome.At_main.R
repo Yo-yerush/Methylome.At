@@ -18,12 +18,15 @@ Methylome.At_main <- function(var1, # control
   ###########################################################################
 
   start_time <- Sys.time()
-  scripts_dir <- paste0(Methylome.At_path, "/scripts/")
-  source(paste0(scripts_dir, "trimm_and_rename_seq.R"))
-  source(paste0(scripts_dir, "multiplot_ggplot2.R"))
-  #script_files <- list.files(scripts_dir, pattern = "\\.R$", full.names = TRUE)
-  #script_files <- script_files[!grepl("install_R_packages\\.R$", script_files)]
-  #invisible(lapply(script_files, source))
+  scripts_dir <- paste0(Methylome.At_path, "/scripts")
+
+  # source all R scripts
+  script_files <- list.files(scripts_dir, pattern = "\\.R$", full.names = TRUE)
+  script_files <- script_files[!grepl("install_R_packages\\.R$", script_files)]
+  script_files <- script_files[!grepl("Methylome\\.At_run\\.R$", script_files)]
+  script_files <- script_files[!grepl("Methylome\\.At_main\\.R$", script_files)]
+  script_files <- script_files[!grepl("MetaPlots_run\\.R$", script_files)]
+  invisible(lapply(script_files, source))
 
   ###########################################################################
 
@@ -57,7 +60,6 @@ Methylome.At_main <- function(var1, # control
   # TAIR10 Transposable Elements file
   tryCatch(
     {
-      source(paste0(scripts_dir, "edit_TE_file.R"))
       TE_file.df <- read.csv(TEs_file, sep = "\t")
       TE_file <- edit_TE_file(TE_file.df)
       message("load Transposable Elements file")
@@ -99,7 +101,6 @@ Methylome.At_main <- function(var1, # control
 
   ##### load methylation data ('CX_report' file) #####
   message("load CX methylation data...")
-  source(paste0(scripts_dir, "load_replicates.R"))
   tryCatch(
     {
       # load 'CX_reports'
@@ -160,7 +161,6 @@ Methylome.At_main <- function(var1, # control
   tryCatch(
     {
       message("")
-      source(paste0(scripts_dir, "ChrC_conversionRate.R"))
       conR_var1 <- conversionRate(load_vars[[1]]$methylationDataReplicates, var1)
       conR_var2 <- conversionRate(load_vars[[2]]$methylationDataReplicates, var2)
       conR_b <- rbind(conR_var1, conR_var2)
@@ -186,7 +186,6 @@ Methylome.At_main <- function(var1, # control
     cat("\nPCA plots...")
     tryCatch(
       {
-        source(paste0(scripts_dir, "pca_plot.R"))
         pca_plot(methylationDataReplicates_joints, var1, var2, var1_path, var2_path, "CG")
         pca_plot(methylationDataReplicates_joints, var1, var2, var1_path, var2_path, "CHG")
         pca_plot(methylationDataReplicates_joints, var1, var2, var1_path, var2_path, "CHH")
@@ -214,7 +213,6 @@ Methylome.At_main <- function(var1, # control
   cat("total methylation levels...")
   tryCatch(
     {
-      source(paste0(scripts_dir, "total_meth_levels.R"))
       total_meth_levels <- total_meth_levels(meth_var1_replicates, meth_var2_replicates, var1, var2)
       message("done")
       cat(" done\n")
@@ -230,7 +228,6 @@ Methylome.At_main <- function(var1, # control
   dir.create(ChrPlot_CX_path, showWarnings = F)
   dir.create(ChrPlot_subCX_path, showWarnings = F)
   setwd(ChrPlot_CX_path)
-  source(paste0(scripts_dir, "ChrPlots_CX.R"))
 
   cat("\n* chromosome methylation plots (ChrPlots):")
   message("generating chromosome methylation plots (ChrPlots): ", appendLF = F)
@@ -248,8 +245,6 @@ Methylome.At_main <- function(var1, # control
   ##### dH analysis over CX methylation #####
   dir.create(dH_CX_path, showWarnings = F)
   setwd(dH_CX_path)
-  source(paste0(scripts_dir, "mean_deltaH_CX.R"))
-  source(paste0(scripts_dir, "sum_deltaH_CX.R"))
 
   cat("\n* chromosome dH plots (ChrPlots):")
   message("generating ChrPlot (mean of dH) and scatter-plot (dH vs dmC): ", appendLF = F)
@@ -302,7 +297,6 @@ Methylome.At_main <- function(var1, # control
 
     ##############################
     ##### Calling DMRs in Replicates #####
-    source(paste0(scripts_dir, "calling_DMRs.R"))
     DMRs_bins <- calling_DMRs(
       methylationDataReplicates_joints, meth_var1, meth_var2,
       var1, var2, var1_path, var2_path, comparison_name,
@@ -317,7 +311,6 @@ Methylome.At_main <- function(var1, # control
     #####  Gain or Loss - DMRs #####
     dir.create(gainORloss_path, showWarnings = FALSE)
     setwd(gainORloss_path)
-    source(paste0(scripts_dir, "gainORloss.R"))
 
     ##### Pie chart
     tryCatch(
@@ -349,7 +342,6 @@ Methylome.At_main <- function(var1, # control
       {
         dir.create(ChrPlots_DMRs_path, showWarnings = FALSE)
         setwd(ChrPlots_DMRs_path)
-        source(paste0(scripts_dir, "ChrPlots_DMRs.R"))
         ChrPlots_DMRs(comparison_name, DMRs_bins, var1, var2, context, scripts_dir)
         message("\tgenerated ChrPlots for all DMRs: done")
       },
@@ -363,12 +355,6 @@ Methylome.At_main <- function(var1, # control
     ##### Annotate DMRs and total-methylations #####
     cat("genome annotations for DMRs...\n")
     message("\tgenome annotations for DMRs...")
-    source(paste0(scripts_dir, "genome_ann.R"))
-    source(paste0(scripts_dir, "DMRs_ann.R"))
-    source(paste0(scripts_dir, "CX_ann.R"))
-    source(paste0(scripts_dir, "DMRs_ann_plots.R"))
-    source(paste0(scripts_dir, "TE_ann_plots.R"))
-    source(paste0(scripts_dir, "TE_Super_Family_Frequency.R"))
     dir.create(genome_ann_path, showWarnings = FALSE)
     setwd(genome_ann_path)
 
@@ -402,7 +388,6 @@ Methylome.At_main <- function(var1, # control
 
     ##### save DMRs as bigWig file #####
     dir.create(DMRs_bigWig_path, showWarnings = FALSE)
-    source(paste0(scripts_dir, "DMRs_2_bigWig.R"))
     ann_res_files <- list.files(paste0(genome_ann_path, "/", context))
     for (ann.loop.bigWig in c("all", ann_res_files)) {
       suppressWarnings(try(
@@ -427,7 +412,6 @@ Methylome.At_main <- function(var1, # control
     {
       setwd(exp_path)
       # setwd(ChrPlots_DMRs_path)
-      source(paste0(scripts_dir, "circular_plot_DMRs.R"))
       DMRs_circular_plot(annotation.gr, TE_file, comparison_name)
       DMRs_circular_plot_legends()
       message("generated DMRs density plot for all contexts: done\n")
@@ -444,7 +428,6 @@ Methylome.At_main <- function(var1, # control
   if (GO_analysis) {
     tryCatch(
       {
-        source(paste0(scripts_dir, "go_script.R"))
         GO_path <- paste0(exp_path, "/GO_analysis")
         dir.create(GO_path, showWarnings = FALSE)
 
@@ -463,7 +446,6 @@ Methylome.At_main <- function(var1, # control
   if (KEGG_pathways) {
     tryCatch(
       {
-        source(paste0(scripts_dir, "kegg_script.R"))
         KEGG_path <- paste0(exp_path, "/KEGG_pathway")
         dir.create(KEGG_path, showWarnings = FALSE)
 
