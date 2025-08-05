@@ -6,7 +6,7 @@ DMRs_2_bigWig <- function(var1, var2, context, ann.res, scaling=TRUE) {
         DMRsReplicates <- read.csv(paste0("DMRs_", context, "_", var2, "_vs_", var1, ".csv"))
         file_name <- paste(context, "all", var2, "vs", var1, sep = "_")
     } else {
-        DMRsReplicates <- read.csv(paste0("genome_annotation/", context, "/", ann.res))
+        DMRsReplicates <- read.csv(paste0("genome_annotation/", context, "/DMRs_", ann.res))
         ann.name <- sub(paste0("_", context, ".*$"), "", ann.res)
         file_name <- paste(context, ann.name, var2, "vs", var1, sep = "_")
     }

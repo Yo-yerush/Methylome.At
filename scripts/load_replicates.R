@@ -5,7 +5,7 @@ load_replicates <- function(var_path, n.cores, var_name, metaPlot_script = F, fi
     function(meth_file_path) {
       tryCatch(
         {
-          cat(paste0("read '", basename(meth_file_path), "' file...\t[",var_name,"]\n"))
+          cat(paste0("read ", basename(meth_file_path), " file...   \t[",var_name,"]\n"))
           if (file_type == "CX_report") {
             cx_4_read <- read_CX(meth_file_path, var_name)
           } else if (convert_2_CX) {

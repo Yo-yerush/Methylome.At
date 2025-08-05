@@ -1,4 +1,4 @@
-run_sum_deltaH_CX <- function(ctrl_name, trnt_name, ctrl_pool, trnt_pool, annotation.gr, TE.gr, num_cores, fdr = 0.95) {
+run_sum_deltaH_CX <- function(ctrl_name, trnt_name, ctrl_pool, trnt_pool, annotation.gr, TE.gr, description_df, num_cores, fdr = 0.95) {
     ctrl_pool <- as.data.frame(ctrl_pool) %>%
         select(seqnames, start, context, m_ctrl = readsM, n_ctrl = readsN)
     trnt_pool <- as.data.frame(trnt_pool) %>%
@@ -15,7 +15,7 @@ run_sum_deltaH_CX <- function(ctrl_name, trnt_name, ctrl_pool, trnt_pool, annota
         arrange(match(seqnames, unique(merged_pool$seqnames)))
 
     # main loop
-    cat("sum dH in 100bp windowsize\n")
+    cat("\nsum dH in 100bp windowsize:")
     hd_list <- mclapply(
         c("CG", "CHG", "CHH"), function(cntx) {
             dH_bins(merged_pool, cntx)
@@ -30,9 +30,9 @@ run_sum_deltaH_CX <- function(ctrl_name, trnt_name, ctrl_pool, trnt_pool, annota
     q_cg <- quantile(cg_hd$sum_surprisal, fdr) %>% as.numeric()
     q_chg <- quantile(chg_hd$sum_surprisal, fdr) %>% as.numeric()
     q_chh <- quantile(chh_hd$sum_surprisal, fdr) %>% as.numeric()
-    cg_filtered <- cg_hd %>% filter(sum_surprisal > q_cg)
-    chg_filtered <- chg_hd %>% filter(sum_surprisal > q_chg)
-    chh_filtered <- chh_hd %>% filter(sum_surprisal > q_chh)
+    cg_filtered <- cg_hd %>% filter(sum_surprisal > q_cg) %>% mutate(regionType = ifelse(pi_log2FC > 0, "gain", "loss"))
+    chg_filtered <- chg_hd %>% filter(sum_surprisal > q_chg) %>% mutate(regionType = ifelse(pi_log2FC > 0, "gain", "loss"))
+    chh_filtered <- chh_hd %>% filter(sum_surprisal > q_chh) %>% mutate(regionType = ifelse(pi_log2FC > 0, "gain", "loss"))
 
     # print df (both to terminal and .log file)
     df_2_print <- data.frame(
@@ -83,12 +83,21 @@ run_sum_deltaH_CX <- function(ctrl_name, trnt_name, ctrl_pool, trnt_pool, annota
     # annotate regions and write files
     ann_list <- genome_ann(annotation.gr, TE.gr)
     write_sum_dH <- function(filtered_df, cntx) {
-        write.csv(filtered_df, paste0("surprisal_", cntx, "_", trnt_name, "_vs_", ctrl_name, ".csv"), row.names = F)
+        filtered_df <- makeGRangesFromDataFrame(filtered_df, keep.extra.columns = T) %>% as.data.frame() # save as gr object configuration
+        write.csv(filtered_df, paste0("SurpMRs_", cntx, "_", trnt_name, "_vs_", ctrl_name, ".csv"), row.names = F)
         write_bw(filtered_df, cntx)
         setwd("genome_annotation")
-        suppressMessages(DMRs_ann(ann_list, makeGRangesFromDataFrame(filtered_df, keep.extra.columns = T), cntx, description_df))
+        SurpMRs_bins <- makeGRangesFromDataFrame(filtered_df, keep.extra.columns = T)
+        suppressMessages(DMRs_ann(ann_list, SurpMRs_bins, cntx, description_df, sum_dH = T))
+        DMRs_ann_plots(ctrl_name, trnt_name, cntx, sum_dH = T)
+        TE_ann_plots(cntx, TE.gr)
+        TE_Super_Family_Frequency(cntx, TE.gr)
         setwd("../")
     }
+
+    write_sum_dH(cg_filtered, "CG")
+    write_sum_dH(chg_filtered, "CHG")
+    write_sum_dH(chh_filtered, "CHH")
 }
 
 ########################################################################
@@ -98,7 +107,7 @@ dH_bins <- function(joint, cntx, min_coverage = 6) {
     min_C_sites <- c(CG = 1, CHG = 2, CHH = 4)[cntx]
     min_coverage <- 6
 
-    cat(paste0("[", cntx, "]\tmin coverage: ", min_coverage, "; min proportion value: ", thresh, "; min dignificant sites: ", min_C_sites, "\n"))
+    cat(paste0("\n[", cntx, "]\tmin coverage: ", min_coverage, "; min proportion value: ", thresh, "; min dignificant sites: ", min_C_sites))
     ### per-site surprisal value [S-Value = −log P_Bin(c | n, π0)]
     eps <- 1e-6 # avoid log(0)
     joint <- joint %>%

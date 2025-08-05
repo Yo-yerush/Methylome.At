@@ -1,10 +1,11 @@
-TE_ann_plots <- function(context, TE.gr) {
-  
+TE_ann_plots <- function(context, TE.gr, sum_dH = F) {
+  region_analysis <- ifelse(!sum_dH, "DMRs", "SurpMRs")
+
   dir.create("TEs_addiotionnal_results", showWarnings = F)
   setwd("TEs_addiotionnal_results")
   
-  DMRsReplicates_TE_file.0 = paste0("../",context,"/Transposable_Elements_",context,"_genom_annotations.csv")
-  DMRsReplicates_Genes_file.0 = paste0("../",context,"/Genes_",context,"_genom_annotations.csv")
+  DMRsReplicates_TE_file.0 = paste0("../",context,"/", region_analysis, "_Transposable_Elements_",context,"_genom_annotations.csv")
+  DMRsReplicates_Genes_file.0 = paste0("../",context,"/", region_analysis, "_Genes_",context,"_genom_annotations.csv")
   
   if (file.exists(DMRsReplicates_TE_file.0)) {
     
@@ -19,7 +20,7 @@ TE_ann_plots <- function(context, TE.gr) {
       geom_bar(stat = 'identity', position= "stack")+
       geom_col()+ 
       xlab("")+
-      ylab("Number of DMRs")+
+      ylab(paste0("Number of ", region_analysis))+
       ggtitle(context)+
       theme_classic() + theme(axis.text.x =  element_text(face="bold",size=11))
     svg(file = paste0(context,"_TE.vs.ProteinCodingGenes.svg"), width = 1.6, height = 2.1, family = "serif")
@@ -42,7 +43,7 @@ TE_ann_plots <- function(context, TE.gr) {
     indices_top_n <- order(TE_Freq$Freq, decreasing = TRUE)[1:top_n]
     labels[indices_top_n] <- as.character(TE_Freq$SF_name[indices_top_n])
     
-    svg(file = paste0(context,"_TE_Super_Family.svg"), width = 8, height = 5.5, family = "serif")
+    svg(file = paste0(region_analysis, "_", context,"_TE_Super_Family.svg"), width = 8, height = 5.5, family = "serif")
     par(mar = c(1,4,1,4))
     par(fig=c(0,6,0,10)/10)
     par(lwd = 2)
@@ -57,7 +58,7 @@ TE_ann_plots <- function(context, TE.gr) {
     symbols(0, 0, circles = 0.8, inches = FALSE, add = TRUE,
             fg = "#575652")
     #title
-    title(main = paste0("Transposon Super Family:\nDMRs in ", context, " context"),
+    title(main = paste0("Transposon Super Family:\n", region_analysis, " in ", context, " context"),
           line = -3, cex.main = 1.25)
     
     # legend

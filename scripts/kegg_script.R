@@ -79,7 +79,7 @@ kegg.pathway.fun = function(treatment,
   start_path = getwd()
   
   #####
-  DMR_file = read.csv(paste0(genome_ann_path,"/",context,"/",annotation,"_",context,"_genom_annotations.csv"))
+  DMR_file = read.csv(paste0(genome_ann_path,"/",context,"/DMRs_",annotation,"_",context,"_genom_annotations.csv"))
   DMR_file = DMR_file[DMR_file$regionType == gain_OR_loss,
                       c("gene_id","pValue")]
   #####

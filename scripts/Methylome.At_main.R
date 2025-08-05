@@ -26,6 +26,8 @@ Methylome.At_main <- function(var1, # control
   script_files <- script_files[!grepl("Methylome\\.At_run\\.R$", script_files)]
   script_files <- script_files[!grepl("Methylome\\.At_main\\.R$", script_files)]
   script_files <- script_files[!grepl("MetaPlots_run\\.R$", script_files)]
+  script_files <- script_files[!grepl("mean_deltaH_CX\\.R", script_files)] # have match functions with 'ChrPlots' functions
+  script_files <- script_files[!grepl("ChrPlots_", script_files)]
   invisible(lapply(script_files, source))
 
   ###########################################################################
@@ -141,8 +143,9 @@ Methylome.At_main <- function(var1, # control
   comparison_name <- paste0(var2, "_vs_", var1)
   exp_path <- paste0(Methylome.At_path, "/results/", comparison_name)
   ChrPlot_CX_path <- paste0(exp_path, "/ChrPlot_CX")
-  ChrPlot_subCX_path <- paste0(ChrPlot_CX_path, "/subCX")
+  ChrPlot_subCX_path <- paste0(exp_path, "/ChrPlot_CX/subCX")
   dH_CX_path <- paste0(exp_path, "/deltaH")
+  dH_CX_ann_path <- paste0(exp_path, "/deltaH/genome_annotation")
   PCA_plots_path <- paste0(exp_path, "/PCA_plots")
   meth_levels_path <- paste0(exp_path, "/methylation_levels")
   metaPlot_path <- paste0(exp_path, "/metaPlots")
@@ -233,6 +236,7 @@ Methylome.At_main <- function(var1, # control
   message("generating chromosome methylation plots (ChrPlots): ", appendLF = F)
   tryCatch(
     {
+      source(paste0(scripts_dir, "/ChrPlots_CX.R"))
       suppressWarnings(run_ChrPlots_CX(var1, var2, meth_var1, meth_var2, TE_file, n.cores))
       message("done")
     },
@@ -244,12 +248,14 @@ Methylome.At_main <- function(var1, # control
 
   ##### dH analysis over CX methylation #####
   dir.create(dH_CX_path, showWarnings = F)
+  dir.create(dH_CX_ann_path, showWarnings = F)
   setwd(dH_CX_path)
 
   cat("\n* chromosome dH plots (ChrPlots):")
   message("generating ChrPlot (mean of dH) and scatter-plot (dH vs dmC): ", appendLF = F)
   tryCatch(
     {
+      source(paste0(scripts_dir, "/mean_deltaH_CX.R"))
       suppressWarnings(run_mean_deltaH_CX(var1, var2, meth_var1, meth_var2, TE_file, n.cores))
       message("done")
     },
@@ -262,7 +268,7 @@ Methylome.At_main <- function(var1, # control
   message("generating sum dH analysis:\n", appendLF = F) # , rep("-", 29)
   tryCatch(
     {
-      suppressWarnings(run_sum_deltaH_CX(var1, var2, meth_var1, meth_var2, annotation.gr, TE_file, n.cores, fdr = 0.95))
+      suppressWarnings(run_sum_deltaH_CX(var1, var2, meth_var1, meth_var2, annotation.gr, TE_file, description_df, n.cores, fdr = 0.95))
     },
     error = function(cond) {
       cat("\n*\n sum dH:\n", as.character(cond), "\n*\n")
@@ -339,6 +345,7 @@ Methylome.At_main <- function(var1, # control
     ##### ChrPlots for DMRs #####
     tryCatch(
       {
+        source(paste0(scripts_dir, "/ChrPlots_DMRs.R"))
         dir.create(ChrPlots_DMRs_path, showWarnings = FALSE)
         setwd(ChrPlots_DMRs_path)
         ChrPlots_DMRs(comparison_name, DMRs_bins, var1, var2, context, scripts_dir)
@@ -352,7 +359,7 @@ Methylome.At_main <- function(var1, # control
     setwd(exp_path)
 
     ##### Annotate DMRs and total-methylations #####
-    cat("genome annotations for DMRs...\n")
+    cat("genome annotations for DMRs...")
     message("\tgenome annotations for DMRs...")
     dir.create(genome_ann_path, showWarnings = FALSE)
     setwd(genome_ann_path)
@@ -365,6 +372,8 @@ Methylome.At_main <- function(var1, # control
         CX_ann(ann_list, var1, var2, meth_var1, meth_var2, context) # save tables of annotate CX
         DMRs_ann_plots(var1, var2, context)
         message("\tgenome annotations for DMRs: done")
+        cat("\n")
+        #cat(" done\n")
       },
       error = function(cond) {
         cat("\n*\n", as.character(cond), "\n*\n")
@@ -397,7 +406,7 @@ Methylome.At_main <- function(var1, # control
       ))
     }
     message("\tsaved all DMRs also as bigWig files\n")
-    cat("done\n")
+    cat
   }
 
   ### ### # finish main loop  ### ### ### ### ### ### ### ### ###

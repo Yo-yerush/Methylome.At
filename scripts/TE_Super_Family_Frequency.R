@@ -1,9 +1,10 @@
 TE_Super_Family_Frequency = function(context, TE.gr) {
-  
+  region_analysis <- ifelse(!sum_dH, "DMRs", "SurpMRs")
+
   dir.create("TEs_addiotionnal_results", showWarnings = F)
   setwd("TEs_addiotionnal_results")
   
-  DMRsReplicates_TE_file.0 = paste0("../",context,"/Transposable_Elements_",context,"_genom_annotations.csv")
+  DMRsReplicates_TE_file.0 = paste0("../",context,"/", region_analysis, "_Transposable_Elements_",context,"_genom_annotations.csv")
   
   if (file.exists(DMRsReplicates_TE_file.0)) {
     
@@ -15,13 +16,13 @@ TE_Super_Family_Frequency = function(context, TE.gr) {
     
     ### frequency of TE super family overlapped with DMRs
     TE_Freq = as.data.frame(table(DMRsReplicates_TE_file$Transposon_Super_Family)) %>%
-      setNames(c("Transposon_Super_Family", "total_DMRs"))
+      setNames(c("Transposon_Super_Family", paste0("total_", region_analysis)))
     
     TE_Freq_up = as.data.frame(table(DMRsReplicates_TE_up$Transposon_Super_Family)) %>%
-      setNames(c("Transposon_Super_Family", "hyper_DMRs"))
+      setNames(c("Transposon_Super_Family", paste0("hyper_", region_analysis)))
     
     TE_Freq_down = as.data.frame(table(DMRsReplicates_TE_down$Transposon_Super_Family)) %>%
-      setNames(c("Transposon_Super_Family", "hypo_DMRs"))
+      setNames(c("Transposon_Super_Family", paste0("hypo_", region_analysis)))
     
     
     ### frequency of TE super family unique IDs
@@ -47,6 +48,6 @@ TE_Super_Family_Frequency = function(context, TE.gr) {
       arrange(desc(total_DMRs))
     TE_Freq_df[is.na(TE_Freq_df)] = 0
     
-    write.csv(TE_Freq_df, paste0(context,"_TE_Super_Family_Freq.csv"), row.names = F)
+    write.csv(TE_Freq_df, paste0(region_analysis, "_", context,"_TE_Super_Family_Freq.csv"), row.names = F)
   }
 }
