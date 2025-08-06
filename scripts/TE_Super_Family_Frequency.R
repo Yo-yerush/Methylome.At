@@ -1,4 +1,4 @@
-TE_Super_Family_Frequency = function(context, TE.gr) {
+TE_Super_Family_Frequency = function(context, TE.gr, sum_dH = F) {
   region_analysis <- ifelse(!sum_dH, "DMRs", "SurpMRs")
 
   dir.create("TEs_addiotionnal_results", showWarnings = F)
@@ -41,13 +41,14 @@ TE_Super_Family_Frequency = function(context, TE.gr) {
       })
     }
     
-    
     TE_Freq_df = merge(TE_uniqueID, TE_Freq, by = "Transposon_Super_Family", all = T)
     TE_Freq_df = merge(TE_Freq_df, TE_Freq_up, by = "Transposon_Super_Family", all = T)
-    TE_Freq_df = merge(TE_Freq_df, TE_Freq_down, by = "Transposon_Super_Family", all = T) %>%
-      arrange(desc(total_DMRs))
+    TE_Freq_df = merge(TE_Freq_df, TE_Freq_down, by = "Transposon_Super_Family", all = T)
+    TE_Freq_df = TE_Freq_df[order(-TE_Freq_df[[paste0("total_", region_analysis)]]), ]
     TE_Freq_df[is.na(TE_Freq_df)] = 0
     
     write.csv(TE_Freq_df, paste0(region_analysis, "_", context,"_TE_Super_Family_Freq.csv"), row.names = F)
   }
+  
+  setwd("../")
 }

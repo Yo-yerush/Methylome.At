@@ -1,4 +1,6 @@
 run_sum_deltaH_CX <- function(ctrl_name, trnt_name, ctrl_pool, trnt_pool, annotation.gr, TE.gr, description_df, num_cores, fdr = 0.95) {
+    # genome_ann_path <- getwd()
+
     ctrl_pool <- as.data.frame(ctrl_pool) %>%
         select(seqnames, start, context, m_ctrl = readsM, n_ctrl = readsN)
     trnt_pool <- as.data.frame(trnt_pool) %>%
@@ -86,12 +88,13 @@ run_sum_deltaH_CX <- function(ctrl_name, trnt_name, ctrl_pool, trnt_pool, annota
         filtered_df <- makeGRangesFromDataFrame(filtered_df, keep.extra.columns = T) %>% as.data.frame() # save as gr object configuration
         write.csv(filtered_df, paste0("SurpMRs_", cntx, "_", trnt_name, "_vs_", ctrl_name, ".csv"), row.names = F)
         write_bw(filtered_df, cntx)
+        #setwd(genome_ann_path)
         setwd("genome_annotation")
         SurpMRs_bins <- makeGRangesFromDataFrame(filtered_df, keep.extra.columns = T)
         suppressMessages(DMRs_ann(ann_list, SurpMRs_bins, cntx, description_df, sum_dH = T))
         DMRs_ann_plots(ctrl_name, trnt_name, cntx, sum_dH = T)
-        TE_ann_plots(cntx, TE.gr)
-        TE_Super_Family_Frequency(cntx, TE.gr)
+        TE_ann_plots(cntx, TE.gr, sum_dH = T)
+        TE_Super_Family_Frequency(cntx, TE.gr, sum_dH = T)
         setwd("../")
     }
 
