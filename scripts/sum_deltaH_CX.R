@@ -32,9 +32,15 @@ run_sum_deltaH_CX <- function(ctrl_name, trnt_name, ctrl_pool, trnt_pool, annota
     q_cg <- quantile(cg_hd$sum_surprisal, fdr) %>% as.numeric()
     q_chg <- quantile(chg_hd$sum_surprisal, fdr) %>% as.numeric()
     q_chh <- quantile(chh_hd$sum_surprisal, fdr) %>% as.numeric()
-    cg_filtered <- cg_hd %>% filter(sum_surprisal > q_cg) %>% mutate(regionType = ifelse(pi_log2FC > 0, "gain", "loss"))
-    chg_filtered <- chg_hd %>% filter(sum_surprisal > q_chg) %>% mutate(regionType = ifelse(pi_log2FC > 0, "gain", "loss"))
-    chh_filtered <- chh_hd %>% filter(sum_surprisal > q_chh) %>% mutate(regionType = ifelse(pi_log2FC > 0, "gain", "loss"))
+    cg_filtered <- cg_hd %>%
+        filter(sum_surprisal > q_cg) %>%
+        mutate(regionType = ifelse(pi_log2FC > 0, "gain", "loss"))
+    chg_filtered <- chg_hd %>%
+        filter(sum_surprisal > q_chg) %>%
+        mutate(regionType = ifelse(pi_log2FC > 0, "gain", "loss"))
+    chh_filtered <- chh_hd %>%
+        filter(sum_surprisal > q_chh) %>%
+        mutate(regionType = ifelse(pi_log2FC > 0, "gain", "loss"))
 
     # print df (both to terminal and .log file)
     df_2_print <- data.frame(
@@ -88,7 +94,7 @@ run_sum_deltaH_CX <- function(ctrl_name, trnt_name, ctrl_pool, trnt_pool, annota
         filtered_df <- makeGRangesFromDataFrame(filtered_df, keep.extra.columns = T) %>% as.data.frame() # save as gr object configuration
         write.csv(filtered_df, paste0("SurpMRs_", cntx, "_", trnt_name, "_vs_", ctrl_name, ".csv"), row.names = F)
         write_bw(filtered_df, cntx)
-        #setwd(genome_ann_path)
+        # setwd(genome_ann_path)
         setwd("genome_annotation")
         SurpMRs_bins <- makeGRangesFromDataFrame(filtered_df, keep.extra.columns = T)
         suppressMessages(DMRs_ann(ann_list, SurpMRs_bins, cntx, description_df, sum_dH = T))
@@ -107,24 +113,30 @@ run_sum_deltaH_CX <- function(ctrl_name, trnt_name, ctrl_pool, trnt_pool, annota
 
 dH_bins <- function(joint, cntx, min_coverage = 6) {
     thresh <- c(CG = 0.4, CHG = 0.2, CHH = 0.1)[cntx]
-    min_C_sites <- c(CG = 1, CHG = 2, CHH = 4)[cntx]
-    min_coverage <- 6
+    min_C_sites <- c(CG = 4, CHG = 4, CHH = 4)[cntx]
 
-    cat(paste0("\n[", cntx, "]\tmin coverage: ", min_coverage, "; min proportion value: ", thresh, "; min dignificant sites: ", min_C_sites))
-    ### per-site surprisal value [S-Value = −log P_Bin(c | n, π0)]
-    eps <- 1e-6 # avoid log(0)
+    cat(paste0("\n[", cntx, "]\tmin coverage: ", min_coverage, "; min proportion value: ", thresh, "; min significant sites: ", min_C_sites))
+    ### per-site surprisal value
     joint <- joint %>%
-        filter(context == cntx, n_ctrl >= min_coverage, n_trnt >= min_coverage) %>%
-        mutate(
-            delta = abs(m_trnt / n_trnt - m_ctrl / n_ctrl),
+        filter(
+            context == cntx,
+            n_ctrl >= min_coverage,
+            n_trnt >= min_coverage
         ) %>%
-        filter(delta > thresh) %>%
+        # mutate(
+        #     delta = abs(m_trnt / n_trnt - m_ctrl / n_ctrl),
+        # ) %>%
+        # filter(delta > thresh) %>%
         mutate(
-            pi0 = pmin(pmax(m_ctrl / n_ctrl, eps), 1 - eps), # ctrl expectation π0
-            surprisal = -(lchoose(n_trnt, m_trnt) +
-                m_trnt * log(pi0) +
-                (n_trnt - m_trnt) * log(1 - pi0))
-        )
+            fc_ctrl = m_ctrl / n_ctrl,
+            fc_trnt = m_trnt / n_trnt
+        ) %>%
+        filter(
+            fc_ctrl > thresh,
+            fc_trnt > thresh
+        ) %>%
+        calculate_surp_1()
+        # calculate_surp_2()
 
     ### 100bp windowSize
     gr_sites <- GRanges(joint$seqnames, IRanges(joint$start, width = 1))
@@ -144,28 +156,78 @@ dH_bins <- function(joint, cntx, min_coverage = 6) {
 
     window_surprisal <- joint %>%
         group_by(tile_id) %>%
-        summarise(
-            sum_surprisal = sum(surprisal, na.rm = TRUE),
-            m_ctrl = sum(m_ctrl),
-            n_ctrl = sum(n_ctrl),
-            m_trnt = sum(m_trnt),
-            n_trnt = sum(n_trnt),
-            # adding 1 m_reads and 2 n_reads (total) if the count is 0
-            pi_ctrl = (m_ctrl + (m_ctrl == 0)) / (n_ctrl + 2 * (m_ctrl == 0)),
-            pi_trnt = (m_trnt + (m_trnt == 0)) / (n_trnt + 2 * (m_trnt == 0)),
-            pi_log2FC = log2(pi_trnt / pi_ctrl),
-            n_sites = n()
-        ) %>%
-        ungroup()
+        summarise_surp_1()
+        # summarise_surp_2(., min_C_sites)
 
     # final df
     out <- cbind(as.data.frame(tiles100)[window_surprisal$tile_id, 1:3], window_surprisal) %>%
-        filter(n_sites >= min_C_sites) %>%
         mutate(context = cntx) %>%
-        dplyr::relocate(context, .before = sum_surprisal) %>%
+        dplyr::relocate(context, .after = tile_id) %>%
         select(-tile_id)
     out
 }
+
+########################################################################
+# option 1 [S-Value = −log P_Bin(c | n, π0)]
+calculate_surp_1 <- function(x) {
+    mutate(x,
+        pi0 = pmin(pmax(m_ctrl / n_ctrl, 1e-6), 1 - 1e-6), # ctrl expectation π0
+        surprisal = -(lchoose(n_trnt, m_trnt) +
+            m_trnt * log(pi0) +
+            (n_trnt - m_trnt) * log(1 - pi0))
+    )
+}
+
+# option 2 [S-Value = p * log(1/p)]
+calculate_surp_2 <- function(x) {
+    mutate(x,
+        surprisal_ctrl = fc_ctrl * log2(1 / fc_ctrl + 1e-6),
+        surprisal_trnt = fc_trnt * log2(1 / fc_trnt + 1e-6),
+        surprisal_site = surprisal_trnt + surprisal_ctrl,
+        surprisal_diff = surprisal_trnt - surprisal_ctrl
+    )
+}
+
+
+########################################################################
+
+summarise_surp_1 <- function(x) {
+    summarise(x,
+        sum_surprisal = sum(surprisal, na.rm = TRUE),
+        m_ctrl = sum(m_ctrl),
+        n_ctrl = sum(n_ctrl),
+        m_trnt = sum(m_trnt),
+        n_trnt = sum(n_trnt),
+        # adding 1 m_reads and 2 n_reads (total) if the count is 0
+        pi_ctrl = (m_ctrl + (m_ctrl == 0)) / (n_ctrl + 2 * (m_ctrl == 0)),
+        pi_trnt = (m_trnt + (m_trnt == 0)) / (n_trnt + 2 * (m_trnt == 0)),
+        pi_log2FC = log2(pi_trnt / pi_ctrl),
+        n_sites = n()
+    ) %>%
+        ungroup()
+}
+
+summarise_surp_2 <- function(x, min_c) {
+    summarise(x,
+        sum_surprisal_ctrl = sum(surprisal_ctrl),
+        sum_surprisal_trnt = sum(surprisal_trnt),
+        sum_surprisal_site = sum(surprisal_site),
+        sum_surprisal_diff = sum(surprisal_diff),
+        p_wilcoxon_diff = wilcox.test(surprisal_diff)$p.value,
+        n_sites = n()
+    ) %>%
+        ungroup() %>%
+        filter(n_sites >= min_c) %>%
+        mutate(
+            # FDR_diff = p.adjust(p_wilcoxon_diff, "BH"),
+            call = case_when(
+                p_wilcoxon_diff < 0.05 & sum_surprisal_diff > 0 ~ "hyperchaotic",
+                p_wilcoxon_diff < 0.05 & sum_surprisal_diff < 0 ~ "hypochaotic",
+                TRUE ~ "NS"
+            )
+        )
+}
+
 
 ########################################################################
 
