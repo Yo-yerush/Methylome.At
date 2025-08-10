@@ -178,11 +178,31 @@ calculate_surp_1 <- function(x) {
     )
 }
 
-# option 2 [S-Value = p * log(1/p)]
+# option 2 [H = p * log(1/p)]
 calculate_surp_2 <- function(x) {
     mutate(x,
-        surprisal_ctrl = fc_ctrl * log2(1 / fc_ctrl + 1e-6),
-        surprisal_trnt = fc_trnt * log2(1 / fc_trnt + 1e-6),
+        surprisal_ctrl = fc_ctrl * log2(1 / (fc_ctrl + 1e-6)),
+        surprisal_trnt = fc_trnt * log2(1 / (fc_trnt + 1e-6)),
+        surprisal_site = surprisal_trnt + surprisal_ctrl,
+        surprisal_diff = surprisal_trnt - surprisal_ctrl
+    )
+}
+
+# option 3 [H = p * log(1/q)]
+calculate_surp_3 <- function(x) {
+    mutate(x,
+        surprisal_cros = fc_trnt * log2(1 / (fc_ctrl + 1e-6)),
+        surprisal_site = surprisal_trnt + surprisal_ctrl,
+        surprisal_diff = surprisal_trnt - surprisal_ctrl
+    )
+}
+
+# option 4 - KL-divergence [D = (p*log(1/q)) - (p*log(1/p))]
+calculate_surp_4 <- function(x) {
+    mutate(x,
+        surprisal_cros = fc_trnt * log2(1 / (fc_ctrl + 1e-6)),
+        surprisal_trnt = fc_trnt * log2(1 / (fc_trnt + 1e-6)),
+        surprisal_kldv = surprisal_cros - surprisal_trnt,
         surprisal_site = surprisal_trnt + surprisal_ctrl,
         surprisal_diff = surprisal_trnt - surprisal_ctrl
     )
