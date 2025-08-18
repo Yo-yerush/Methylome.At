@@ -1,11 +1,13 @@
 total_meth_levels <- function(rep_var1, rep_var2, var1, var2) {
   
   # heterochromatin as GRanges object
+  # Bi et al., Genome Research (2017)
+  # http://www.genome.org/cgi/doi/10.1101/gr.215186.116.
   heterochromatin_ranges <- GRanges(
     seqnames = rep_var1@seqnames@values,
     ranges = IRanges(
-      start = c(12500000, 1250000, 11000000, 1666667, 9444444),
-      end = c(17500000, 7500000, 16250000, 7000000, 15000000)
+      start = c(11.5, 1.1, 10.3, 1.5, 9) * 1e6,
+      end = c(17.7, 7.2, 17.3, 6.3, 16) * 1e6
     )
   )
   # Subset the GRanges object to keep only hetero/eu chromatin
