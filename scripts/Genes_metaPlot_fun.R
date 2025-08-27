@@ -241,7 +241,7 @@ Genes_metaPlot <- function(methylationPool_var1,methylationPool_var2,var1,var2,a
       theme(legend.position = "none",
             axis.line.x = element_blank(),
             axis.line.y = element_blank(),
-            panel.border = element_rect(colour = "black", fill=NA, linewidth=1),
+            panel.border = element_rect(colour = "black", fill=NA, linewidth=0.75),
             plot.title = element_text(hjust = 0.5),
             axis.text.y = element_text(size = 8),
             axis.text.x = element_text(size = 9)
