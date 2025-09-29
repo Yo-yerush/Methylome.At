@@ -1,4 +1,5 @@
 Genes_metaPlot <- function(methylationPool_var1,methylationPool_var2,var1,var2,annotations_file,n.random,minReadsC,n.cores,is_TE=F) {
+
   if (is_TE) {
     new_path.f = "TEs"
     coding.Genes = annotations_file
@@ -259,9 +260,9 @@ Genes_metaPlot <- function(methylationPool_var1,methylationPool_var2,var1,var2,a
     
     
     if (is_TE) {
-      svg(paste0("TEs_",cntx.m,"_metaPlot_",var2,"_vs_",var1,".svg"), width = 1.88, height = 1.94, family = "serif")
+      img_device(paste0("TEs_",cntx.m,"_metaPlot_",var2,"_vs_",var1,".",img_ext), width = 1.88, height = 1.94, family = "serif")
     } else {
-      svg(paste0("Genes_",cntx.m,"_metaPlot_",var2,"_vs_",var1,".svg"), width = 1.88, height = 1.94, family = "serif")
+      img_device(paste0("Genes_",cntx.m,"_metaPlot_",var2,"_vs_",var1,".svg"), width = 1.88, height = 1.94, family = "serif")
     }
     #par(mar = c(2,2,1,2))
     print(plot_out)

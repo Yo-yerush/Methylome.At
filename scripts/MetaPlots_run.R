@@ -45,6 +45,7 @@ binSize = as.numeric(configs[8])
 methyl_files_type = configs[9]
 analyze_Gene_n_TEs = as.logical(configs[10])
 analyze_GeneFeatures = as.logical(configs[11])
+img_type = as.logical(configs[12])
 
 ########################################################################### 
 
@@ -58,6 +59,20 @@ metaPlot_path = paste0(rmv_d(Methylome.At_path),"/results/",var2,"_vs_",var1,"/m
 dir.create(metaPlot_path, showWarnings = F)
 
 source(paste0(scripts_dir,"trimm_and_rename_seq.R"))
+
+###########################################################################
+
+# image device function
+img_device <- function(filename, w, h) {
+    img_env <- get(img_type, envir = asNamespace("grDevices"))
+    full_file_name <- paste0(filename, ".", img_type)
+
+    if (img_type == "svg" | img_type == "pdf") {
+        img_env(full_file_name, width = w, height = h, family = "serif")
+    } else {
+        img_env(full_file_name, width = w, height = h, units = "in", res = 900, family = "serif")
+    }
+}
 
 ########################################################################### 
 
