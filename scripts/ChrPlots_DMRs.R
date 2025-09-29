@@ -38,7 +38,7 @@ ChrPlots_DMRs <- function(comparison_name, DMRs_gr_pl, var1, var2, context, scri
 
 
 
-    svg(paste0("ChrPlot_DMRs_",context,"_",comparison_name,".svg"), width = 8, height = 2, family = "serif")
+    img_device(paste0("ChrPlot_DMRs_",context,"_",comparison_name), w = 8, h = 2, family = "serif")
     
     #left axis
     par(mar = c(1,4,2,0))

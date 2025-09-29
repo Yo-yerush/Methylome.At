@@ -421,7 +421,7 @@ run_ChrPlots_CX <- function(ctrl_name, trnt_name, ctrl_pool, trnt_pool, TE.gr, n
     ### ChrPlot
     if (CX_plot) {
         cat(paste0("\rChrPlots... [", trnt_name, " & ", ctrl_name, "]"))
-        svg(paste0("ChrPlot_", trnt_name, "_vs_", ctrl_name, ".svg"), width = 7, height = 4, family = "serif")
+        img_device(paste0("ChrPlot_", trnt_name, "_vs_", ctrl_name), w = 7, h = 4, family = "serif")
         try({
             ChrPlots_CX_all(
                 meth_var_list = list(var_sep(ctrl_pool, F, num_cores), var_sep(trnt_pool, F, num_cores)),
@@ -448,7 +448,7 @@ run_ChrPlots_CX <- function(ctrl_name, trnt_name, ctrl_pool, trnt_pool, TE.gr, n
 
         # delta
         cat(paste0("\rChrPlots... [delta]            "))
-        svg(paste0("ChrPlot_difference_", trnt_name, "_vs_", ctrl_name, ".svg"), width = 7, height = 4, family = "serif")
+        img_device(paste0("ChrPlot_difference_", trnt_name, "_vs_", ctrl_name), w = 7, h = 4, family = "serif")
         try({
             ChrPlots_CX_all(
                 meth_var_list = list(var_sep(delta_pool, F, num_cores)),
@@ -480,7 +480,7 @@ run_ChrPlots_CX <- function(ctrl_name, trnt_name, ctrl_pool, trnt_pool, TE.gr, n
     if (subCX_plot) {
         # var1
         cat(paste0("\rChrPlots for sub-contexts... [", ctrl_name, "]          "))
-        svg(paste0("subCX/ChrPlot_subCX_", ctrl_name, ".svg"), width = 7, height = 4, family = "serif")
+        img_device(paste0("subCX/ChrPlot_subCX_", ctrl_name), w = 7, h = 4, family = "serif")
         try({
             ChrPlots_CX_all(
                 meth_var_list = list(var_sep(ctrl_pool, T, num_cores), var_sep(trnt_pool, T, num_cores)),
@@ -507,7 +507,7 @@ run_ChrPlots_CX <- function(ctrl_name, trnt_name, ctrl_pool, trnt_pool, TE.gr, n
 
         # var2
         cat(paste0("\rChrPlots for sub-contexts... [", trnt_name, "]          "))
-        svg(paste0("subCX/ChrPlot_subCX_", trnt_name, ".svg"), width = 7, height = 4, family = "serif")
+        img_device(paste0("subCX/ChrPlot_subCX_", trnt_name), w = 7, h = 4, family = "serif")
         try({
             ChrPlots_CX_all(
                 meth_var_list = list(var_sep(trnt_pool, T, num_cores)),
@@ -534,7 +534,7 @@ run_ChrPlots_CX <- function(ctrl_name, trnt_name, ctrl_pool, trnt_pool, TE.gr, n
 
         # delta
         cat("\rChrPlots for sub-contexts... [delta]          ")
-        svg(paste0("subCX/ChrPlot_difference_subCX_", trnt_name, "_vs_", ctrl_name, ".svg"), width = 7, height = 4, family = "serif")
+        img_device(paste0("subCX/ChrPlot_difference_subCX_", trnt_name, "_vs_", ctrl_name), w = 7, h = 4, family = "serif")
         try({
             ChrPlots_CX_all(
                 meth_var_list = list(var_sep(delta_pool, T, num_cores)),

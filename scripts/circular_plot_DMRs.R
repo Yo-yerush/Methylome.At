@@ -16,7 +16,7 @@ genes_type = ann.file[which(ann.file$type == "gene")]
   
   #####################################
   ############# the plot #############
-  svg(paste0("DMRs_Density_",comparison_name,".svg"), width = 3.25, height = 3.25, family = "serif")
+  img_device(paste0("DMRs_Density_",comparison_name), w = 3.25, h = 3.25, family = "serif")
   
   circos.par(start.degree = 90)
   circos.genomicInitialize(as.data.frame(ann.file)[,1:3], sector.names = paste0("Chr ",seq(chr_amount)), axis.labels.cex = 0.325, labels.cex = 1.35)
@@ -80,7 +80,7 @@ DMRs_circular_plot_legends <- function() {
   colfunc_vec_2 = colfunc(100)[-c((round(100/2)-5):(100/2)-1, ((100/2)+1):((100/2)+1+5))]
   
   
-  svg("legends.svg", width = 2.5, height = 3.35, family = "serif")
+  img_device("legends", w = 2.5, h = 3.35, family = "serif")
   par(mar = c(0, 0, 0, 0) )
   circos.par("track.height" = 0.6, "canvas.xlim" = c(-0.2, 0.3), "canvas.ylim" = c(-0.25, 1), "gap.degree" = 0, "clock.wise" = FALSE)
   circos.initialize(factors = as.character(1:tracks_total_size), xlim = c(0, 1)) 

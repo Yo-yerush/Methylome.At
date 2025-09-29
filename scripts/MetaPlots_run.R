@@ -68,9 +68,9 @@ img_device <- function(filename, w, h) {
     full_file_name <- paste0(filename, ".", img_type)
 
     if (img_type == "svg" | img_type == "pdf") {
-        img_env(full_file_name, width = w, height = h, family = "serif")
+        img_env(full_file_name, w = w, h = h, family = "serif")
     } else {
-        img_env(full_file_name, width = w, height = h, units = "in", res = 900, family = "serif")
+        img_env(full_file_name, w = w, h = h, units = "in", res = 900, family = "serif")
     }
 }
 
@@ -147,12 +147,16 @@ if (analyze_Gene_n_TEs) {
     message(paste("generate metaPlot to", metaPlot.random.genes,"protein-coding Genes..."))
     setwd(metaPlot_path)
     Genes_metaPlot(meth_var1,meth_var2,var1,var2,annotation.gr,metaPlot.random.genes,minReadsPerCytosine,n.cores)
+    setwd(metaPlot_path)
+    delta_metaplot("Genes", var1, var2)
   }, error = function(cond) {message(paste0("process average metaPlot to ",metaPlot.random.genes," Protein Coding Genes: fail"))})
   
   tryCatch({
     message(paste("\ngenerate metaPlot to", metaPlot.random.genes," Transposable Elements..."))
     setwd(metaPlot_path)
     Genes_metaPlot(meth_var1,meth_var2,var1,var2,TE.gr,metaPlot.random.genes,minReadsPerCytosine,n.cores,is_TE=T)
+    setwd(metaPlot_path)
+    delta_metaplot("TEs", var1, var2)
   }, error = function(cond) {message(paste0("process average metaPlot to ",metaPlot.random.genes," Transposable Elements: fail\n"))})
 }
 

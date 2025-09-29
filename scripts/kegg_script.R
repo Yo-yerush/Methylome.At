@@ -236,8 +236,8 @@ KEGG_one_plot <- function(treatment,
   Height = max(c(nrow(gain_bind),nrow(loss_bind)))/6.25
   if (Height < 3) {Height = 3}
   
-  svg(paste0(path_for_results,"/",treatment,".",annotation,".KEGG.svg"),
-      width = 9.90, height = Height, family = "serif")
+  img_device(paste0(path_for_results,"/",treatment,".",annotation,".KEGG"),
+      width = 9.90, h = Height, family = "serif")
   multiplot(bubble_gain, bubble_loss, cols=2)
   dev.off()
   

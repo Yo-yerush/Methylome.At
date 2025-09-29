@@ -39,9 +39,9 @@ Methylome.At_main <- function(var1, # control
       full_file_name <- paste0(filename, ".", img_type)
 
       if (img_type == "svg" | img_type == "pdf") {
-          img_env(full_file_name, width = w, height = h, family = "serif")
+          img_env(full_file_name, w = w, h = h, family = "serif")
       } else {
-          img_env(full_file_name, width = w, height = h, units = "in", res = 900, family = "serif")
+          img_env(full_file_name, w = w, h = h, units = "in", res = 900, family = "serif")
       }
   }
 

@@ -23,7 +23,7 @@ TE_ann_plots <- function(context, TE.gr, sum_dH = F) {
       ylab(paste0("Number of ", region_analysis))+
       ggtitle(context)+
       theme_classic() + theme(axis.text.x =  element_text(face="bold",size=11))
-    svg(file = paste0(context,"_TE.vs.ProteinCodingGenes.svg"), width = 1.6, height = 2.1, family = "serif")
+    img_device(paste0(context,"_TE.vs.ProteinCodingGenes"), w = 1.6, h = 2.1, family = "serif")
     plot(GvsT_plot)
     dev.off()
     
@@ -43,7 +43,7 @@ TE_ann_plots <- function(context, TE.gr, sum_dH = F) {
     indices_top_n <- order(TE_Freq$Freq, decreasing = TRUE)[1:top_n]
     labels[indices_top_n] <- as.character(TE_Freq$SF_name[indices_top_n])
     
-    svg(file = paste0(region_analysis, "_", context,"_TE_Super_Family.svg"), width = 8, height = 5.5, family = "serif")
+    img_device(paste0(region_analysis, "_", context,"_TE_Super_Family"), w = 8, h = 5.5, family = "serif")
     par(mar = c(1,4,1,4))
     par(fig=c(0,6,0,10)/10)
     par(lwd = 2)
