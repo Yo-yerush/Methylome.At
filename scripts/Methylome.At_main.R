@@ -33,8 +33,8 @@ Methylome.At_main <- function(var1, # control
 
   ###########################################################################
 
-  # image device function
-  img_device <- function(filename, w, h) {
+  # image device function for all sub-functions
+  img_device <<- function(filename, w, h) {
       img_env <- get(img_type, envir = asNamespace("grDevices"))
       full_file_name <- paste0(filename, ".", img_type)
 

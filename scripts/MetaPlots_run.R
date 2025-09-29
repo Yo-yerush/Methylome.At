@@ -63,7 +63,7 @@ source(paste0(scripts_dir,"trimm_and_rename_seq.R"))
 ###########################################################################
 
 # image device function
-img_device <- function(filename, w, h) {
+img_device <<- function(filename, w, h) {
     img_env <- get(img_type, envir = asNamespace("grDevices"))
     full_file_name <- paste0(filename, ".", img_type)
 
