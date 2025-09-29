@@ -159,10 +159,10 @@ edit_script1_parameters() {
         3>&1 1>&2 2>&3 || echo "$SCRIPT1_file_type")
     elif [ "$OPTION" = "$SCRIPT1_img_type" ]; then
       SCRIPT1_img_type=$(whiptail --radiolist "Select images file type:" 15 70 3 \
-        "SVG" "'.svg'" ON \
+        "JPEG" "'.jpeg'" ON \
+        "SVG" "'.svg'" OFF \
         "PDF" "'.pdf'" OFF \
         "TIFF" "'.tiff'" OFF \
-        "JPEG" "'.jpeg'" OFF \
         "PNG" "'.png'" OFF \
         "BMP" "'.bmp'" OFF \
         3>&1 1>&2 2>&3 || echo "$SCRIPT1_img_type")
@@ -223,10 +223,10 @@ edit_script2_parameters() {
         3>&1 1>&2 2>&3 || echo "$SCRIPT2_file_type")
     elif [ "$OPTION" = "$SCRIPT2_img_type" ]; then
       SCRIPT2_img_type=$(whiptail --radiolist "Select images file type:" 15 70 3 \
-        "SVG" "'.svg'" ON \
+        "JPEG" "'.jpeg'" ON \
+        "SVG" "'.svg'" OFF \
         "PDF" "'.pdf'" OFF \
         "TIFF" "'.tiff'" OFF \
-        "JPEG" "'.jpeg'" OFF \
         "PNG" "'.png'" OFF \
         "BMP" "'.bmp'" OFF \
         3>&1 1>&2 2>&3 || echo "$SCRIPT2_img_type")

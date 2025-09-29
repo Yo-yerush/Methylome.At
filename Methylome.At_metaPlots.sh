@@ -15,7 +15,7 @@ metaPlot_random_genes=10000
 n_cores=20
 bin_size_features=10
 methyl_files_type=CX_report
-img_type=svg
+img_type=jpeg
 Genes_n_TEs=TRUE
 Gene_features=TRUE
 
