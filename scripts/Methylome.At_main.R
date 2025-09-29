@@ -12,6 +12,7 @@ Methylome.At_main <- function(var1, # control
                               minReadsPerCytosine,
                               pValueThreshold,
                               methyl_files_type,
+                              img_type,
                               n.cores,
                               GO_analysis,
                               KEGG_pathways) {
@@ -29,6 +30,20 @@ Methylome.At_main <- function(var1, # control
   script_files <- script_files[!grepl("mean_deltaH_CX\\.R", script_files)] # have match functions with 'ChrPlots' functions
   script_files <- script_files[!grepl("ChrPlots_", script_files)]
   invisible(lapply(script_files, source))
+
+  ###########################################################################
+
+  # image device function
+  img_device <- function(filename, w, h) {
+      img_env <- get(img_type, envir = asNamespace("grDevices"))
+      full_file_name <- paste0(filename, ".", img_type)
+
+      if (img_type == "svg" | img_type == "pdf") {
+          img_env(full_file_name, width = w, height = h, family = "serif")
+      } else {
+          img_env(full_file_name, width = w, height = h, units = "in", res = 900, family = "serif")
+      }
+  }
 
   ###########################################################################
 

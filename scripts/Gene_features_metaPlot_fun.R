@@ -221,7 +221,7 @@ Genes_features_metaPlot <- function(methylationPool_var1, methylationPool_var2, 
                color = c("gray40","#bf6828"), fontface = "bold")
     
     
-    svg(paste0("Genes_features_",cntx,"_metaPlot_",var2,"_vs_",var1,".svg"), width = 3.5, height = 2, family = "serif")
+    img_device(paste0("Genes_features_",cntx,"_metaPlot_",var2,"_vs_",var1), w = 3.5, h = 2, family = "serif")
     #par(mar = c(2,2,1,2))
     print(plot_out)
     dev.off()

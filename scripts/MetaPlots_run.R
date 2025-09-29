@@ -43,9 +43,9 @@ metaPlot.random.genes = configs[6]
 n.cores = as.numeric(configs[7])
 binSize = as.numeric(configs[8])
 methyl_files_type = configs[9]
-analyze_Gene_n_TEs = as.logical(configs[10])
-analyze_GeneFeatures = as.logical(configs[11])
-img_type = as.logical(configs[12])
+img_type = configs[10]
+analyze_Gene_n_TEs = as.logical(configs[11])
+analyze_GeneFeatures = as.logical(configs[12])
 
 ########################################################################### 
 

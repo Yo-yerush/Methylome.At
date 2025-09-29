@@ -33,6 +33,7 @@ SCRIPT1_DEFAULT_n_cores="10"
 SCRIPT1_DEFAULT_GO_analysis="FALSE"
 SCRIPT1_DEFAULT_KEGG_pathways="FALSE"
 SCRIPT1_DEFAULT_file_type="CX_report"
+SCRIPT1_DEFAULT_img_type="svg"
 SCRIPT1_DEFAULT_annotation_file="annotation_files/Methylome.At_annotations.csv.gz"
 SCRIPT1_DEFAULT_description_file="annotation_files/Methylome.At_description_file.csv.gz"
 SCRIPT1_DEFAULT_TEs_file="annotation_files/TAIR10_Transposable_Elements.txt"
@@ -45,6 +46,7 @@ SCRIPT2_DEFAULT_metaPlot_random_genes="10000"
 SCRIPT2_DEFAULT_n_cores="10"
 SCRIPT2_DEFAULT_bin_size_features="10"
 SCRIPT2_DEFAULT_file_type="CX_report"
+SCRIPT2_DEFAULT_img_type="svg"
 SCRIPT2_DEFAULT_annotation_file="annotation_files/Methylome.At_annotations.csv.gz"
 SCRIPT2_DEFAULT_TEs_file="annotation_files/TAIR10_Transposable_Elements.txt"
 
@@ -112,6 +114,7 @@ edit_script1_parameters() {
       "$SCRIPT1_GO_analysis" "Perform GO analysis (TRUE/FALSE)" \
       "$SCRIPT1_KEGG_pathways" "Perform KEGG pathways analysis (TRUE/FALSE)" \
       "$SCRIPT1_file_type" "Methylation file type" \
+      "$SCRIPT1_img_type" "Output images type" \
       "$SCRIPT1_annotation_file" "Path to annotation file" \
       "$SCRIPT1_description_file" "Path to description file" \
       "$SCRIPT1_TEs_file" "Path to Transposable Elements file" \
@@ -154,6 +157,15 @@ edit_script1_parameters() {
         "bedMethyl" "'.bed'" OFF \
         "CGmap" "'.CGmap'" OFF \
         3>&1 1>&2 2>&3 || echo "$SCRIPT1_file_type")
+    elif [ "$OPTION" = "$SCRIPT1_img_type" ]; then
+      SCRIPT1_img_type=$(whiptail --radiolist "Select images file type:" 15 70 3 \
+        "SVG" "'.svg'" ON \
+        "PDF" "'.pdf'" OFF \
+        "TIFF" "'.tiff'" OFF \
+        "JPEG" "'.jpeg'" OFF \
+        "PNG" "'.png'" OFF \
+        "BMP" "'.bmp'" OFF \
+        3>&1 1>&2 2>&3 || echo "$SCRIPT1_img_type")
     elif [ "$OPTION" = "$SCRIPT1_annotation_file" ]; then
       SCRIPT1_annotation_file=$(whiptail --inputbox "Path to annotation file" 10 70 "$SCRIPT1_annotation_file" 3>&1 1>&2 2>&3 || echo "$SCRIPT1_annotation_file")
     elif [ "$OPTION" = "$SCRIPT1_description_file" ]; then
@@ -176,6 +188,7 @@ edit_script2_parameters() {
       "$SCRIPT2_n_cores" "Number of cores" \
       "$SCRIPT2_bin_size_features" "Bin-size for Gene_features analysis" \
       "$SCRIPT2_file_type" "Methylation file types" \
+      "$SCRIPT2_img_type" "Output images type" \
       "$SCRIPT2_annotation_file" "Path to genome annotation file" \
       "$SCRIPT2_TEs_file" "Path to Transposable Elements file" \
       3>&1 1>&2 2>&3)
@@ -208,6 +221,15 @@ edit_script2_parameters() {
         "bedMethyl" "'.bed'" OFF \
         "CGmap" "'.CGmap'" OFF \
         3>&1 1>&2 2>&3 || echo "$SCRIPT2_file_type")
+    elif [ "$OPTION" = "$SCRIPT2_img_type" ]; then
+      SCRIPT2_img_type=$(whiptail --radiolist "Select images file type:" 15 70 3 \
+        "SVG" "'.svg'" ON \
+        "PDF" "'.pdf'" OFF \
+        "TIFF" "'.tiff'" OFF \
+        "JPEG" "'.jpeg'" OFF \
+        "PNG" "'.png'" OFF \
+        "BMP" "'.bmp'" OFF \
+        3>&1 1>&2 2>&3 || echo "$SCRIPT2_img_type")
     elif [ "$OPTION" = "$SCRIPT2_annotation_file" ]; then
       SCRIPT2_annotation_file=$(whiptail --inputbox "Path to genome annotation file" 10 70 "$SCRIPT2_annotation_file" 3>&1 1>&2 2>&3 || echo "$SCRIPT2_annotation_file")
     elif [ "$OPTION" = "$SCRIPT2_TEs_file" ]; then
@@ -234,6 +256,7 @@ if [[ " ${SELECTED_SCRIPTS[*]} " =~ "Methylome.At" ]]; then
     SCRIPT1_GO_analysis="$SCRIPT1_DEFAULT_GO_analysis"
     SCRIPT1_KEGG_pathways="$SCRIPT1_DEFAULT_KEGG_pathways"
     SCRIPT1_file_type="$SCRIPT1_DEFAULT_file_type"
+    SCRIPT1_img_type="$SCRIPT1_DEFAULT_img_type"
     SCRIPT1_annotation_file="$SCRIPT1_DEFAULT_annotation_file"
     SCRIPT1_description_file="$SCRIPT1_DEFAULT_description_file"
     SCRIPT1_TEs_file="$SCRIPT1_DEFAULT_TEs_file"
@@ -254,6 +277,7 @@ if [[ " ${SELECTED_SCRIPTS[*]} " =~ "MetaPlots" ]]; then
     SCRIPT2_n_cores="$SCRIPT2_DEFAULT_n_cores"
     SCRIPT2_bin_size_features="$SCRIPT2_DEFAULT_bin_size_features"
     SCRIPT2_file_type="$SCRIPT2_DEFAULT_file_type"
+    SCRIPT2_img_type="$SCRIPT2_DEFAULT_img_type"
     SCRIPT2_annotation_file="$SCRIPT2_DEFAULT_annotation_file"
     SCRIPT2_TEs_file="$SCRIPT2_DEFAULT_TEs_file"
     
@@ -304,6 +328,7 @@ if (whiptail --title "All done!" --yesno "You have chosen to run: $chosen_messag
       --GO_analysis "$SCRIPT1_GO_analysis" \
       --KEGG_pathways "$SCRIPT1_KEGG_pathways" \
       --file_type "$SCRIPT1_file_type" \
+      --image_type "$SCRIPT1_img_type" \
       --annotation_file "$SCRIPT1_annotation_file" \
       --description_file "$SCRIPT1_description_file" \
       --TEs_file "$SCRIPT1_TEs_file"
@@ -321,6 +346,7 @@ if (whiptail --title "All done!" --yesno "You have chosen to run: $chosen_messag
       --n_cores "$SCRIPT2_n_cores" \
       --bin_size_features "$SCRIPT2_bin_size_features" \
       --file_type "$SCRIPT2_file_type" \
+      --image_type "$SCRIPT2_img_type" \
       --annotation_file "$SCRIPT2_annotation_file" \
       --TEs_file "$SCRIPT2_TEs_file"
   fi
