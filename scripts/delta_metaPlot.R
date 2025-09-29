@@ -88,7 +88,7 @@ delta_metaplot <- function(list_type, var1, var2, is_geneFeature = FALSE, contex
     }
 
 
-  img_device(paste0(list_type, "/", list_type, "_delta_metaPlot_", var2, "_vs_", var1), w = 1.88, h = 1.94, family = "serif")
+  img_device(paste0(list_type, "/", list_type, "_delta_metaPlot_", var2, "_vs_", var1), w = 1.88, h = 1.94)
   print(plot_out)
   dev.off()
 }

@@ -66,7 +66,7 @@ gainORloss <- function(DMRsReplicates, context, add_count = FALSE) {
       size = 0.25
     )
 
-  img_device(paste0("pie_", context, "_gainORloss"), w = ifelse(add_count, 2.5, 2), h = 1, family = "serif")
+  img_device(paste0("pie_", context, "_gainORloss"), w = ifelse(add_count, 2.5, 2), h = 1)
   par(mar = rep(0, 4)) # bottom, left, top, right
   print(final_plot)
   dev.off()
@@ -78,7 +78,7 @@ ratio.distribution = function(DMRsReplicates, var1, var2, context, comparison_na
   
   dmrs_ratio = DMRsReplicates$proportion2/DMRsReplicates$proportion1
   
-  img_device(paste0("ratio.distribution_",context,"_gainORloss"), w = 3.58, h = 3.3, family = "serif")
+  img_device(paste0("ratio.distribution_",context,"_gainORloss"), w = 3.58, h = 3.3)
   
   h <- hist(log(dmrs_ratio), breaks=1000, plot=FALSE)
   hist(log(dmrs_ratio),

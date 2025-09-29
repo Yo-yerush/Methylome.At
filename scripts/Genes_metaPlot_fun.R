@@ -260,9 +260,9 @@ Genes_metaPlot <- function(methylationPool_var1,methylationPool_var2,var1,var2,a
     
     
     if (is_TE) {
-      img_device(paste0("TEs_",cntx.m,"_metaPlot_",var2,"_vs_",var1), w = 1.88, h = 1.94, family = "serif")
+      img_device(paste0("TEs_",cntx.m,"_metaPlot_",var2,"_vs_",var1), w = 1.88, h = 1.94)
     } else {
-      img_device(paste0("Genes_",cntx.m,"_metaPlot_",var2,"_vs_",var1), w = 1.88, h = 1.94, family = "serif")
+      img_device(paste0("Genes_",cntx.m,"_metaPlot_",var2,"_vs_",var1), w = 1.88, h = 1.94)
     }
     #par(mar = c(2,2,1,2))
     print(plot_out)

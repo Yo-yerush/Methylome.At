@@ -98,7 +98,7 @@ total_meth_levels_fun <- function(rep_var1_f, rep_var2_f, var1_f, var2_f, plot_t
     #geom_jitter(color="steelblue4", size=1, alpha=0.9, w = 0.18) +
     scale_y_continuous(expand = c(0,0), limits = c(0,y_max_plot)) 
   
-  img_device(paste0(plot_title,"_",var2_f,"_vs_",var1_f), w = 2.5, h = 4.2, family = "serif")
+  img_device(paste0(plot_title,"_",var2_f,"_vs_",var1_f), w = 2.5, h = 4.2)
   plot(g1)
   dev.off()
   

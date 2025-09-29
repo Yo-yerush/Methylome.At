@@ -33,7 +33,7 @@ DMRs_ann_plots <- function(var1, var2, context, sum_dH = F) {
   y_lim_max <- max(y_lim_total)
   #########################
   # plot
-  img_device(paste0(context, "_genom_annotations"), w = 2.45, h = 2, family = "serif")
+  img_device(paste0(context, "_genom_annotations"), w = 2.45, h = 2)
 
   ann_plot <- ann_plot_final_df %>% ggplot() +
     geom_col(
@@ -84,7 +84,7 @@ DMRs_ann_plots <- function(var1, var2, context, sum_dH = F) {
   )
   legend_ann <- as.raster(matrix(c(colfunc_ann[[1]](20), colfunc_ann[[2]](20)[20:1]), ncol = 1))
 
-  img_device("legend_genom_annotations", w = 1.34, h = 1.83, family = "serif")
+  img_device("legend_genom_annotations", w = 1.34, h = 1.83)
   par(mar = c(0, 0, 2, 0))
   plot(c(0, 2), c(0, 1), type = "n", axes = F, xlab = "", ylab = "", main = "Regions type\ndistribution")
   text(x = 0.7, y = seq(0.15, 0.85, l = 5), labels = c("100% Loss", "", "Neutral", "", "100% Gain"), adj = 0)

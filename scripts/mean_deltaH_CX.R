@@ -434,7 +434,7 @@ run_mean_deltaH_CX <- function(ctrl_name, trnt_name, ctrl_pool, trnt_pool, TE.gr
         scatter_chg_meth <- var_sep(delta_pool, F, "Proportion", num_cores)$chg
         scatter_chh_meth <- var_sep(delta_pool, F, "Proportion", num_cores)$chh
 
-        img_device(paste0("scatter_plot_difference_subCX_", trnt_name, "_vs_", ctrl_name), w = 6.5, h = 2.75, family = "serif")
+        img_device(paste0("scatter_plot_difference_subCX_", trnt_name, "_vs_", ctrl_name), w = 6.5, h = 2.75)
         par(mfrow = c(1, 3))
 
         plot(
@@ -479,7 +479,7 @@ run_mean_deltaH_CX <- function(ctrl_name, trnt_name, ctrl_pool, trnt_pool, TE.gr
     if (CX_plot) {
         # delta
         cat("\rChrPlots... [delta]")
-        img_device(paste0("ChrPlot_difference_", trnt_name, "_vs_", ctrl_name), w = 7, h = 4, family = "serif")
+        img_device(paste0("ChrPlot_difference_", trnt_name, "_vs_", ctrl_name), w = 7, h = 4)
         try({
             ChrPlots_CX_all(
                 meth_var_list = list(var_sep(delta_pool, F, "deltaH", num_cores)),
@@ -510,7 +510,7 @@ run_mean_deltaH_CX <- function(ctrl_name, trnt_name, ctrl_pool, trnt_pool, TE.gr
     ### ChrPlot sub-CX
     if (subCX_plot) {
         cat("\rChrPlots for sub-contexts... [delta]")
-        img_device(paste0("ChrPlot_delta_H_subCX_", trnt_name, "_vs_", ctrl_name), w = 7, h = 4, family = "serif")
+        img_device(paste0("ChrPlot_delta_H_subCX_", trnt_name, "_vs_", ctrl_name), w = 7, h = 4)
         try({
             ChrPlots_CX_all(
                 meth_var_list = list(var_sep(delta_pool, T, "deltaH", num_cores)),

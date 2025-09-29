@@ -237,7 +237,7 @@ KEGG_one_plot <- function(treatment,
   if (Height < 3) {Height = 3}
   
   img_device(paste0(path_for_results,"/",treatment,".",annotation,".KEGG"),
-      width = 9.90, h = Height, family = "serif")
+      width = 9.90, h = Height)
   multiplot(bubble_gain, bubble_loss, cols=2)
   dev.off()
   

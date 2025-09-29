@@ -215,7 +215,7 @@ GO_one_plot <- function(treatment,
   #print(paste(treatment,context,annotation, sep = "_"))
   
   img_device(paste0(path_for__results,"/",treatment,"_",context,"_",annotation,"_GO"),
-      width = 9.90, h = Height, family = "serif")
+      width = 9.90, h = Height)
   multiplot(bubble_gain, bubble_loss, cols=2)
   dev.off()
 }
