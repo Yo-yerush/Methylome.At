@@ -141,6 +141,8 @@ treatment_s=$(echo "$samples_var" | head -n2 | tail -n1)
 
 # Output the configuration
 echo ""
+echo "-------------------------------------"
+echo ""
 echo "$treatment_s VS. $control_s"
 echo ""
 echo "DMRs Min Proportion Diff CG: $minProportionDiff_CG"
@@ -163,6 +165,7 @@ echo "Description file: $description_file"
 echo "Transposable Elements file: $TEs_file"
 echo "Methylome.At directory path: $Methylome_At_path"
 echo ""
+echo "-------------------------------------"
 echo ""
 
 # create results directory

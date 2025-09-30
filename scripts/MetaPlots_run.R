@@ -72,6 +72,8 @@ img_device <<- function(filename, w, h) {
 
     if (img_type == "svg" | img_type == "pdf") {
         img_env(full_file_name, w = w, h = h, family = "serif")
+    } else if (img_type == "tiff") {
+        img_env(full_file_name, w = w, h = h, units = "in", res = 900, family = "serif", compression = "lzw")
     } else {
         img_env(full_file_name, w = w, h = h, units = "in", res = 900, family = "serif")
     }

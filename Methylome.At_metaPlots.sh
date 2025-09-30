@@ -111,6 +111,8 @@ treatment_s=$(echo "$samples_var" | head -n2 | tail -n1)
 
 # Output the configuration
 echo ""
+echo "-------------------------------------"
+echo ""
 echo "$treatment_s VS. $control_s"
 echo "Genes and TEs metaPlot: $Genes_n_TEs"
 echo "Gene Features metaPlot: $Gene_features"
@@ -124,6 +126,8 @@ echo "Samples file: $samples_file"
 echo "Annotation file: Methylome.At (TAIR10 based)"
 echo "Transposable Elements file: TAIR10"
 echo "Methylome_At_path: $Methylome_At_path"
+echo ""
+echo "-------------------------------------"
 echo ""
 
 # create results directory

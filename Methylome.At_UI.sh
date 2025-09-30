@@ -159,12 +159,12 @@ edit_script1_parameters() {
         3>&1 1>&2 2>&3 || echo "$SCRIPT1_file_type")
     elif [ "$OPTION" = "$SCRIPT1_img_type" ]; then
       SCRIPT1_img_type=$(whiptail --radiolist "Select image format:" 15 70 6 \
-        "pdf" "Vector" ON \
-        "svg" "Vector" OFF \
-        "jpeg" "Raster" OFF \
-        "tiff" "Raster" OFF \
-        "png" "Raster" OFF \
-        "bmp" "Raster" OFF \
+        "pdf" "Vector; tiny" ON \
+        "svg" "Vector; editable; tiny" OFF \
+        "png" "Raster (lossless)" OFF \
+        "tiff" "Raster (lossless - LZW); journal/print standard; large" OFF \
+        "jpeg" "Raster (lossy); smallest" OFF \
+        "bmp" "Raster (uncompressed); huge; avoid" OFF \
         3>&1 1>&2 2>&3 || echo "$SCRIPT1_img_type")
     elif [ "$OPTION" = "$SCRIPT1_annotation_file" ]; then
       SCRIPT1_annotation_file=$(whiptail --inputbox "Path to annotation file" 10 70 "$SCRIPT1_annotation_file" 3>&1 1>&2 2>&3 || echo "$SCRIPT1_annotation_file")
@@ -223,12 +223,12 @@ edit_script2_parameters() {
         3>&1 1>&2 2>&3 || echo "$SCRIPT2_file_type")
     elif [ "$OPTION" = "$SCRIPT2_img_type" ]; then
       SCRIPT2_img_type=$(whiptail --radiolist "Select image format:" 15 70 6 \
-        "pdf" "Vector" ON \
-        "svg" "Vector" OFF \
-        "jpeg" "Raster" OFF \
-        "tiff" "Raster" OFF \
-        "png" "Raster" OFF \
-        "bmp" "Raster" OFF \
+        "pdf" "Vector; tiny" ON \
+        "svg" "Vector; editable; tiny" OFF \
+        "png" "Raster (lossless)" OFF \
+        "tiff" "Raster (lossless - LZW); journal/print standard; large" OFF \
+        "jpeg" "Raster (lossy); smallest" OFF \
+        "bmp" "Raster (uncompressed); huge; avoid" OFF \
         3>&1 1>&2 2>&3 || echo "$SCRIPT2_img_type")
     elif [ "$OPTION" = "$SCRIPT2_annotation_file" ]; then
       SCRIPT2_annotation_file=$(whiptail --inputbox "Path to genome annotation file" 10 70 "$SCRIPT2_annotation_file" 3>&1 1>&2 2>&3 || echo "$SCRIPT2_annotation_file")
