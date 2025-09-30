@@ -116,7 +116,7 @@ Genes_metaPlot <- function(methylationPool_var1,methylationPool_var2,var1,var2,a
         
         # print percentage every 100 genes
         if (gene.num %% 100 == 0 | gene.num %% length(ann.obj) == 0) {
-          cat(paste0("\r", group_name, " >> processing average for each ", gsub("s","",new_path.f), "... [", round((gene.num/length(ann.obj)*100), 0), "%]     "))
+          cat(paste0("\r", group_name, " >> processing average for each ", gsub("s","",new_path.f), "...\t[", round((gene.num/length(ann.obj)*100), 0), "%]     "))
         }
 
         return(list(CG_list=CG_list,
@@ -128,7 +128,7 @@ Genes_metaPlot <- function(methylationPool_var1,methylationPool_var2,var1,var2,a
         })
     }
 
-    cat(paste0("\r", group_name, " >> processing average for each ", gsub("s","",new_path.f), "... [0%]     "))
+    cat(paste0("\r", group_name, " >> processing average for each ", gsub("s","",new_path.f), "...\t[0%]     "))
     results = mclapply(1:length(ann.obj) , gene_2_bins_run, mc.cores = n.cores.f)
     results = results[!sapply(results, is.null)]
     cat("\n")
@@ -158,7 +158,7 @@ Genes_metaPlot <- function(methylationPool_var1,methylationPool_var2,var1,var2,a
     
     for (string_loc in 1:3) {
       # Parallel processing using mclapply
-      cat(paste0(group_name, " >> processing average of ", gsub("\\.","-",names(gr_list_CG)[string_loc]), " bins... "))
+      cat(paste0(group_name, " >> processing average of ", gsub("\\.","-",names(gr_list_CG)[string_loc]), " bins...\t"))
       results_parallel = mclapply(1:20, function(row_num) process_row(row_num, results,string_loc), mc.cores = ifelse(n.cores.f >= 20, 20, n.cores.f))
 
       # Assigning results back to your lists
@@ -255,7 +255,7 @@ Genes_metaPlot <- function(methylationPool_var1,methylationPool_var2,var1,var2,a
                x = 3,
                y = ifelse(is_TE,max_value,q1_value),
                label = legend_labels,
-               hjust = 0, vjust = 0.75, size = 3.25, 
+               hjust = 0, vjust = 0.75, size = 3, 
                color = c("gray40","#bf6828"), fontface = "bold")
     
     

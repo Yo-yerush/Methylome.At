@@ -109,7 +109,7 @@ Genes_features_metaPlot <- function(methylationPool_var1, methylationPool_var2, 
           
           # print percentage every 100 genes
           if (feature.num %% 100 == 0) {
-            cat(paste0("\r", group_name, " > processing average for each ", gsub("s","",region_name), "s region [", round((feature.num/length(ann.obj))*100, 0), "%]     "))
+            cat(paste0("\r", group_name, " >> processing average for each ", gsub("s","",region_name), "s region\t[", round((feature.num/length(ann.obj))*100, 0), "%]     "))
           }
 
           return(context_results)
@@ -118,7 +118,7 @@ Genes_features_metaPlot <- function(methylationPool_var1, methylationPool_var2, 
         })
       }
 
-      cat(paste0("\r", group_name, " > processing average for each ", gsub("s","",region_name), "s region [0%]     "))
+      cat(paste0("\r", group_name, " >> processing average for each ", gsub("s","",region_name), "s region\t[0%]     "))
       #cat("\n\nPreparing", length(ann.obj), "bins for region:", region_name, "\n")
       results = mclapply(1:length(ann.obj), gene_2_bins_run, mc.cores = n.cores.f)
       results = results[!sapply(results, is.null)]
@@ -153,11 +153,11 @@ Genes_features_metaPlot <- function(methylationPool_var1, methylationPool_var2, 
   var2_metaPlot = genes_metaPlot_fun(methylationPool_var2, regions_list, var2, n.cores.f = n.cores)
   
   # Save the data
-  dir.create("features_metaPlot_tables", showWarnings = F)
+  dir.create("metaPlot_tables", showWarnings = F)
   for (region_name in region_names) {
     for (cntx in c("CG", "CHG", "CHH")) {
-      try({write.csv(as.data.frame(var1_metaPlot[[region_name]][[cntx]]), paste0("features_metaPlot_tables/", var1, ".", cntx, ".", region_name, ".features.csv"), row.names = FALSE)})
-      try({write.csv(as.data.frame(var2_metaPlot[[region_name]][[cntx]]), paste0("features_metaPlot_tables/", var2, ".", cntx, ".", region_name, ".features.csv"), row.names = FALSE)})
+      try({write.csv(as.data.frame(var1_metaPlot[[region_name]][[cntx]]), paste0("metaPlot_tables/", var1, ".", cntx, ".", region_name, ".features.csv"), row.names = FALSE)})
+      try({write.csv(as.data.frame(var2_metaPlot[[region_name]][[cntx]]), paste0("metaPlot_tables/", var2, ".", cntx, ".", region_name, ".features.csv"), row.names = FALSE)})
     }
   }
   
@@ -217,7 +217,7 @@ Genes_features_metaPlot <- function(methylationPool_var1, methylationPool_var2, 
                x = max(breaks_vline),
                y = c(max_value*0.95, max_value*0.85),
                label = legend_labels,
-               hjust = 0, vjust = 0.75, size = 3.25, 
+               hjust = 0, vjust = 0.75, size = 3, 
                color = c("gray40","#bf6828"), fontface = "bold")
     
     

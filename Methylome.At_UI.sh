@@ -33,7 +33,7 @@ SCRIPT1_DEFAULT_n_cores="10"
 SCRIPT1_DEFAULT_GO_analysis="FALSE"
 SCRIPT1_DEFAULT_KEGG_pathways="FALSE"
 SCRIPT1_DEFAULT_file_type="CX_report"
-SCRIPT1_DEFAULT_img_type="jpeg"
+SCRIPT1_DEFAULT_img_type="pdf"
 SCRIPT1_DEFAULT_annotation_file="annotation_files/Methylome.At_annotations.csv.gz"
 SCRIPT1_DEFAULT_description_file="annotation_files/Methylome.At_description_file.csv.gz"
 SCRIPT1_DEFAULT_TEs_file="annotation_files/TAIR10_Transposable_Elements.txt"
@@ -46,7 +46,7 @@ SCRIPT2_DEFAULT_metaPlot_random_genes="10000"
 SCRIPT2_DEFAULT_n_cores="10"
 SCRIPT2_DEFAULT_bin_size_features="10"
 SCRIPT2_DEFAULT_file_type="CX_report"
-SCRIPT2_DEFAULT_img_type="jpeg"
+SCRIPT2_DEFAULT_img_type="pdf"
 SCRIPT2_DEFAULT_annotation_file="annotation_files/Methylome.At_annotations.csv.gz"
 SCRIPT2_DEFAULT_TEs_file="annotation_files/TAIR10_Transposable_Elements.txt"
 
@@ -114,7 +114,7 @@ edit_script1_parameters() {
       "$SCRIPT1_GO_analysis" "Perform GO analysis (TRUE/FALSE)" \
       "$SCRIPT1_KEGG_pathways" "Perform KEGG pathways analysis (TRUE/FALSE)" \
       "$SCRIPT1_file_type" "Methylation file type" \
-      "$SCRIPT1_img_type" "Output images type" \
+      "$SCRIPT1_img_type" "Output images format" \
       "$SCRIPT1_annotation_file" "Path to annotation file" \
       "$SCRIPT1_description_file" "Path to description file" \
       "$SCRIPT1_TEs_file" "Path to Transposable Elements file" \
@@ -158,13 +158,13 @@ edit_script1_parameters() {
         "CGmap" "'.CGmap'" OFF \
         3>&1 1>&2 2>&3 || echo "$SCRIPT1_file_type")
     elif [ "$OPTION" = "$SCRIPT1_img_type" ]; then
-      SCRIPT1_img_type=$(whiptail --radiolist "Select images file type:" 15 70 3 \
-        "JPEG" "'.jpeg'" ON \
-        "SVG" "'.svg'" OFF \
-        "PDF" "'.pdf'" OFF \
-        "TIFF" "'.tiff'" OFF \
-        "PNG" "'.png'" OFF \
-        "BMP" "'.bmp'" OFF \
+      SCRIPT1_img_type=$(whiptail --radiolist "Select image format:" 15 70 6 \
+        "pdf" "Vector" ON \
+        "svg" "Vector" OFF \
+        "jpeg" "Raster" OFF \
+        "tiff" "Raster" OFF \
+        "png" "Raster" OFF \
+        "bmp" "Raster" OFF \
         3>&1 1>&2 2>&3 || echo "$SCRIPT1_img_type")
     elif [ "$OPTION" = "$SCRIPT1_annotation_file" ]; then
       SCRIPT1_annotation_file=$(whiptail --inputbox "Path to annotation file" 10 70 "$SCRIPT1_annotation_file" 3>&1 1>&2 2>&3 || echo "$SCRIPT1_annotation_file")
@@ -188,7 +188,7 @@ edit_script2_parameters() {
       "$SCRIPT2_n_cores" "Number of cores" \
       "$SCRIPT2_bin_size_features" "Bin-size for Gene_features analysis" \
       "$SCRIPT2_file_type" "Methylation file types" \
-      "$SCRIPT2_img_type" "Output images type" \
+      "$SCRIPT2_img_type" "Output images format" \
       "$SCRIPT2_annotation_file" "Path to genome annotation file" \
       "$SCRIPT2_TEs_file" "Path to Transposable Elements file" \
       3>&1 1>&2 2>&3)
@@ -222,13 +222,13 @@ edit_script2_parameters() {
         "CGmap" "'.CGmap'" OFF \
         3>&1 1>&2 2>&3 || echo "$SCRIPT2_file_type")
     elif [ "$OPTION" = "$SCRIPT2_img_type" ]; then
-      SCRIPT2_img_type=$(whiptail --radiolist "Select images file type:" 15 70 3 \
-        "JPEG" "'.jpeg'" ON \
-        "SVG" "'.svg'" OFF \
-        "PDF" "'.pdf'" OFF \
-        "TIFF" "'.tiff'" OFF \
-        "PNG" "'.png'" OFF \
-        "BMP" "'.bmp'" OFF \
+      SCRIPT2_img_type=$(whiptail --radiolist "Select image format:" 15 70 6 \
+        "pdf" "Vector" ON \
+        "svg" "Vector" OFF \
+        "jpeg" "Raster" OFF \
+        "tiff" "Raster" OFF \
+        "png" "Raster" OFF \
+        "bmp" "Raster" OFF \
         3>&1 1>&2 2>&3 || echo "$SCRIPT2_img_type")
     elif [ "$OPTION" = "$SCRIPT2_annotation_file" ]; then
       SCRIPT2_annotation_file=$(whiptail --inputbox "Path to genome annotation file" 10 70 "$SCRIPT2_annotation_file" 3>&1 1>&2 2>&3 || echo "$SCRIPT2_annotation_file")

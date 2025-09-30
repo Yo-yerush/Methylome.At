@@ -19,7 +19,7 @@ minCytosinesCount=4
 minReadsPerCytosine=4
 pValueThreshold=0.05
 methyl_files_type=CX_report
-img_type=jpeg
+img_type=pdf
 n_cores=10
 GO_analysis=FALSE
 KEGG_pathways=FALSE
@@ -41,7 +41,7 @@ usage() {
   echo "  --minReadsPerCytosine         Minimum reads per cytosine [default: $minReadsPerCytosine]"
   echo "  --pValueThreshold             P-value threshold [default: $pValueThreshold]"
   echo "  --file_type                   Post-alignment file type - 'CX_report', 'bedMethyl' and 'CGmap' [default: '$methyl_files_type' OR determine automatically]"
-  echo "  --image_type                  Output images file type [default: '$img_type']"
+  echo "  --image_type                  Output images format [default: '$img_type']"
   echo "  --n_cores                     Number of cores [default: $n_cores]"
   echo "  --GO_analysis                 Perform GO analysis [default: $GO_analysis]"
   echo "  --KEGG_pathways               Perform KEGG pathways analysis [default: $KEGG_pathways]"
@@ -152,7 +152,7 @@ echo "DMRs Min Reads Per Cytosine: $minReadsPerCytosine"
 echo "DMRs P-value Threshold: $pValueThreshold"
 echo ""
 echo "Post-alignment file type: $methyl_files_type"
-echo "Output images type: $img_type"
+echo "Output images format: $img_type"
 echo "Number of Cores: $n_cores"
 echo "GO Analysis: $GO_analysis"
 echo "KEGG Pathways: $KEGG_pathways"
@@ -208,7 +208,7 @@ echo "DMRs Min Cytosines Count: $minCytosinesCount" >> "$log_file"
 echo "DMRs Min Reads Per Cytosine: $minReadsPerCytosine" >> "$log_file"
 echo "DMRs P-value Threshold: $pValueThreshold" >> "$log_file"
 echo "Post-alignment file type: $methyl_files_type" >> "$log_file"
-echo "Output images type: $img_type" >> "$log_file"
+echo "Output images format: $img_type" >> "$log_file"
 echo "Number of Cores: $n_cores" >> "$log_file"
 echo "GO Analysis: $GO_analysis" >> "$log_file"
 echo "KEGG Pathways: $KEGG_pathways" >> "$log_file"

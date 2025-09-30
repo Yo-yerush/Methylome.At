@@ -2,7 +2,7 @@ start_time <- Sys.time()
 
 # upload libraries
 lib_packages <- c(
-  "dplyr", "ggplot2", "DMRcaller", "org.At.tair.db",
+  "dplyr", "tidyr", "ggplot2", "DMRcaller", "org.At.tair.db",
   "GenomicFeatures", "plyranges", "parallel", "data.table"
   )
 for (n.pkg in seq(lib_packages)) {
@@ -59,6 +59,9 @@ metaPlot_path = paste0(rmv_d(Methylome.At_path),"/results/",var2,"_vs_",var1,"/m
 dir.create(metaPlot_path, showWarnings = F)
 
 source(paste0(scripts_dir,"trimm_and_rename_seq.R"))
+source(paste0(scripts_dir,"Genes_metaPlot_fun.R"))
+source(paste0(scripts_dir,"Gene_features_metaPlot_fun.R"))
+source(paste0(scripts_dir,"delta_metaPlot.R"))
 
 ###########################################################################
 
@@ -140,16 +143,17 @@ cat("\n-------------------------------------\n")
 
 # run metPlot function for coding-Genes and TEs
 if (analyze_Gene_n_TEs) {
-  ##### calculate metaPlot for Genes and TEs
-  source(paste0(scripts_dir,"Genes_metaPlot_fun.R"))
-  
+  ##### calculate metaPlot for Genes and TEs  
   tryCatch({
     message(paste("generate metaPlot to", metaPlot.random.genes,"protein-coding Genes..."))
     setwd(metaPlot_path)
     Genes_metaPlot(meth_var1,meth_var2,var1,var2,annotation.gr,metaPlot.random.genes,minReadsPerCytosine,n.cores)
     setwd(metaPlot_path)
     delta_metaplot("Genes", var1, var2)
-  }, error = function(cond) {message(paste0("process average metaPlot to ",metaPlot.random.genes," Protein Coding Genes: fail"))})
+  }, error = function(cond) {
+    cat("\n*\n", as.character(cond), "\n*\n")
+    message(paste0("process average metaPlot to ",metaPlot.random.genes," Protein Coding Genes: fail"))
+    })
   
   tryCatch({
     message(paste("\ngenerate metaPlot to", metaPlot.random.genes," Transposable Elements..."))
@@ -157,7 +161,10 @@ if (analyze_Gene_n_TEs) {
     Genes_metaPlot(meth_var1,meth_var2,var1,var2,TE.gr,metaPlot.random.genes,minReadsPerCytosine,n.cores,is_TE=T)
     setwd(metaPlot_path)
     delta_metaplot("TEs", var1, var2)
-  }, error = function(cond) {message(paste0("process average metaPlot to ",metaPlot.random.genes," Transposable Elements: fail\n"))})
+  }, error = function(cond) {
+    cat("\n*\n", as.character(cond), "\n*\n")
+    message(paste0("process average metaPlot to ",metaPlot.random.genes," Transposable Elements: fail\n"))
+    })
 }
 
 cat("\n-------------------------------------\n")
@@ -165,14 +172,16 @@ cat("\n-------------------------------------\n")
 ###########################################################################
 
 # run metPlot function for coding-Gene features
-if (analyze_GeneFeatures) {
-  source(paste0(scripts_dir,"Gene_features_metaPlot_fun.R"))
-  
+if (analyze_GeneFeatures) {  
   tryCatch({
     message(paste("\ngenerate metaPlot to", metaPlot.random.genes,"protein-coding Gene Features..."))
     setwd(metaPlot_path)
     Genes_features_metaPlot(meth_var1,meth_var2,var1,var2,annotation.gr,metaPlot.random.genes,minReadsPerCytosine,binSize,n.cores)
-  }, error = function(cond) {message(paste0("process average metaPlot to ",metaPlot.random.genes," Protein Coding Genes: fail"))})
+    delta_metaplot("Gene_features", var1, var2, is_geneFeature = TRUE)
+  }, error = function(cond) {
+    cat("\n*\n", as.character(cond), "\n*\n")
+    message(paste0("process average metaPlot to ",metaPlot.random.genes," Protein Coding Genes: fail"))
+    })
 }
 
 message(paste0("**\t",var2," vs ",var1,": done\n"))
