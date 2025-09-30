@@ -18,7 +18,7 @@ gainORloss <- function(DMRsReplicates, context, add_count = FALSE) {
 
   # pie plot
   pie_plot <- ggplot(pie_data, aes(x = "", y = value, fill = group)) +
-    geom_bar(stat = "identity", w = 1, color = "white", lwd = 0.5) +
+    geom_bar(stat = "identity", width = 1, color = "white", lwd = 0.5) +
     coord_polar(theta = "y", start = pi / 2, direction = 1) +
     scale_fill_manual(values = c(gain = "#d96c6c", loss = "#6c96d9")) +
     theme_void() +

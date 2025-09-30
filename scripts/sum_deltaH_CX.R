@@ -70,7 +70,7 @@ run_sum_deltaH_CX <- function(ctrl_name, trnt_name, ctrl_pool, trnt_pool, annota
         },
         mc.cores = ifelse(num_cores >= 3, 3, num_cores)
     )
-    png(paste0("sum_dH_manhattan_plot_", trnt_name, "_vs_", ctrl_name, ".png"), w = 10, h = 2.75, units = "in", res = 300)
+    png(paste0("sum_dH_manhattan_plot_", trnt_name, "_vs_", ctrl_name, ".png"), width = 10, height = 2.75, units = "in", res = 300)
     multiplot(
         print(manH_par[[1]]), print(manH_par[[2]]), print(manH_par[[3]]),
         cols = 3
@@ -139,7 +139,7 @@ dH_bins <- function(joint, cntx, min_coverage = 6) {
         # calculate_surp_2()
 
     ### 100bp windowSize
-    gr_sites <- GRanges(joint$seqnames, IRanges(joint$start, w = 1))
+    gr_sites <- GRanges(joint$seqnames, IRanges(joint$start, width = 1))
     seqlevels <- unique(joint$seqnames)
     seqlengths_per_chr <- joint %>%
         group_by(seqnames) %>%

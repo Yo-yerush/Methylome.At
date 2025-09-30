@@ -102,7 +102,7 @@ read_CX <- function(cx_path, name) {
 
   cx_gr <- GRanges(
     seqnames = factor(cx_df$seqnames, levels = unique(cx_df$seqnames)),
-    ranges = IRanges(as.integer(cx_df$pos), w = 1),
+    ranges = IRanges(as.integer(cx_df$pos), width = 1),
     strand = factor(cx_df$strand, levels = c("+", "-")),
     context = factor(cx_df$context, levels = c("CG", "CHG", "CHH")),
     readsM = as.integer(cx_df$readsM),
@@ -131,7 +131,7 @@ read_CGmap <- function(cgmap_path, name) {
 
   cgmap_gr <- GRanges(
     seqnames = factor(cgmap_df$seqnames, levels = unique(cgmap_df$seqnames)),
-    ranges = IRanges(as.integer(cgmap_df$pos), w = 1),
+    ranges = IRanges(as.integer(cgmap_df$pos), width = 1),
     strand = factor(cgmap_df$strand, levels = c("+", "-")),
     context = factor(cgmap_df$context, levels = c("CG", "CHG", "CHH")),
     readsM = as.integer(cgmap_df$readsM),
@@ -169,7 +169,7 @@ read_bedMethyl <- function(bed_path, name) {
 
   bed_gr <- GRanges(
     seqnames = factor(bed_df$seqnames, levels = unique(bed_df$seqnames)),
-    ranges = IRanges(bed_df$pos, w = 1),
+    ranges = IRanges(bed_df$pos, width = 1),
     strand = factor(bed_df$strand, levels = c("+", "-")),
     context = factor(bed_df$context, levels = c("CG", "CHG", "CHH")),
     readsM = bed_df$readsM,

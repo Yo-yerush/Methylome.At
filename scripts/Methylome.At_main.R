@@ -33,25 +33,26 @@ Methylome.At_main <- function(var1, # control
 
   ###########################################################################
 
-  # image device function for all sub-functions
+  # image device function
   img_device <<- function(filename, w, h) {
-      img_env <- get(img_type, envir = asNamespace("grDevices"))
-      full_file_name <- paste0(filename, ".", img_type)
+    dev_call <- ifelse(img_type == "pdf", "cairo_pdf", img_type)
+    img_env <- get(dev_call, envir = asNamespace("grDevices"))
+    full_file_name <- paste0(filename, ".", img_type)
 
-      if (img_type == "svg" | img_type == "pdf") {
-          img_env(full_file_name, w = w, h = h, family = "serif")
-      } else if (img_type == "tiff") {
-          img_env(full_file_name, w = w, h = h, units = "in", res = 900, family = "serif", compression = "lzw")
-      } else {
-          img_env(full_file_name, w = w, h = h, units = "in", res = 900, family = "serif")
-      }
+    if (img_type == "svg" | img_type == "pdf") {
+      img_env(full_file_name, width = w, height = h, family = "serif")
+    } else if (img_type == "tiff") {
+      img_env(full_file_name, width = w, height = h, units = "in", res = 900, family = "serif", compression = "lzw")
+    } else {
+      img_env(full_file_name, width = w, height = h, units = "in", res = 900, family = "serif")
+    }
   }
 
   ###########################################################################
 
   setwd(Methylome.At_path)
 
-  ##### Read annotation and description files #####
+  ##### read annotation and description files #####
   cat("\rload annotations and description files [0/3]")
 
   # annotation file
@@ -390,7 +391,7 @@ Methylome.At_main <- function(var1, # control
         DMRs_ann_plots(var1, var2, context)
         message("\tgenome annotations for DMRs: done")
         cat("\n")
-        #cat(" done\n")
+        # cat(" done\n")
       },
       error = function(cond) {
         cat("\n*\n", as.character(cond), "\n*\n")
