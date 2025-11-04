@@ -1,5 +1,11 @@
 #!/bin/bash
 
+#############################
+# check for bismark - methylome.At
+
+#############################
+
+
 usage_yo="
 ###############################################################################
 YO - 260525
@@ -19,6 +25,7 @@ Options:
 -n, --ncores    Number of cores (max). multiples of 4 recommended. [default: 16]
 -m, --mem       Buffer size for 'bismark_methylation_extractor' [default: 8G]
 --cx            Produce and keep only '_CX_report.txt.gz' file
+--mat           Produce samples table (.txt) for 'Methylome.At' pipeline
 --sort          Sort & index BAM files (applies only if --cx is off)
 --strand        Keep top/bottom strand (OT/OB) files [remove in default]
 --um            Produce and keep only unmapped files (as .fastq)
@@ -59,6 +66,7 @@ output_suffix="wgbs_bismark_$(date +%d%m%y)"
 n_cores=16
 buffer_size=8G
 keep_cx=false
+methAt_samples=false
 sort_bam=false
 keep_strand=false
 keep_unmapped=false
@@ -87,6 +95,10 @@ while [[ $# -gt 0 ]]; do
         ;;
         --cx)
             keep_cx=true
+            shift
+        ;;
+        --mat)
+            methAt_samples=true
             shift
         ;;
         --sort)
@@ -203,6 +215,17 @@ if [[ "$genome_b_name" == *.fas ]]; then
 fi
 bismark_genome_preparation $output_path/genome_indx
 
+####################
+### create samples table file for Methylome.At
+if [[ "$methAt_samples" == "true" ]]; then
+    mkdir -p "$output_path/../samples_table"
+    unique_samples_string=$(printf '%s\n' "${sample_name[@]}" | sed 's/[._][0-9]*$//' | awk '!seen[$0]++' | tr '\n' ' ')
+    read -ra unique_samples <<< "$unique_samples_string"
+    comparison_name="${unique_samples[1]}_vs_${unique_samples[0]}"
+    samples_table_path="$output_path/../samples_table/samples_table_"$comparison_name".txt"
+    > "$samples_table_path"
+fi
+
 echo "" >> "$log_file"
 echo "-----------------------------------" >> "$log_file"
 
@@ -289,6 +312,15 @@ for ((u = 0; u < ${#sample_name[@]}; u++)); do
             samtools sort $output_path/"$i"/"$i"_bismark_"$Rs_type".bam -o $output_path/"$i"/"$i"_sorted.bam
             samtools index $output_path/"$i"/"$i"_sorted.bam
         fi
+
+        # # # # # # # # # # # #
+        # samples table for Methylome.At
+        if [[ "$methAt_samples" == "true" ]]; then
+            if [[ "$keep_cx" == "true" ]]; then
+            echo -e "$i"\\t"$output_path"/"$i"_bismark_"$Rs_type".CX_report.txt.gz >> "$samples_table_path"
+        else
+            echo -e "$i"\\t"$output_path"/"$i"/methylation_extractor/"$i"_bismark_"$Rs_type".CX_report.txt.gz >> $samples_table_path
+        fi
     fi
     echo "" >> "$log_file"
     echo "-----------------------------------" >> "$log_file"
@@ -297,3 +329,4 @@ done
 echo "**  $(date +"%d-%m-%y %H:%M")" >> "$log_file"
 cd $ori_path
 rm -r $output_path/tmp
+
