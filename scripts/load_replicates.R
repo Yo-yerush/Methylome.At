@@ -34,11 +34,13 @@ load_replicates <- function(var_path, n.cores, var_name, metaPlot_script = F, fi
       methylationDataReplicates <- methylationDataList[[1]] # 1 sample
       names(mcols(methylationDataReplicates))[names(mcols(methylationDataReplicates)) %in% c("readsM", "readsN")] <- c("readsM1", "readsN1")
     } else {
-      message(paste0("\t----"))
+      # message(paste0("\t----"))
       message(paste0("\tjoin replicates   [", var_name, "]"))
       methylationDataReplicates <- joinReplicates(methylationDataList[[1]], methylationDataList[[2]]) # 2 samples
-      if (length(var_path) == 3) {
-        methylationDataReplicates <- joinReplicates(methylationDataReplicates, methylationDataList[[3]]) # 3 samples
+      if (length(var_path) > 2) {
+        for (i in 3:length(var_path)) {
+          methylationDataReplicates <- joinReplicates(methylationDataReplicates, methylationDataList[[i]]) # >2 samples
+        }
       }
     }
 

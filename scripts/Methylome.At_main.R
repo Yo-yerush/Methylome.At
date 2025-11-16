@@ -125,7 +125,12 @@ Methylome.At_main <- function(var1, # control
     {
       # load 'CX_reports'
       n.cores.load <- ifelse(n.cores > 1, 2, 1)
-      load_vars <- mclapply(var_args, function(x) load_replicates(x$path, n.cores, x$name, F, methyl_files_type), mc.cores = n.cores.load)
+      load_vars <- mclapply(var_args, function(x) {
+        Sys.sleep(ifelse(x$name == var1, 0, 6))
+        load_replicates(x$path, n.cores, x$name, F, methyl_files_type)
+      },
+      mc.cores = n.cores.load
+      )
 
       # trimm seqs objects (rename if not 'TAIR10' Chr seqnames)
       meth_var1 <- trimm_and_rename(load_vars[[1]]$methylationData_pool)

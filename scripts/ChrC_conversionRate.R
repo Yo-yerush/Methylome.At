@@ -1,7 +1,7 @@
 conversionRate <- function(methylationData, var) {
   x = data.frame(a = NA, b = NA)
   
-  methylationData = methylationData[grepl("ChrC|NC_000932.1|Pt", methylationData@seqnames)]
+  methylationData = methylationData[grepl("ChrC|NC_000932.1|Pt|chloroplast", methylationData@seqnames)]
   methylation_df = methylationData@elementMetadata
   readsM_pos = grep("readsM",names(methylation_df))
   ii=1

@@ -24,8 +24,13 @@ cat("\n")
 configs <- commandArgs(trailingOnly = TRUE)
 
 # upload samples file
-var_sep_format <- ifelse(grepl("\\.csv$", configs[1]), ",", "\t")
-var_table <- suppressWarnings(read.csv(configs[1], header = F, sep = var_sep_format))
+suppressWarnings({
+  var_sep_format <- ifelse(
+    grepl("\\.csv$", configs[1]) | grepl(",", readLines(configs[1])[1]),
+    ",", "\t"
+  )
+  var_table <- read.csv(configs[1], header = F, sep = var_sep_format)
+})
 vars_vector <- unique(var_table[, 1])
 var1_path <- var_table[grep(vars_vector[1], var_table[, 1]), 2]
 var2_path <- var_table[grep(vars_vector[2], var_table[, 1]), 2]

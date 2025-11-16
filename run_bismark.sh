@@ -215,7 +215,8 @@ if [[ "$genome_b_name" == *.fas ]]; then
 fi
 bismark_genome_preparation $output_path/genome_indx
 
-####################
+#################### fix table
+#################### check if table is producrd
 ### create samples table file for Methylome.At
 if [[ "$methAt_samples" == "true" ]]; then
     mkdir -p "$output_path/../samples_table"
@@ -313,14 +314,14 @@ for ((u = 0; u < ${#sample_name[@]}; u++)); do
             samtools index $output_path/"$i"/"$i"_sorted.bam
         fi
 
-        # # # # # # # # # # # #
-        # samples table for Methylome.At
-        if [[ "$methAt_samples" == "true" ]]; then
-            if [[ "$keep_cx" == "true" ]]; then
-            echo -e "$i"\\t"$output_path"/"$i"_bismark_"$Rs_type".CX_report.txt.gz >> "$samples_table_path"
-        else
-            echo -e "$i"\\t"$output_path"/"$i"/methylation_extractor/"$i"_bismark_"$Rs_type".CX_report.txt.gz >> $samples_table_path
-        fi
+# fix #        # # # # # # # # # # # #
+# fix #        # samples table for Methylome.At
+# fix #        if [[ "$methAt_samples" == "true" ]]; then
+# fix #            if [[ "$keep_cx" == "true" ]]; then
+# fix #            echo -e "$i"\\t"$output_path"/"$i"_bismark_"$Rs_type".CX_report.txt.gz >> "$samples_table_path"
+# fix #        else
+# fix #            echo -e "$i"\\t"$output_path"/"$i"/methylation_extractor/"$i"_bismark_"$Rs_type".CX_report.txt.gz >> $samples_table_path
+# fix #        fi
     fi
     echo "" >> "$log_file"
     echo "-----------------------------------" >> "$log_file"

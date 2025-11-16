@@ -128,7 +128,7 @@ calling_DMRs <- function(methylationDataReplicates_joints, meth_var1, meth_var2,
   }
 
   if (length(DMRs_gr) != 0) {
-    mcols(DMRs_gr)[, paste0("proportionsR", 1:5)] <- NULL # remove 'NA' cols
+    mcols(DMRs_gr)[, paste0("proportionsR", 1:length(condition))] <- NULL # remove 'NA' cols
     DMRs_gr$log2FC <- log2(DMRs_gr$proportion2 / DMRs_gr$proportion1)
 
     DMRs_gr <- as.data.frame(DMRs_gr) %>%
