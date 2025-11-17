@@ -1,3 +1,5 @@
+options(width = 100)
+
 # upload libraries
 lib_packages <- c(
   "dplyr", "tidyr", "ggplot2", "DMRcaller", "rtracklayer", "lattice",

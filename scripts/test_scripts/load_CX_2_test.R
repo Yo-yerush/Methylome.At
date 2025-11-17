@@ -12,20 +12,20 @@ source("https://raw.githubusercontent.com/Yo-yerush/Methylome.At/main/scripts/tr
 
 ##### Read annotation and description files #####
 
-annotation.gr <- read.csv("/PATH/TO/Methylome.At/annotation_files/Methylome.At_annotations.csv.gz") %>%
+annotation.gr <- read.csv("/home/yoyerush/yo/methylome_pipeline/leaf_senescence_vatov_22/Methylome.At/annotation_files/Methylome.At_annotations.csv.gz") %>%
   makeGRangesFromDataFrame(., keep.extra.columns = T) %>%
   trimm_and_rename()
 
 # TAIR10 Transposable Elements file
 
 source("https://raw.githubusercontent.com/Yo-yerush/Methylome.At/main/scripts/edit_TE_file.R")
-TE_file.df <- read.csv("/PATH/TO/Methylome.At/annotation_files/TAIR10_Transposable_Elements.txt", sep = "\t")
+TE_file.df <- read.csv("/home/yoyerush/yo/methylome_pipeline/leaf_senescence_vatov_22/Methylome.At/annotation_files/TAIR10_Transposable_Elements.txt", sep = "\t")
 TE_file <- edit_TE_file(TE_file.df)
 
 
 # upload description file
 
-description_df <- read.csv("/PATH/TO/Methylome.At/annotation_files/Methylome.At_description_file.csv.gz")
+description_df <- read.csv("/home/yoyerush/yo/methylome_pipeline/leaf_senescence_vatov_22/Methylome.At/annotation_files/Methylome.At_description_file.csv.gz")
 names(description_df)[1] <- "gene_id"
 
 
@@ -33,10 +33,10 @@ names(description_df)[1] <- "gene_id"
 var1 <- "wt"
 var2 <- "suvh8"
 var1_path <- c(
-  "/PATH/TO/wt_2_bismark_se.CX_report.txt.gz",
-  "/PATH/TO/wt_3_bismark_se.CX_report.txt.gz"
+  "/home/yoyerush/yo/methylome_pipeline/other_mutants/stroud_et_al_2013/bismark_results/wt_2_bismark_se.CX_report.txt.gz",
+  "/home/yoyerush/yo/methylome_pipeline/other_mutants/stroud_et_al_2013/bismark_results/wt_3_bismark_se.CX_report.txt.gz"
 )
-var2_path <- "/PATH/TO/suvh8_bismark_se.CX_report.txt.gz"
+var2_path <- "/home/yoyerush/yo/methylome_pipeline/other_mutants/stroud_et_al_2013/bismark_results/suvh8_bismark_se.CX_report.txt.gz"
 
 
 is_single <- (length(var1_path) == 1 & length(var2_path) == 1) # both genotypes includes 1 sample
@@ -62,4 +62,9 @@ meth_var1 <- trimm_and_rename(load_vars[[1]]$methylationData_pool)
 meth_var2 <- trimm_and_rename(load_vars[[2]]$methylationData_pool)
 meth_var1_replicates <- trimm_and_rename(load_vars[[1]]$methylationDataReplicates)
 meth_var2_replicates <- trimm_and_rename(load_vars[[2]]$methylationDataReplicates)
+
+cat("\nPooled ", var1, " object for example:\n\n", sep = "")
+capture.output(print(meth_var1), file = NULL)[-c(1, 16)] %>% cat(sep = "\n")
+cat(paste("seq-levels:", paste(seqlevels(meth_var1), collapse = " ")), "  -------", sep = "\n")
+
 print(meth_var1)

@@ -5,7 +5,7 @@ load_replicates <- function(var_path, n.cores, var_name, metaPlot_script = F, fi
     function(meth_file_path) {
       tryCatch(
         {
-          cat(paste0("read ", basename(meth_file_path), " file...   \t[",var_name,"]\n"))
+          cat(paste0("read ", basename(meth_file_path), " file...   \t[", var_name, "]\n"))
           if (file_type == "CX_report") {
             cx_4_read <- read_CX(meth_file_path, var_name)
           } else if (convert_2_CX) {
@@ -26,6 +26,7 @@ load_replicates <- function(var_path, n.cores, var_name, metaPlot_script = F, fi
   )
 
   # Pooling Methylation Datasets
+  cat("pooling datasets\t[", var_name, "]\n", sep = "")
   methylationData_pool <- poolMethylationDatasets(GRangesList(methylationDataList))
 
   # Joining Replicates
@@ -34,6 +35,7 @@ load_replicates <- function(var_path, n.cores, var_name, metaPlot_script = F, fi
       methylationDataReplicates <- methylationDataList[[1]] # 1 sample
       names(mcols(methylationDataReplicates))[names(mcols(methylationDataReplicates)) %in% c("readsM", "readsN")] <- c("readsM1", "readsN1")
     } else {
+      cat("joining ", length(var_path), " replicates\t[", var_name, "]\n", sep = "")
       # message(paste0("\t----"))
       message(paste0("\tjoin replicates   [", var_name, "]"))
       methylationDataReplicates <- joinReplicates(methylationDataList[[1]], methylationDataList[[2]]) # 2 samples
