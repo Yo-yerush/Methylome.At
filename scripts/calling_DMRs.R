@@ -63,10 +63,10 @@ calling_DMRs <- function(methylationDataReplicates_joints, meth_var1, meth_var2,
             },
             error = function(e) {
               if (n.cores > 10) {
-                message("Error encountered. Retrying with cores = 10")
+                cat("Error encountered. Retrying with cores = 10\n")
                 runReplicates(10)
               } else if (n.cores > 1) {
-                message("Error encountered. Retrying with cores = 1")
+                cat("Error encountered. Retrying with cores = 1\n")
                 runReplicates(1)
               } else {
                 stop(e)
@@ -106,10 +106,10 @@ calling_DMRs <- function(methylationDataReplicates_joints, meth_var1, meth_var2,
             },
             error = function(e) {
               if (n.cores > 10) {
-                message("Error encountered. Retrying with cores = 10")
+                cat("Error encountered. Retrying with cores = 10\n")
                 runPooled(10)
               } else if (n.cores > 1) {
-                message("Error encountered. Retrying with cores = 1")
+                cat("Error encountered. Retrying with cores = 1\n")
                 runPooled(1)
               } else {
                 stop(e)

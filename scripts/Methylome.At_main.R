@@ -137,6 +137,9 @@ Methylome.At_main <- function(var1, # control
       meth_var2 <- trimm_and_rename(load_vars[[2]]$methylationData_pool)
       meth_var1_replicates <- trimm_and_rename(load_vars[[1]]$methylationDataReplicates)
       meth_var2_replicates <- trimm_and_rename(load_vars[[2]]$methylationDataReplicates)
+      cat("\nPooled ", var1, " object for example:\n\n", sep = "")
+      capture.output(print(meth_var1), file = NULL)[-c(1, 16)] %>% cat(sep = "\n")
+      cat(paste("seq-levels:", paste(seqlevels(meth_var1), collapse = " ")), "  -------", sep = "\n")
 
       if (!is_single) {
         # join replicates
