@@ -91,7 +91,7 @@ total_meth_levels_fun <- function(rep_var1_f, rep_var2_f, var1_f, var2_f, plot_t
           axis.line.y = element_line(linewidth = 1.1),
           axis.ticks = element_line(linewidth = 1.1) , 
           axis.ticks.length = unit(0.01, "cm"),
-          legend.position = c(leg_horiz, 0.9),
+          legend.position.inside = c(leg_horiz, 0.9),
           legend.title = element_blank(),
           legend.text = element_text(size = 9, face = "bold")) + 
     labs(y = "5-mC%", title = gsub("_"," ",plot_title)) +

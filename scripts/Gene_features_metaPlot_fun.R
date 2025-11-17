@@ -203,7 +203,7 @@ Genes_features_metaPlot <- function(methylationPool_var1, methylationPool_var2, 
       scale_color_manual(values = c("V1" = "gray50", "V2" = "#bf6828")) +
       theme_classic() +
       labs(title = main_title, x = "", y = paste0(cntx," Methylation")) +
-      theme(legend.position = "none",
+      theme(legend.position.inside = "none",
             panel.border = element_rect(colour = "black", fill=NA, linewidth=1),
             plot.title = element_text(hjust = 0.5),
             axis.text.y = element_text(size = 8),

@@ -27,7 +27,7 @@ gainORloss <- function(DMRsReplicates, context, add_count = FALSE) {
       panel.grid = element_blank(),
       panel.border = element_blank(),
       axis.ticks = element_blank(),
-      legend.position = "none",
+      legend.position.inside = "none",
       text = element_text(family = "serif")
     )
 
