@@ -66,7 +66,7 @@ delta_metaplot <- function(list_type, var1, var2, is_geneFeature = FALSE, contex
       y = "Δ methylation"
     ) +
     theme(
-      legend.position.inside = "none",
+      legend.position = "none",
       axis.line.x = element_blank(),
       axis.line.y = element_blank(),
       panel.border = element_rect(colour = "black", fill = NA, linewidth = 0.75),

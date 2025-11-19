@@ -65,7 +65,7 @@ DMRs_ann_plots <- function(var1, var2, context, sum_dH = F) {
       panel.border = element_rect(colour = "black", fill = NA, linewidth = 0.5),
       # legend.title=element_text(size = 8, face = "bold"),
       # legend.text = element_text(size = 8, face = "bold"),
-      legend.position.inside = "none"
+      legend.position = "none"
     ) +
     geom_text(aes(x = ann, y = y_lim_max * 0.8, label = total), size = 2.65) +
     labs(

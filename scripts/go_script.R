@@ -176,7 +176,7 @@ GO_one_plot <- function(treatment,
       #plot.title=element_text(hjust=0.5),
       legend.key.size = unit(0.25, 'cm'),
       legend.title = element_text(size=9.5),
-      legend.position.inside = "right",
+      legend.position = "right",
       text = element_text(family = "serif")) + 
     geom_point() +
     facet_grid(rows = vars(type), scales = "free_y", space = "free_y") + 
@@ -198,7 +198,7 @@ GO_one_plot <- function(treatment,
       #plot.title=element_text(hjust=0.5),
       legend.key.size = unit(0.25, 'cm'),
       legend.title = element_text(size=9.5),
-      legend.position.inside = "right",
+      legend.position = "right",
       text = element_text(family = "serif")) + 
     geom_point() +
     facet_grid(rows = vars(type), scales = "free_y", space = "free_y") + 
