@@ -1,11 +1,5 @@
 #!/bin/bash
 
-#############################
-# check for bismark - methylome.At
-
-#############################
-
-
 usage_yo="
 ###############################################################################
 YO - 260525
@@ -215,15 +209,12 @@ if [[ "$genome_b_name" == *.fas ]]; then
 fi
 bismark_genome_preparation $output_path/genome_indx
 
-#################### fix table
-#################### check if table is producrd
+
+####################
 ### create samples table file for Methylome.At
 if [[ "$methAt_samples" == "true" ]]; then
     mkdir -p "$output_path/../samples_table"
-    unique_samples_string=$(printf '%s\n' "${sample_name[@]}" | sed 's/[._][0-9]*$//' | awk '!seen[$0]++' | tr '\n' ' ')
-    read -ra unique_samples <<< "$unique_samples_string"
-    comparison_name="${unique_samples[1]}_vs_${unique_samples[0]}"
-    samples_table_path="$output_path/../samples_table/samples_table_"$comparison_name".txt"
+    samples_table_path="$output_path/../samples_table/S_T_tmp.txt"
     > "$samples_table_path"
 fi
 
@@ -314,18 +305,28 @@ for ((u = 0; u < ${#sample_name[@]}; u++)); do
             samtools index $output_path/"$i"/"$i"_sorted.bam
         fi
 
-# fix #        # # # # # # # # # # # #
-# fix #        # samples table for Methylome.At
-# fix #        if [[ "$methAt_samples" == "true" ]]; then
-# fix #            if [[ "$keep_cx" == "true" ]]; then
-# fix #            echo -e "$i"\\t"$output_path"/"$i"_bismark_"$Rs_type".CX_report.txt.gz >> "$samples_table_path"
-# fix #        else
-# fix #            echo -e "$i"\\t"$output_path"/"$i"/methylation_extractor/"$i"_bismark_"$Rs_type".CX_report.txt.gz >> $samples_table_path
-# fix #        fi
+        # # # # # # # # # # # #
+        # samples table for Methylome.At
+        if [[ "$methAt_samples" == "true" ]]; then
+            i_unique=$(printf '%s\n' "$i" | sed 's/[._][0-9]*$//')
+            if [[ "$keep_cx" == "true" ]]; then
+                echo -e "$i_unique"\\t"$output_path"/"$i"_bismark_"$Rs_type".CX_report.txt.gz >> "$samples_table_path"
+            else
+                echo -e "$i_unique"\\t"$output_path"/"$i"/methylation_extractor/"$i"_bismark_"$Rs_type".CX_report.txt.gz >> $samples_table_path
+            fi
+        fi
     fi
     echo "" >> "$log_file"
     echo "-----------------------------------" >> "$log_file"
 done
+
+if [[ "$methAt_samples" == "true" ]]; then
+    samples_var=$(cut -f1 "$samples_table_path" | uniq)
+    control_s=$(echo "$samples_var" | head -n1)
+    treatment_s=$(echo "$samples_var" | head -n2 | tail -n1)
+    cat $samples_table_path > "$output_path"/../samples_table/samples_file_"$treatment_s"_vs_"$control_s".txt
+    rm $samples_table_path
+fi
 
 echo "**  $(date +"%d-%m-%y %H:%M")" >> "$log_file"
 cd $ori_path

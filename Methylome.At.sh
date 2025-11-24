@@ -198,6 +198,9 @@ Rscript ./scripts/Methylome.At_run.R \
 "$KEGG_pathways" \
     2>> "$log_file"
     
+# Output a markdown report as '.html' file
+Rscript -e "rmarkdown::render('./scripts/Methylome.At_report.Rmd', params = list(cond1 = '$control_s', cond2 = '$treatment_s'))"
+
 # Output again the configurations, now to the 'log' file
 echo "" >> "$log_file"
 echo "" >> "$log_file"
