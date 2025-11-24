@@ -1,7 +1,7 @@
 edit_TE_file <- function(TE_df) {
   
   TE_df <- TE_df %>%
-    mutate(seqnames = NA) %>%  # Add a new column with NA values
+    mutate(seqnames = NA) %>%
     dplyr::select(seqnames,Transposon_min_Start,Transposon_max_End,orientation_is_5prime, everything()) %>%
     dplyr::rename(gene_id = Transposon_Name)
   
@@ -15,4 +15,5 @@ edit_TE_file <- function(TE_df) {
   TE_gr = makeGRangesFromDataFrame(TE_df, keep.extra.columns = T)
   
   return(TE_gr)
+
 }
