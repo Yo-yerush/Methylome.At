@@ -1,4 +1,4 @@
-options(width = 100)
+options(width = 100, warn = -1)
 
 # upload libraries
 lib_packages <- c(

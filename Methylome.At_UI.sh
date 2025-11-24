@@ -21,6 +21,10 @@ fi
 ###############
 # CONFIGURATION
 ###############
+# Default parameters for run_bismark.sh:
+SCRIPT_BIS_DEFAULT_genome="TAIR10"
+SCRIPT_BIS_DEFAULT_ncores="8"
+
 # Default parameters for Methylome.At.sh:
 SCRIPT1_DEFAULT_minProportionDiff_CG="0.4"
 SCRIPT1_DEFAULT_minProportionDiff_CHG="0.2"
@@ -29,7 +33,7 @@ SCRIPT1_DEFAULT_binSize="100"
 SCRIPT1_DEFAULT_minCytosinesCount="4"
 SCRIPT1_DEFAULT_minReadsPerCytosine="4"
 SCRIPT1_DEFAULT_pValueThreshold="0.05"
-SCRIPT1_DEFAULT_n_cores="10"
+SCRIPT1_DEFAULT_n_cores="8"
 SCRIPT1_DEFAULT_GO_analysis="FALSE"
 SCRIPT1_DEFAULT_KEGG_pathways="FALSE"
 SCRIPT1_DEFAULT_file_type="CX_report"
@@ -43,7 +47,7 @@ SCRIPT2_DEFAULT_Genes_n_TEs="TRUE"
 SCRIPT2_DEFAULT_Gene_features="TRUE"
 SCRIPT2_DEFAULT_minReadsPerCytosine="4"
 SCRIPT2_DEFAULT_metaPlot_random_genes="10000"
-SCRIPT2_DEFAULT_n_cores="10"
+SCRIPT2_DEFAULT_n_cores="8"
 SCRIPT2_DEFAULT_bin_size_features="10"
 SCRIPT2_DEFAULT_file_type="CX_report"
 SCRIPT2_DEFAULT_img_type="pdf"
@@ -51,8 +55,9 @@ SCRIPT2_DEFAULT_annotation_file="annotation_files/Methylome.At_annotations.csv.g
 SCRIPT2_DEFAULT_TEs_file="annotation_files/TAIR10_Transposable_Elements.txt"
 
 # Paths to the scripts we want to run (adjust if needed)
-SCRIPT1_PATH="./Methylome.At.sh"
-SCRIPT2_PATH="./Methylome.At_metaPlots.sh"
+SCRIPT_BIS_PATH="./scripts/run_bismark.sh"
+SCRIPT1_PATH="./scripts/Methylome.At.sh"
+SCRIPT2_PATH="./scripts/Methylome.At_metaPlots.sh"
 
 ##################
 # WHIPTAIL DIALOGS
@@ -62,6 +67,7 @@ SCRIPT2_PATH="./Methylome.At_metaPlots.sh"
 CHOICE=$(whiptail --title "Choose scripts to run" \
   --checklist "Select which pipeline(s) to run. Use SPACE to toggle selection, ENTER to confirm, ESC to cancle." \
   18 70 4 \
+  "Bismark" "Run genome alignment with Bismark" OFF \
   "Methylome.At" "Run main methylome pipeline'" ON \
   "MetaPlots" "Run 'metaPlot' pipeline" OFF \
   3>&1 1>&2 2>&3)
@@ -84,7 +90,7 @@ done
 # Prompt for the samples_file
 #############################
 SAMPLES_FILE=$(whiptail --title "samples_file" --inputbox \
-  "Enter the path to the samples file (required):" \
+  "Enter the path to the samples table file:" \
   10 70 \
   "" \
   3>&1 1>&2 2>&3)
@@ -96,6 +102,29 @@ fi
 ########################################
 # Function to edit parameters interactively
 ########################################
+
+# A generic function to create a parameter menu for bismrk scripts
+edit_script_bis_parameters() {
+  # Parameters are expected to be set before calling this function
+  while true; do
+    OPTION=$(whiptail --title "'Bismark alignment' Parameters" --menu "Select a parameter to change or proceed with current settings." 25 78 16 \
+      "Proceed." "Use current parameters" \
+      "$SCRIPT_BIS_DEFAULT_genome" "Reference FASTA file" \
+      "$SCRIPT_BIS_DEFAULT_ncores" "Number of cores" \
+      3>&1 1>&2 2>&3)
+
+    # Check if user cancelled
+    [ $? -ne 0 ] && return 1
+
+    if [ "$OPTION" = "Proceed." ]; then
+      break
+    elif [ "$OPTION" = "$SCRIPT_BIS_DEFAULT_genome" ]; then
+      SCRIPT_BIS_DEFAULT_genome=$(whiptail --inputbox "Path to reference genome file" 10 70 "$SCRIPT_BIS_DEFAULT_genome" 3>&1 1>&2 2>&3 || echo "$SCRIPT_BIS_DEFAULT_genome")
+    elif [ "$OPTION" = "$SCRIPT_BIS_DEFAULT_ncores" ]; then
+      SCRIPT_BIS_DEFAULT_ncores=$(whiptail --inputbox "Number of cores" 10 70 "$SCRIPT_BIS_DEFAULT_ncores" 3>&1 1>&2 2>&3 || echo "$SCRIPT_BIS_DEFAULT_ncores")
+    fi
+  done
+}
 
 # A generic function to create a parameter menu for script1
 edit_script1_parameters() {
@@ -241,6 +270,18 @@ edit_script2_parameters() {
 
 
 ###################
+# Gather run_bismark.sh
+###################
+if [[ " ${SELECTED_SCRIPTS[*]} " =~ "Bismark" ]]; then
+    # Initialize parameters with defaults
+    SCRIPT_BIS_genome="$SCRIPT_BIS_DEFAULT_genome"
+    SCRIPT_BIS_ncores="$SCRIPT_BIS_DEFAULT_ncores"
+
+    # Directly go to the parameters selection menu
+    edit_script_bis_parameters || exit 1
+fi
+
+###################
 # Gather Methylome.At.sh
 ###################
 if [[ " ${SELECTED_SCRIPTS[*]} " =~ "Methylome.At" ]]; then
@@ -291,6 +332,9 @@ fi
 
 # Construct a message listing the chosen scripts
 chosen_message=""
+if [[ " ${SELECTED_SCRIPTS[*]} " =~ "Bismark" ]]; then
+    chosen_message+="'Bismark' "
+fi
 if [[ " ${SELECTED_SCRIPTS[*]} " =~ "Methylome.At" ]]; then
     chosen_message+="'Methylome.At' "
 fi
@@ -311,12 +355,20 @@ fi
 
 # Display yes/no dialog
 if (whiptail --title "All done!" --yesno "You have chosen to run: $chosen_message.\n\nWould you like to proceed?" 12 70); then
-  # User selected Yes, proceed with running the scripts
-  # Methylome.At.sh invocation
+
+  # Bismark pipeline for 'cx_report' files
+  if [[ " ${SELECTED_SCRIPTS[*]} " =~ "Bismark" ]]; then
+    echo "Running run_bismark.sh..."
+    SAMPLES_FILE_CX=$(bash "$SCRIPT_BIS_PATH" -s "$SAMPLES_FILE" -g "$SCRIPT_BIS_genome" -n "$SCRIPT_BIS_ncores" -o "${Methylome_At_path}/bismark_CX_reports" --cx --mat)
+  else
+    SAMPLES_FILE_CX="$SAMPLES_FILE"
+  fi
+
+  # Methylome.At pipeline invocation
   if [[ " ${SELECTED_SCRIPTS[*]} " =~ "Methylome.At" ]]; then
     echo "Running Methylome.At.sh..."
     bash "$SCRIPT1_PATH" \
-      --samples_file "$SAMPLES_FILE" \
+      --samples_file "$SAMPLES_FILE_CX" \
       --minProportionDiff_CG "$SCRIPT1_minProportionDiff_CG" \
       --minProportionDiff_CHG "$SCRIPT1_minProportionDiff_CHG" \
       --minProportionDiff_CHH "$SCRIPT1_minProportionDiff_CHH" \
@@ -334,11 +386,11 @@ if (whiptail --title "All done!" --yesno "You have chosen to run: $chosen_messag
       --TEs_file "$SCRIPT1_TEs_file"
   fi
 
-  # Methylome.At_metaPlots.sh invocation
+  # MetaPlots pipeline
   if [[ " ${SELECTED_SCRIPTS[*]} " =~ "MetaPlots" ]]; then
     echo "Running Methylome.At_metaPlots.sh..."
     bash "$SCRIPT2_PATH" \
-      --samples_file "$SAMPLES_FILE" \
+      --samples_file "$SAMPLES_FILE_CX" \
       --Genes_n_TEs "$SCRIPT2_Genes_n_TEs" \
       --Gene_features "$SCRIPT2_Gene_features" \
       --minReadsPerCytosine "$SCRIPT2_minReadsPerCytosine" \
@@ -350,10 +402,8 @@ if (whiptail --title "All done!" --yesno "You have chosen to run: $chosen_messag
       --annotation_file "$SCRIPT2_annotation_file" \
       --TEs_file "$SCRIPT2_TEs_file"
   fi
-
-  #echo "All done!"
 else
-  # User selected No, just exit without running
+
   echo "You chose not to run the scripts. Exiting."
   exit 0
 fi

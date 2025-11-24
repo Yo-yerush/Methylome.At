@@ -16,7 +16,7 @@ Options:
 -s, --samples   Tab-delimited two-column file: sample-name <TAB> fastq-path
 -g, --genome    FASTA of the reference genome (will be indexed)
 -o, --outdir    Output directory [default: ./bismark_results]
--n, --ncores    Number of cores (max). multiples of 4 recommended. [default: 16]
+-n, --ncores    Number of cores (max). multiples of 4 recommended [default: 8]
 -m, --mem       Buffer size for 'bismark_methylation_extractor' [default: 8G]
 --cx            Produce and keep only '_CX_report.txt.gz' file
 --mat           Produce samples table (.txt) for 'Methylome.At' pipeline
@@ -32,7 +32,7 @@ Example:
 Download Arabidopsis reference genome (TAIR10):
 -----------------------------------------------
 $ cd /PATH/TO
-$ wget -O TAIR10_chr_all.fas.gz https://www.arabidopsis.org/api/download-files/download?filePath=Genes/TAIR10_genome_release/TAIR10_chromosome_files/TAIR10_chr_all.fas.gz
+$ wget -O TAIR10_chr_all.fa.gz https://www.arabidopsis.org/api/download-files/download?filePath=Genes/TAIR10_genome_release/TAIR10_chromosome_files/TAIR10_chr_all.fas.gz
 
 Create a sample table file (example):
 -------------------------------------
@@ -47,7 +47,7 @@ wt_2    PATH/TO/FILE/wt2_R2.fastq
 
 Run:
 ----
-$ ./run_bismark_yo.sh -s samples_table.txt -g TAIR10_chr_all.fas.gz --cx
+$ ./run_bismark_yo.sh -s samples_table.txt -g TAIR10_chr_all.fa.gz -n 30 --cx --mat
 ###############################################################################
 "
 
@@ -57,7 +57,7 @@ sample_table=
 genome_file_full_path=
 output_path="./bismark_results"
 output_suffix="wgbs_bismark_$(date +%d%m%y)"
-n_cores=16
+n_cores=8
 buffer_size=8G
 keep_cx=false
 methAt_samples=false
@@ -130,7 +130,7 @@ fi
 dos2unix "$sample_table" 2>/dev/null
 
 # check if 'genome_file_full_path' file exists
-if [[ ! -f "$genome_file_full_path" ]]; then
+if [[ ! -f "$genome_file_full_path" || "$genome_file_full_path" != "TAIR10" ]]; then
     echo "Error: Genome file '$genome_file_full_path' does not exist."
     exit 1
 fi
@@ -198,24 +198,31 @@ genome_b_name=$(basename "$genome_file_full_path")
 genome_new_path=$output_path/genome_indx/$genome_b_name
 echo "indexing genome file: '$genome_b_name'" >> "$log_file"
 mkdir -p $output_path/genome_indx
-cp $genome_file_full_path $output_path/genome_indx
-# Rename genome file if necessary
-if [[ "$genome_b_name" == *.fas ]]; then
-    mv "$genome_new_path" "${genome_new_path%.fas}.fa"
-    echo "* rename genome file: '$(basename ${genome_new_path%.fas}.fa)'" >> "$log_file"
+
+# Get the genome file from TAIR10 or full path
+if [["$genome_file_full_path" == "TAIR10"]]; then
+    wget -O "${output_path}/genome_indx/TAIR10_chr_all.fa.gz" "https://www.arabidopsis.org/api/download-files/download?filePath=Genes/TAIR10_genome_release/TAIR10_chromosome_files/TAIR10_chr_all.fas.gz"
+    genome_file_full_path
+else
+    cp $genome_file_full_path $output_path/genome_indx
+    # Rename genome file if needed
+    if [[ "$genome_b_name" == *.fas ]]; then
+        mv "$genome_new_path" "${genome_new_path%.fas}.fa"
+        echo "* rename genome file: '$(basename ${genome_new_path%.fas}.fa)'" >> "$log_file"
     elif [[ "$genome_new_path" == *.fas.gz ]]; then
-    mv "$genome_new_path" "${genome_new_path%.fas.gz}.fa.gz"
-    echo "* rename genome file: '$(basename ${genome_new_path%.fas.gz}.fa.gz)'" >> "$log_file"
+        mv "$genome_new_path" "${genome_new_path%.fas.gz}.fa.gz"
+        echo "* rename genome file: '$(basename ${genome_new_path%.fas.gz}.fa.gz)'" >> "$log_file"
+    fi
 fi
+
 bismark_genome_preparation $output_path/genome_indx
 
 
 ####################
 ### create samples table file for Methylome.At
 if [[ "$methAt_samples" == "true" ]]; then
-    mkdir -p "$output_path/../samples_table"
-    samples_table_path="$output_path/../samples_table/S_T_tmp.txt"
-    > "$samples_table_path"
+    samples_table_tmp="${output_path}/tmp/S_T_$(date +"%y%m%d%H%M%S").tmp"
+    > "$samples_table_tmp"
 fi
 
 echo "" >> "$log_file"
@@ -310,9 +317,9 @@ for ((u = 0; u < ${#sample_name[@]}; u++)); do
         if [[ "$methAt_samples" == "true" ]]; then
             i_unique=$(printf '%s\n' "$i" | sed 's/[._][0-9]*$//')
             if [[ "$keep_cx" == "true" ]]; then
-                echo -e "$i_unique"\\t"$output_path"/"$i"_bismark_"$Rs_type".CX_report.txt.gz >> "$samples_table_path"
+                echo -e "$i_unique"\\t"$output_path"/"$i"_bismark_"$Rs_type".CX_report.txt.gz >> "$samples_table_tmp"
             else
-                echo -e "$i_unique"\\t"$output_path"/"$i"/methylation_extractor/"$i"_bismark_"$Rs_type".CX_report.txt.gz >> $samples_table_path
+                echo -e "$i_unique"\\t"$output_path"/"$i"/methylation_extractor/"$i"_bismark_"$Rs_type".CX_report.txt.gz >> $samples_table_tmp
             fi
         fi
     fi
@@ -321,14 +328,17 @@ for ((u = 0; u < ${#sample_name[@]}; u++)); do
 done
 
 if [[ "$methAt_samples" == "true" ]]; then
-    samples_var=$(cut -f1 "$samples_table_path" | uniq)
+    st_out_path="${output_path}/../samples_CX_table"
+    st_out_name="${st_out_path}/samples_file_${treatment_s}_vs_${control_s}.txt"
+    samples_var=$(cut -f1 "$samples_table_tmp" | uniq)
     control_s=$(echo "$samples_var" | head -n1)
     treatment_s=$(echo "$samples_var" | head -n2 | tail -n1)
-    cat $samples_table_path > "$output_path"/../samples_table/samples_file_"$treatment_s"_vs_"$control_s".txt
-    rm $samples_table_path
+    mkdir -p "$st_out_path"
+    cat "$samples_table_tmp" > "$st_out_name"
+    rm "$samples_table_tmp"
+    echo "$st_out_name" # print the table path to the next script
 fi
 
 echo "**  $(date +"%d-%m-%y %H:%M")" >> "$log_file"
 cd $ori_path
 rm -r $output_path/tmp
-

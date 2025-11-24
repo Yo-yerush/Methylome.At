@@ -1,6 +1,6 @@
 ---
 title: "Methylome.At report"
-author: " "
+author: "[ ](https://github.com/Yo-yerush/Methylome.At)"
 date: "`r format(Sys.Date(), '%d, %B, %Y')`"
 output:
     html_document:

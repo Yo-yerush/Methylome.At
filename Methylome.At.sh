@@ -20,7 +20,7 @@ minReadsPerCytosine=4
 pValueThreshold=0.05
 methyl_files_type=CX_report
 img_type=pdf
-n_cores=10
+n_cores=8
 GO_analysis=FALSE
 KEGG_pathways=FALSE
 
@@ -138,6 +138,7 @@ fi
 # Use head and sed to get the first and second lines
 control_s=$(echo "$samples_var" | head -n1)
 treatment_s=$(echo "$samples_var" | head -n2 | tail -n1)
+condition_s="${treatment_s}_vs_${control_s}"
 
 # Output the configuration
 echo ""
@@ -172,7 +173,7 @@ echo ""
 mkdir -p results
 
 # Generate log file with a timestamp
-log_file="results/${treatment_s}_vs_${control_s}_$(date +"%d-%m-%y").log"
+log_file="results/${condition_s}_$(date +"%d-%m-%y").log"
 echo "**  $(date +"%d-%m-%y %H:%M")" > "$log_file"
 echo "**  $treatment_s VS. $control_s" >> "$log_file"
 echo "" >> "$log_file"
@@ -197,9 +198,12 @@ Rscript ./scripts/Methylome.At_run.R \
 "$GO_analysis" \
 "$KEGG_pathways" \
     2>> "$log_file"
-    
+
 # Output a markdown report as '.html' file
-Rscript -e "rmarkdown::render('./scripts/Methylome.At_report.Rmd', params = list(cond1 = '$control_s', cond2 = '$treatment_s'))"
+report_file_name="${condition_s}_report_$(date +"%d-%m-%y").html"
+report_file_path="${Methylome_At_path}/results/${condition_s}"
+cd "$Methylome_At_path"
+Rscript -e "rmarkdown::render('./scripts/Methylome.At_report.Rmd',output_file = '$report_file_name', output_dir = '$report_file_path', params = list(cond1 = '$control_s', cond2 = '$treatment_s'), quiet = TRUE)"
 
 # Output again the configurations, now to the 'log' file
 echo "" >> "$log_file"
