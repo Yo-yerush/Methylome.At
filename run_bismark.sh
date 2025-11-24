@@ -9,12 +9,12 @@ Bismark WGBS pipeline
 
 Usage:
 ------
-run_bismark_yo.sh [-s <required>] [-g <required>] [options]
+run_bismark_yo.sh [-s <required>] [-g TAIR10] [options]
 
 Options:
 --------
 -s, --samples   Tab-delimited two-column file: sample-name <TAB> fastq-path
--g, --genome    FASTA of the reference genome (will be indexed)
+-g, --genome    FASTA of the reference genome [default: TAIR10]
 -o, --outdir    Output directory [default: ./bismark_results]
 -n, --ncores    Number of cores (max). multiples of 4 recommended [default: 8]
 -m, --mem       Buffer size for 'bismark_methylation_extractor' [default: 8G]
@@ -22,17 +22,13 @@ Options:
 --mat           Produce samples table (.txt) for 'Methylome.At' pipeline
 --sort          Sort & index BAM files (applies only if --cx is off)
 --strand        Keep top/bottom strand (OT/OB) files [remove in default]
---um            Produce and keep only unmapped files (as .fastq)
+--um            Produce and keep only unmapped files (as FASTQ)
 --help
 
 ------------------------------------------------------------
 
 Example:
 --------
-Download Arabidopsis reference genome (TAIR10):
------------------------------------------------
-$ cd /PATH/TO
-$ wget -O TAIR10_chr_all.fa.gz https://www.arabidopsis.org/api/download-files/download?filePath=Genes/TAIR10_genome_release/TAIR10_chromosome_files/TAIR10_chr_all.fas.gz
 
 Create a sample table file (example):
 -------------------------------------
@@ -47,14 +43,14 @@ wt_2    PATH/TO/FILE/wt2_R2.fastq
 
 Run:
 ----
-$ ./run_bismark_yo.sh -s samples_table.txt -g TAIR10_chr_all.fa.gz -n 30 --cx --mat
+$ ./run_bismark_yo.sh -s samples_table.txt -g TAIR10 -n 30 --cx --mat
 ###############################################################################
 "
 
 ####################
 ### default values
 sample_table=
-genome_file_full_path=
+genome_file_name="TAIR10"
 output_path="./bismark_results"
 output_suffix="wgbs_bismark_$(date +%d%m%y)"
 n_cores=8
@@ -72,7 +68,7 @@ while [[ $# -gt 0 ]]; do
             shift 2
         ;;
         -g | --genome)
-            genome_file_full_path=$2
+            genome_file_name=$2
             shift 2
         ;;
         -o | --outdir)
@@ -129,9 +125,9 @@ fi
 # ensure sample table has unix line endings (can also try: sed -i 's/\r$//' "$sample_table")
 dos2unix "$sample_table" 2>/dev/null
 
-# check if 'genome_file_full_path' file exists
-if [[ ! -f "$genome_file_full_path" || "$genome_file_full_path" != "TAIR10" ]]; then
-    echo "Error: Genome file '$genome_file_full_path' does not exist."
+# check if 'genome_file_name' file exists
+if [[ ! -f "$genome_file_name" || "$genome_file_name" != "TAIR10" ]]; then
+    echo "Error: Genome file '$genome_file_name' does not exist."
     exit 1
 fi
 
@@ -194,18 +190,18 @@ echo "" >> "$log_file"
 
 ####################
 ### index the genom
-genome_b_name=$(basename "$genome_file_full_path")
-genome_new_path=$output_path/genome_indx/$genome_b_name
-echo "indexing genome file: '$genome_b_name'" >> "$log_file"
 mkdir -p $output_path/genome_indx
 
-# Get the genome file from TAIR10 or full path
-if [["$genome_file_full_path" == "TAIR10"]]; then
+# Get the genome file from TAIR10 or from file path
+if [["$genome_file_name" == "TAIR10"]]; then
+    echo "download TAIR10 FASTA" >> "$log_file"
     wget -O "${output_path}/genome_indx/TAIR10_chr_all.fa.gz" "https://www.arabidopsis.org/api/download-files/download?filePath=Genes/TAIR10_genome_release/TAIR10_chromosome_files/TAIR10_chr_all.fas.gz"
-    genome_file_full_path
+    genome_b_name="TAIR10_chr_all.fa.gz"
 else
-    cp $genome_file_full_path $output_path/genome_indx
+    cp $genome_file_name $output_path/genome_indx
     # Rename genome file if needed
+    genome_b_name=$(basename "$genome_file_name")
+    genome_new_path=$output_path/genome_indx/$genome_b_name
     if [[ "$genome_b_name" == *.fas ]]; then
         mv "$genome_new_path" "${genome_new_path%.fas}.fa"
         echo "* rename genome file: '$(basename ${genome_new_path%.fas}.fa)'" >> "$log_file"
@@ -215,6 +211,7 @@ else
     fi
 fi
 
+echo "indexing genome file: '$genome_b_name'" >> "$log_file"
 bismark_genome_preparation $output_path/genome_indx
 
 
