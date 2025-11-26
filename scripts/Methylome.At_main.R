@@ -187,6 +187,7 @@ Methylome.At_main <- function(var1, # control
 
   ##### calculate the conversion rate by the chloroplast chromosome (ChrC)
   message("\nconversion rate (C->T) along the Chloroplast genome:", appendLF = F)
+  cat("\nconversion rate (C->T) along the Chloroplast genome:\n")
   tryCatch(
     {
       message("")
@@ -230,7 +231,7 @@ Methylome.At_main <- function(var1, # control
     cat(" done\n")
   } else {
     message("\n* skipping PCA plots for single-samples data")
-    cat(" fail\n")
+    cat("skipping PCA plots for single-samples data\n")
   }
   ###########################################################################
 

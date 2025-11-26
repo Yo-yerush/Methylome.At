@@ -9,7 +9,7 @@ Bismark WGBS pipeline
 
 Usage:
 ------
-run_bismark_yo.sh [-s <required>] [-g TAIR10] [options]
+run_bismark.sh [-s <required>] [-g TAIR10] [options]
 
 Options:
 --------
@@ -20,6 +20,7 @@ Options:
 -m, --mem       Buffer size for 'bismark_methylation_extractor' [default: 8G]
 --cx            Produce and keep only '_CX_report.txt.gz' file
 --mat           Produce samples table (.txt) for 'Methylome.At' pipeline
+--indx          Keep the genome index directory (applies only if --cx is on)
 --sort          Sort & index BAM files (applies only if --cx is off)
 --strand        Keep top/bottom strand (OT/OB) files [remove in default]
 --um            Produce and keep only unmapped files (as FASTQ)
@@ -43,7 +44,7 @@ wt_2    PATH/TO/FILE/wt2_R2.fastq
 
 Run:
 ----
-$ ./run_bismark_yo.sh -s samples_table.txt -g TAIR10 -n 30 --cx --mat
+$ ./run_bismark.sh -s samples_table.txt -g TAIR10 -n 30 --cx --mat
 ###############################################################################
 "
 
@@ -57,6 +58,7 @@ n_cores=8
 buffer_size=8G
 keep_cx=false
 methAt_samples=false
+keep_indx=false
 sort_bam=false
 keep_strand=false
 keep_unmapped=false
@@ -89,6 +91,10 @@ while [[ $# -gt 0 ]]; do
         ;;
         --mat)
             methAt_samples=true
+            shift
+        ;;
+        --indx)
+            keep_indx=true
             shift
         ;;
         --sort)
@@ -126,7 +132,7 @@ fi
 dos2unix "$sample_table" 2>/dev/null
 
 # check if 'genome_file_name' file exists
-if [[ ! -f "$genome_file_name" || "$genome_file_name" != "TAIR10" ]]; then
+if [[ ! -f "$genome_file_name" && "$genome_file_name" != "TAIR10" ]]; then
     echo "Error: Genome file '$genome_file_name' does not exist."
     exit 1
 fi
@@ -193,8 +199,9 @@ echo "" >> "$log_file"
 mkdir -p $output_path/genome_indx
 
 # Get the genome file from TAIR10 or from file path
-if [["$genome_file_name" == "TAIR10"]]; then
+if [[ "$genome_file_name" == "TAIR10" ]]; then
     echo "download TAIR10 FASTA" >> "$log_file"
+    echo -e "\n*************\n\ndownload the default TAIR10 reference FASTA file\n\n*************\n\n"
     wget -O "${output_path}/genome_indx/TAIR10_chr_all.fa.gz" "https://www.arabidopsis.org/api/download-files/download?filePath=Genes/TAIR10_genome_release/TAIR10_chromosome_files/TAIR10_chr_all.fas.gz"
     genome_b_name="TAIR10_chr_all.fa.gz"
 else
@@ -304,7 +311,7 @@ for ((u = 0; u < ${#sample_name[@]}; u++)); do
 
         # # # # # # # # # # # #
         # sort bam files (can use in IGV software to watch the reads over the genome)
-        if [[ "$sort_bam" == "true" || "$keep_cx" == "false" ]]; then
+        if [[ "$sort_bam" == "true" && "$keep_cx" == "false" ]]; then
             samtools sort $output_path/"$i"/"$i"_bismark_"$Rs_type".bam -o $output_path/"$i"/"$i"_sorted.bam
             samtools index $output_path/"$i"/"$i"_sorted.bam
         fi
@@ -325,15 +332,19 @@ for ((u = 0; u < ${#sample_name[@]}; u++)); do
 done
 
 if [[ "$methAt_samples" == "true" ]]; then
-    st_out_path="${output_path}/../samples_CX_table"
-    st_out_name="${st_out_path}/samples_file_${treatment_s}_vs_${control_s}.txt"
     samples_var=$(cut -f1 "$samples_table_tmp" | uniq)
     control_s=$(echo "$samples_var" | head -n1)
     treatment_s=$(echo "$samples_var" | head -n2 | tail -n1)
+    st_out_path=$(readlink -f "${output_path}/../samples_CX_table")
+    st_out_name="${st_out_path}/samples_file_${treatment_s}_vs_${control_s}.txt"
     mkdir -p "$st_out_path"
     cat "$samples_table_tmp" > "$st_out_name"
     rm "$samples_table_tmp"
     echo "$st_out_name" # print the table path to the next script
+fi
+
+if [[ "$keep_cx" == "true" && "$keep_indx" == "false" ]]; then
+    rm -r -- $output_path/genome_indx
 fi
 
 echo "**  $(date +"%d-%m-%y %H:%M")" >> "$log_file"

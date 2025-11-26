@@ -56,7 +56,7 @@ SCRIPT2_DEFAULT_TEs_file="annotation_files/TAIR10_Transposable_Elements.txt"
 
 # Paths to the scripts we want to run (adjust if needed)
 SCRIPT_BIS_PATH="./scripts/run_bismark.sh"
-SCRIPT1_PATH="./scripts/Methylome.At.sh"
+SCRIPT1_PATH="./Methylome.At.sh"
 SCRIPT2_PATH="./scripts/Methylome.At_metaPlots.sh"
 
 ##################
@@ -359,7 +359,7 @@ if (whiptail --title "All done!" --yesno "You have chosen to run: $chosen_messag
   # Bismark pipeline for 'cx_report' files
   if [[ " ${SELECTED_SCRIPTS[*]} " =~ "Bismark" ]]; then
     echo "Running run_bismark.sh..."
-    SAMPLES_FILE_CX=$(bash "$SCRIPT_BIS_PATH" -s "$SAMPLES_FILE" -g "$SCRIPT_BIS_genome" -n "$SCRIPT_BIS_ncores" -o "${Methylome_At_path}/bismark_CX_reports" --cx --mat)
+    SAMPLES_FILE_CX=$(bash "$SCRIPT_BIS_PATH" -s "$SAMPLES_FILE" -g "$SCRIPT_BIS_genome" -n "$SCRIPT_BIS_ncores" -o "${Methylome_At_path}/bismark_CX_reports" --cx --mat | tail -n1)
   else
     SAMPLES_FILE_CX="$SAMPLES_FILE"
   fi
