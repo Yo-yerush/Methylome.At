@@ -2,10 +2,9 @@ TE_ann_plots <- function(context, TE.gr, sum_dH = F) {
   region_analysis <- ifelse(!sum_dH, "DMRs", "SurpMRs")
 
   dir.create("TEs_addiotionnal_results", showWarnings = F)
-  setwd("TEs_addiotionnal_results")
-  
-  DMRsReplicates_TE_file.0 = paste0("../",context,"/", region_analysis, "_Transposable_Elements_",context,"_genom_annotations.csv")
-  DMRsReplicates_Genes_file.0 = paste0("../",context,"/", region_analysis, "_Genes_",context,"_genom_annotations.csv")
+
+  DMRsReplicates_TE_file.0 = paste0(context,"/", region_analysis, "_Transposable_Elements_",context,"_genom_annotations.csv")
+  DMRsReplicates_Genes_file.0 = paste0(context,"/", region_analysis, "_Genes_",context,"_genom_annotations.csv")
   
   if (file.exists(DMRsReplicates_TE_file.0)) {
     
@@ -14,6 +13,7 @@ TE_ann_plots <- function(context, TE.gr, sum_dH = F) {
     DMRsReplicates_Genes_file = DMRsReplicates_Genes_file[DMRsReplicates_Genes_file$gene_model_type == "protein_coding",]
     
     ######################### TE vs Genes plot
+    dir.create("TEs_addiotionnal_results/coding_genes_vs_TEs", showWarnings = F)
     GvsT_df = data.frame(x=c("Genes","TE"),
                          y=c(nrow(DMRsReplicates_Genes_file),nrow(DMRsReplicates_TE_file)))
     GvsT_plot = ggplot(GvsT_df,aes(x=x, y=y)) + 
@@ -23,11 +23,12 @@ TE_ann_plots <- function(context, TE.gr, sum_dH = F) {
       ylab(paste0("Number of ", region_analysis))+
       ggtitle(context)+
       theme_classic() + theme(axis.text.x =  element_text(face="bold",size=11))
-    img_device(paste0(context,"_TE.vs.ProteinCodingGenes"), w = 1.6, h = 2.1)
+    img_device(paste0("TEs_addiotionnal_results/coding_genes_vs_TEs/", context,"_coding_genes_vs_TEs"), w = 1.6, h = 2.1)
     plot(GvsT_plot)
     dev.off()
     
     ######################### TE pie plot
+    dir.create("TEs_addiotionnal_results/super_family_frequency", showWarnings = F)
     color_vec = c(brewer.pal(n = 8, name = "Set2"), brewer.pal(n = 9, name = "Set1"),brewer.pal(n = 8, name = "Dark2"))
     color_vec = paste0(color_vec,"90")
     col_indx = data.frame(SF_name = sort(unique(TE.gr$Transposon_Super_Family)),
@@ -43,7 +44,7 @@ TE_ann_plots <- function(context, TE.gr, sum_dH = F) {
     indices_top_n <- order(TE_Freq$Freq, decreasing = TRUE)[1:top_n]
     labels[indices_top_n] <- as.character(TE_Freq$SF_name[indices_top_n])
     
-    img_device(paste0(region_analysis, "_", context,"_TE_Super_Family"), w = 8, h = 5.5)
+    img_device(paste0("TEs_addiotionnal_results/super_family_frequency/", region_analysis, "_", context,"_TE_super_family"), w = 8, h = 5.5)
     par(mar = c(1,4,1,4))
     par(fig=c(0,6,0,10)/10)
     par(lwd = 2)
@@ -70,6 +71,4 @@ TE_ann_plots <- function(context, TE.gr, sum_dH = F) {
     
     dev.off()
   }
-  
-  setwd("../")
 }

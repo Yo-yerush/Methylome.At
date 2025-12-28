@@ -174,7 +174,6 @@ Methylome.At_main <- function(var1, # control
   dH_CX_ann_path <- paste0(exp_path, "/deltaH/genome_annotation")
   PCA_plots_path <- paste0(exp_path, "/PCA_plots")
   meth_levels_path <- paste0(exp_path, "/methylation_levels")
-  metaPlot_path <- paste0(exp_path, "/metaPlots")
   gainORloss_path <- paste0(exp_path, "/gain_OR_loss")
   genome_ann_path <- paste0(exp_path, "/genome_annotation")
   DMRs_bigWig_path <- paste0(exp_path, "/DMRs_bigWig")
@@ -455,6 +454,39 @@ Methylome.At_main <- function(var1, # control
       cat("\n*\n", as.character(cond), "\n*\n")
       message("generated DMRs density plot for all contexts: fail\n")
     }
+  )
+
+  ###########################################################################
+
+  ##### TEs - size and distance plots
+  TE_context_list <- TE_delta_meth(list(meth_var1, meth_var2), TE_file)
+
+  ## TE methylation levels (delta) and size
+  TE_delta_list <- list(
+    te_size_plot(TE_context_list, "CG"),
+    te_size_plot(TE_context_list, "CHG"),
+    te_size_plot(TE_context_list, "CHH")
+  )
+
+  ggsave(
+    filename = paste0(genome_ann_path, "/TEs_addiotionnal_results/TE_size_delta_scatter.png"),
+    plot = gridExtra::grid.arrange(grobs = TE_delta_list, nrow = 1, ncol = 3),
+    width = 10500,
+    height = 2500,
+    units = "px",
+    dpi = 1200
+  )
+
+  ## TE methylation levels (delta) and distance from centromer
+  TE_distance <- distance_from_centromer(TE_context_list, TE_gr, window_size = 1e6)
+
+  ggsave(
+    filename = paste0(genome_ann_path, "/TEs_addiotionnal_results/TE_centromere_distance_delta.png"),
+    plot = TE_distance$plot,
+    width = 3500,
+    height = 2500,
+    units = "px",
+    dpi = 1200
   )
 
   ###########################################################################

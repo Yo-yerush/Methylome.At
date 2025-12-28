@@ -1,10 +1,10 @@
 TE_Super_Family_Frequency = function(context, TE.gr, sum_dH = F) {
   region_analysis <- ifelse(!sum_dH, "DMRs", "SurpMRs")
-
-  dir.create("TEs_addiotionnal_results", showWarnings = F)
-  setwd("TEs_addiotionnal_results")
   
-  DMRsReplicates_TE_file.0 = paste0("../",context,"/", region_analysis, "_Transposable_Elements_",context,"_genom_annotations.csv")
+  dir.create("TEs_addiotionnal_results", showWarnings = F)
+  dir.create("TEs_addiotionnal_results/super_family_frequency", showWarnings = F)
+
+  DMRsReplicates_TE_file.0 = paste0(context,"/", region_analysis, "_Transposable_Elements_",context,"_genom_annotations.csv")
   
   if (file.exists(DMRsReplicates_TE_file.0)) {
     
@@ -47,8 +47,6 @@ TE_Super_Family_Frequency = function(context, TE.gr, sum_dH = F) {
     TE_Freq_df = TE_Freq_df[order(-TE_Freq_df[[paste0("total_", region_analysis)]]), ]
     TE_Freq_df[is.na(TE_Freq_df)] = 0
     
-    write.csv(TE_Freq_df, paste0(region_analysis, "_", context,"_TE_Super_Family_Freq.csv"), row.names = F)
+    write.csv(TE_Freq_df, paste0("TEs_addiotionnal_results/super_family_frequency/", region_analysis, "_", context,"_TE_Super_Family_Freq.csv"), row.names = F)
   }
-  
-  setwd("../")
 }
