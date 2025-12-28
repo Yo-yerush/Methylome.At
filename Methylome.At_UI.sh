@@ -56,7 +56,7 @@ SCRIPT2_DEFAULT_TEs_file="annotation_files/TAIR10_Transposable_Elements.txt"
 
 # Paths to the scripts we want to run (adjust if needed)
 SCRIPT_BIS_PATH="./scripts/run_bismark.sh"
-SCRIPT1_PATH="./Methylome.At.sh"
+SCRIPT1_PATH="./scripts/Methylome.At.sh"
 SCRIPT2_PATH="./scripts/Methylome.At_metaPlots.sh"
 
 ##################
@@ -94,6 +94,7 @@ SAMPLES_FILE=$(whiptail --title "samples_file" --inputbox \
   10 70 \
   "" \
   3>&1 1>&2 2>&3)
+SAMPLES_FILE="${SAMPLES_FILE//\"/}"
 if [ $? -ne 0 ] || [ -z "$SAMPLES_FILE" ]; then
   echo "samples_file is required. Exiting."
   exit 1
@@ -138,7 +139,7 @@ edit_script1_parameters() {
       "$SCRIPT1_binSize" "Bin-size for DMRs" \
       "$SCRIPT1_minCytosinesCount" "Minimum cytosines count" \
       "$SCRIPT1_minReadsPerCytosine" "Minimum reads per cytosine" \
-      "$SCRIPT1_pValueThreshold" "P-value threshold" \
+      "$SCRIPT1_pValueThreshold" "P-value threshold (adjusted)" \
       "$SCRIPT1_n_cores" "Number of cores" \
       "$SCRIPT1_GO_analysis" "Perform GO analysis (TRUE/FALSE)" \
       "$SCRIPT1_KEGG_pathways" "Perform KEGG pathways analysis (TRUE/FALSE)" \
