@@ -3,7 +3,9 @@
 samples_file=""
 
 # Get the directory where the Bash script is located
-Methylome_At_path=$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")
+Methylome_At_path=$(pwd)
+# Methylome_At_path=$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")
+# Methylome_At_path="$Methylome_At_path/../"
 
 # Default files path
 annotation_file="$Methylome_At_path/annotation_files/Methylome.At_annotations.csv.gz"

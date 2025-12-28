@@ -357,6 +357,8 @@ fi
 # Display yes/no dialog
 if (whiptail --title "All done!" --yesno "You have chosen to run: $chosen_message.\n\nWould you like to proceed?" 12 70); then
 
+  cd "$Methylome_At_path"
+
   # Bismark pipeline for 'cx_report' files
   if [[ " ${SELECTED_SCRIPTS[*]} " =~ "Bismark" ]]; then
     echo "Running run_bismark.sh..."
@@ -364,6 +366,8 @@ if (whiptail --title "All done!" --yesno "You have chosen to run: $chosen_messag
   else
     SAMPLES_FILE_CX="$SAMPLES_FILE"
   fi
+
+  cd "$Methylome_At_path"
 
   # Methylome.At pipeline invocation
   if [[ " ${SELECTED_SCRIPTS[*]} " =~ "Methylome.At" ]]; then
@@ -386,6 +390,8 @@ if (whiptail --title "All done!" --yesno "You have chosen to run: $chosen_messag
       --description_file "$SCRIPT1_description_file" \
       --TEs_file "$SCRIPT1_TEs_file"
   fi
+
+  cd "$Methylome_At_path"
 
   # MetaPlots pipeline
   if [[ " ${SELECTED_SCRIPTS[*]} " =~ "MetaPlots" ]]; then
