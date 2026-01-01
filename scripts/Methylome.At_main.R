@@ -77,7 +77,7 @@ Methylome.At_main <- function(var1, # control
       message("load annotation file")
     },
     error = function(cond) {
-      cat("\n*\n", as.character(cond), "\n*\n")
+      cat("\n*\n load annotation file:\n", as.character(cond), "*\n")
       message("load 'annotation' file: fail")
     }
   )
@@ -91,7 +91,7 @@ Methylome.At_main <- function(var1, # control
       message("load Transposable Elements file")
     },
     error = function(cond) {
-      cat("\n*\n", as.character(cond), "\n*\n")
+      cat("\n*\n load TE file:\n", as.character(cond), "*\n")
       message("load Transposable Elements file: fail")
     }
   )
@@ -106,7 +106,7 @@ Methylome.At_main <- function(var1, # control
       message("load description file\n")
     },
     error = function(cond) {
-      cat("\n*\n", as.character(cond), "\n*\n")
+      cat("\n*\n load description file:\n", as.character(cond), "*\n")
       message("load description file: fail\n")
     }
   )
@@ -164,7 +164,7 @@ Methylome.At_main <- function(var1, # control
       }
     },
     error = function(cond) {
-      cat("\n*\n", as.character(cond), "\n*\n")
+      cat("\n*\n load and join CX methylation data:\n", as.character(cond), "*\n")
       stop("load and join CX methylation data: fail")
     }
   )
@@ -193,7 +193,7 @@ Methylome.At_main <- function(var1, # control
 
   ##### calculate the conversion rate by the chloroplast chromosome (ChrC)
   message("\nconversion rate (C->T) along the Chloroplast genome:", appendLF = F)
-  cat("\nconversion rate (C->T) along the Chloroplast genome:\n")
+  cat("\nconversion rate (C->T) along the Chloroplast genome:") # "\n"
   tryCatch(
     {
       message("")
@@ -204,7 +204,7 @@ Methylome.At_main <- function(var1, # control
       print(kable(conR_b))
     },
     error = function(cond) {
-      cat("\n*\n conversion rate:\n", as.character(cond), "\n*\n")
+      cat("\n*\n conversion rate:\n", as.character(cond), "*\n")
       message("fail")
       cat(" fail\n")
     }
@@ -229,7 +229,7 @@ Methylome.At_main <- function(var1, # control
         message("done")
       },
       error = function(cond) {
-        cat("\n*\n PCA plot:\n", as.character(cond), "\n*\n")
+        cat("\n*\n PCA plot:\n", as.character(cond), "*\n")
         message("fail")
       }
     )
@@ -254,7 +254,7 @@ Methylome.At_main <- function(var1, # control
       cat(" done\n")
     },
     error = function(cond) {
-      cat("\n*\n total methylation levels:\n", as.character(cond), "\n*\n")
+      cat("\n*\n total methylation levels:\n", as.character(cond), "*\n")
       message("fail")
       cat(" fail\n")
     }
@@ -274,7 +274,7 @@ Methylome.At_main <- function(var1, # control
       message("done")
     },
     error = function(cond) {
-      cat("\n*\n ChrPlots:\n", as.character(cond), "\n*\n")
+      cat("\n*\n ChrPlots:\n", as.character(cond), "*\n")
       message("fail")
     }
   )
@@ -325,7 +325,7 @@ Methylome.At_main <- function(var1, # control
         message("\tpie chart (gain or loss): done")
       },
       error = function(cond) {
-        cat("\n*\n", as.character(cond), "\n*\n")
+        cat("\n*\n pie chart (gain or loss):\n", as.character(cond), "*\n")
         message("\tpie chart (gain or loss): fail\n")
       }
     )
@@ -337,7 +337,7 @@ Methylome.At_main <- function(var1, # control
         message("\tratio distribution (gain or loss): done")
       },
       error = function(cond) {
-        cat("\n*\n", as.character(cond), "\n*\n")
+        cat("\n*\n ratio distribution (gain or loss):\n", as.character(cond), "*\n")
         message("\tratio distribution (gain or loss): fail\n")
       }
     )
@@ -353,7 +353,7 @@ Methylome.At_main <- function(var1, # control
         message("\tgenerated ChrPlots for all DMRs: done")
       },
       error = function(cond) {
-        cat("\n*\n", as.character(cond), "\n*\n")
+        cat("\n*\n tgenerated ChrPlots for all DMRs:\n", as.character(cond), "*\n")
         message("\tgenerated ChrPlots for all DMRs: fail\n")
       }
     )
@@ -377,7 +377,7 @@ Methylome.At_main <- function(var1, # control
         # cat(" done\n")
       },
       error = function(cond) {
-        cat("\n*\n", as.character(cond), "\n*\n")
+        cat("\n*\n tgenome annotations for DMRs:\n", as.character(cond), "*\n")
         message("\tgenome annotations for DMRs: fail")
       }
     )
@@ -389,7 +389,7 @@ Methylome.At_main <- function(var1, # control
         TE_Super_Family_Frequency(context, TE_file)
       },
       error = function(cond) {
-        cat("\n*\n", as.character(cond), "\n*\n")
+        cat("\n*\n TE families plots:\n", as.character(cond), "*\n")
         message("\tTE families plots: fail")
       }
     )
@@ -426,7 +426,7 @@ Methylome.At_main <- function(var1, # control
       message("generated DMRs density plot for all contexts: done\n")
     },
     error = function(cond) {
-      cat("\n*\n", as.character(cond), "\n*\n")
+      cat("\n*\n DMRs density plot:\n", as.character(cond), "*\n")
       message("generated DMRs density plot for all contexts: fail\n")
     }
   )
@@ -434,34 +434,45 @@ Methylome.At_main <- function(var1, # control
   ###########################################################################
 
   ##### TEs - size and distance plots
-  TE_context_list <- TE_delta_meth(list(meth_var1, meth_var2), TE_file)
+  tryCatch(
+    {
+      TE_context_list <- TE_delta_meth(list(meth_var1, meth_var2), TE_file)
 
-  ## TE methylation levels (delta) and size
-  TE_delta_list <- list(
-    te_size_plot(TE_context_list, "CG"),
-    te_size_plot(TE_context_list, "CHG"),
-    te_size_plot(TE_context_list, "CHH")
-  )
+      ## TE methylation levels (delta) and size
+      cat("TE delta-methylation vs. TE-size\n")
+      TE_delta_list <- list(
+        te_size_plot(TE_context_list, "CG"),
+        te_size_plot(TE_context_list, "CHG"),
+        te_size_plot(TE_context_list, "CHH")
+      )
 
-  ggsave(
-    filename = paste0(genome_ann_path, "/TEs_addiotionnal_results/TE_size_delta_scatter.png"),
-    plot = gridExtra::grid.arrange(grobs = TE_delta_list, nrow = 1, ncol = 3),
-    width = 10500,
-    height = 2500,
-    units = "px",
-    dpi = 1200
-  )
+      ggsave(
+        filename = paste0(genome_ann_path, "/TEs_addiotionnal_results/TE_size_delta_scatter.png"),
+        plot = gridExtra::grid.arrange(grobs = TE_delta_list, nrow = 1, ncol = 3),
+        width = 10500,
+        height = 2500,
+        units = "px",
+        dpi = 1200
+      )
+      message("TE delta-methylation vs. TE-size: done\n")
 
-  ## TE methylation levels (delta) and distance from centromer
-  TE_distance <- distance_from_centromer(TE_context_list, TE_gr, window_size = 1e6)
+      ## TE methylation levels (delta) and distance from centromer
+      cat("TE delta-methylation vs. distance from centromer\n")
+      TE_distance <- distance_from_centromer(TE_context_list, TE_gr, window_size = 1e6)
 
-  ggsave(
-    filename = paste0(genome_ann_path, "/TEs_addiotionnal_results/TE_centromere_distance_delta.png"),
-    plot = TE_distance$plot,
-    width = 3500,
-    height = 2500,
-    units = "px",
-    dpi = 1200
+      ggsave(
+        filename = paste0(genome_ann_path, "/TEs_addiotionnal_results/TE_centromere_distance_delta.png"),
+        plot = TE_distance$plot,
+        width = 3500,
+        height = 2500,
+        units = "px",
+        dpi = 1200
+      )
+      message("TE delta-methylation vs. distance from centromer: done\n")
+    },
+    error = function(cond) {
+      cat("\n*\n TEs size and distance plots:\n", as.character(cond), "*\n")
+    }
   )
 
   ###########################################################################
@@ -478,7 +489,7 @@ Methylome.At_main <- function(var1, # control
         message("GO analysis for annotated DMRs: done\n")
       },
       error = function(cond) {
-        cat("\n*\n", as.character(cond), "\n*\n")
+        cat("\n*\n GO analysis:\n", as.character(cond), "*\n")
         message("GO analysis for annotated DMRs: fail\n")
       }
     )
@@ -496,7 +507,7 @@ Methylome.At_main <- function(var1, # control
         message("KEGG pathways for annotated DMRs: done\n")
       },
       error = function(cond) {
-        cat("\n*\n", as.character(cond), "\n*\n")
+        cat("\n*\n KEGG pathways:\n", as.character(cond), "*\n")
         message("KEGG pathways for annotated DMRs: fail\n")
       }
     )
@@ -519,7 +530,7 @@ Methylome.At_main <- function(var1, # control
         message("done")
       },
       error = function(cond) {
-        cat("\n*\n mean dH:\n", as.character(cond), "\n*\n")
+        cat("\n*\n mean dH:\n", as.character(cond), "*\n")
         message("fail")
       }
     )
@@ -530,7 +541,7 @@ Methylome.At_main <- function(var1, # control
         suppressWarnings(run_sum_deltaH_CX(var1, var2, meth_var1, meth_var2, annotation.gr, TE_file, description_df, n.cores, fdr = 0.95))
       },
       error = function(cond) {
-        cat("\n*\n sum dH:\n", as.character(cond), "\n*\n")
+        cat("\n*\n sum dH:\n", as.character(cond), "*\n")
         message("fail\n")
       }
     )
@@ -555,7 +566,7 @@ Methylome.At_main <- function(var1, # control
           delta_metaplot("Genes", var1, var2)
         },
         error = function(cond) {
-          cat("\n*\n", as.character(cond), "\n*\n")
+          cat("\n*\n TEs metaPlots:\n", as.character(cond), "*\n")
           message(paste0("process average metaPlot to ", metaPlot.random.genes, " Protein Coding Genes: fail"))
         }
       )
@@ -572,7 +583,7 @@ Methylome.At_main <- function(var1, # control
           delta_metaplot("TEs", var1, var2)
         },
         error = function(cond) {
-          cat("\n*\n", as.character(cond), "\n*\n")
+          cat("\n*\n Genes-body metaPlots:\n", as.character(cond), "*\n")
           message(paste0("process average metaPlot to ", metaPlot.random.genes, " Transposable Elements: fail\n"))
         }
       )
@@ -588,7 +599,7 @@ Methylome.At_main <- function(var1, # control
           # delta_metaplot("Gene_features", var1, var2, is_geneFeature = TRUE)
         },
         error = function(cond) {
-          cat("\n*\n", as.character(cond), "\n*\n")
+          cat("\n*\n Gene features metaPlots:\n", as.character(cond), "*\n")
           message(paste0("process average metaPlot to ", metaPlot.random.genes, " Protein Coding Gene Features: fail"))
         }
       )
