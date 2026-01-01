@@ -41,10 +41,10 @@ SCRIPT1_DEFAULT_img_type="pdf"
 SCRIPT1_DEFAULT_annotation_file="annotation_files/Methylome.At_annotations.csv.gz"
 SCRIPT1_DEFAULT_description_file="annotation_files/Methylome.At_description_file.csv.gz"
 SCRIPT1_DEFAULT_TEs_file="annotation_files/TAIR10_Transposable_Elements.txt"
-SCRIPT1_DEFAULT_delta_H="TRUE"
-SCRIPT1_DEFAULT_TEs_metaplots="TRUE"
-SCRIPT1_DEFAULT_Genes_metaplots="TRUE"
-SCRIPT1_DEFAULT_Gene_features_metaplots="TRUE"
+SCRIPT1_DEFAULT_delta_H="FALSE"
+SCRIPT1_DEFAULT_TEs_metaplots="FALSE"
+SCRIPT1_DEFAULT_Genes_metaplots="FALSE"
+SCRIPT1_DEFAULT_Gene_features_metaplots="FALSE"
 SCRIPT1_DEFAULT_bin_size_features="10"
 SCRIPT1_DEFAULT_metaPlot_random_genes="10000"
 
@@ -151,15 +151,15 @@ edit_script1_parameters() {
       "$SCRIPT1_KEGG_pathways" "Perform KEGG pathways analysis (TRUE/FALSE)" \
       "$SCRIPT1_file_type" "Methylation file type" \
       "$SCRIPT1_img_type" "Output images format" \
-      "$SCRIPT1_annotation_file" "Path to annotation file" \
-      "$SCRIPT1_description_file" "Path to description file" \
-      "$SCRIPT1_TEs_file" "Path to Transposable Elements file" \
       "$SCRIPT1_TEs_metaplots" "Analyze of TEs metaPlots (TRUE/FALSE)" \
       "$SCRIPT1_Genes_metaplots" "Analyze of Genes-body metaPlots (TRUE/FALSE)" \
       "$SCRIPT1_Gene_features_metaplots" "Analyze Gene Features metaPlots (TRUE/FALSE)" \
       "$SCRIPT1_bin_size_features" "Bin-size for Gene Features metaPlots" \
       "$SCRIPT1_metaPlot_random_genes" "Number of random genes (or [all])" \
       "$SCRIPT1_delta_H_analysis" "dH analysis (TRUE/FALSE)" \
+      "$SCRIPT1_annotation_file" "Path to annotation file" \
+      "$SCRIPT1_description_file" "Path to description file" \
+      "$SCRIPT1_TEs_file" "Path to Transposable Elements file" \
       3>&1 1>&2 2>&3)
 
     # Check if user cancelled
@@ -183,16 +183,6 @@ edit_script1_parameters() {
       SCRIPT1_pValueThreshold=$(whiptail --inputbox "P-value threshold" 10 70 "$SCRIPT1_pValueThreshold" 3>&1 1>&2 2>&3 || echo "$SCRIPT1_pValueThreshold")
     elif [ "$OPTION" = "$SCRIPT1_n_cores" ]; then
       SCRIPT1_n_cores=$(whiptail --inputbox "Number of cores" 10 70 "$SCRIPT1_n_cores" 3>&1 1>&2 2>&3 || echo "$SCRIPT1_n_cores")
-    elif [ "$OPTION" = "$SCRIPT1_GO_analysis" ]; then
-      SCRIPT1_GO_analysis=$(whiptail --radiolist "Perform GO analysis?" 12 70 2 \
-        "TRUE" "Perform GO analysis" OFF \
-        "FALSE" "Skip GO analysis" ON \
-        3>&1 1>&2 2>&3 || echo "$SCRIPT1_GO_analysis")
-    elif [ "$OPTION" = "$SCRIPT1_KEGG_pathways" ]; then
-      SCRIPT1_KEGG_pathways=$(whiptail --radiolist "Perform KEGG pathways analysis?" 12 70 2 \
-        "TRUE" "Perform KEGG pathways analysis" OFF \
-        "FALSE" "Skip KEGG pathways analysis" ON \
-        3>&1 1>&2 2>&3 || echo "$SCRIPT1_KEGG_pathways")
     elif [ "$OPTION" = "$SCRIPT1_file_type" ]; then
       SCRIPT1_file_type=$(whiptail --radiolist "Select methylation file type:" 15 70 3 \
         "CX_report" "'.txt'" ON \
@@ -208,21 +198,25 @@ edit_script1_parameters() {
         "jpeg" "Raster (lossy); smallest" OFF \
         "bmp" "Raster (uncompressed); huge; avoid" OFF \
         3>&1 1>&2 2>&3 || echo "$SCRIPT1_img_type")
-    elif [ "$OPTION" = "$SCRIPT1_annotation_file" ]; then
-      SCRIPT1_annotation_file=$(whiptail --inputbox "Path to annotation file" 10 70 "$SCRIPT1_annotation_file" 3>&1 1>&2 2>&3 || echo "$SCRIPT1_annotation_file")
-    elif [ "$OPTION" = "$SCRIPT1_description_file" ]; then
-      SCRIPT1_description_file=$(whiptail --inputbox "Path to description file" 10 70 "$SCRIPT1_description_file" 3>&1 1>&2 2>&3 || echo "$SCRIPT1_description_file")
-    elif [ "$OPTION" = "$SCRIPT1_TEs_file" ]; then
-      SCRIPT1_TEs_file=$(whiptail --inputbox "Path to Transposable Elements file" 10 70 "$SCRIPT1_TEs_file" 3>&1 1>&2 2>&3 || echo "$SCRIPT1_TEs_file")
+    elif [ "$OPTION" = "$SCRIPT1_GO_analysis" ]; then
+      SCRIPT1_GO_analysis=$(whiptail --radiolist "Perform GO analysis?" 12 70 2 \
+        "TRUE" "Perform GO analysis" OFF \
+        "FALSE" "Skip GO analysis" ON \
+        3>&1 1>&2 2>&3 || echo "$SCRIPT1_GO_analysis")
+    elif [ "$OPTION" = "$SCRIPT1_KEGG_pathways" ]; then
+      SCRIPT1_KEGG_pathways=$(whiptail --radiolist "Perform KEGG pathways analysis?" 12 70 2 \
+        "TRUE" "Perform KEGG pathways analysis" OFF \
+        "FALSE" "Skip KEGG pathways analysis" ON \
+        3>&1 1>&2 2>&3 || echo "$SCRIPT1_KEGG_pathways")
     elif [ "$OPTION" = "$SCRIPT1_TEs_metaplots" ]; then
       SCRIPT1_TEs_metaplots=$(whiptail --radiolist "Analyze of TEs metaPlots?" 12 70 2 \
-        "TRUE" "Yes" ON \
-        "FALSE" "No" OFF \
+        "TRUE" "Yes" OFF \
+        "FALSE" "No" ON \
         3>&1 1>&2 2>&3 || echo "$SCRIPT1_TEs_metaplots")
     elif [ "$OPTION" = "$SCRIPT1_Genes_metaplots" ]; then
       SCRIPT1_Genes_metaplots=$(whiptail --radiolist "Analyze of Genes-body metaPlots?" 12 70 2 \
-        "TRUE" "Yes" ON \
-        "FALSE" "No" OFF \
+        "TRUE" "Yes" OFF \
+        "FALSE" "No" ON \
         3>&1 1>&2 2>&3 || echo "$SCRIPT1_Genes_metaplots")
     elif [ "$OPTION" = "$SCRIPT1_Gene_features_metaplots" ]; then
       SCRIPT1_Gene_features_metaplots=$(whiptail --radiolist "Analyze Gene Features metaPlots?" 12 70 2 \
@@ -235,9 +229,16 @@ edit_script1_parameters() {
       SCRIPT1_metaPlot_random_genes=$(whiptail --inputbox "Number of random genes (or [all])" 10 70 "$SCRIPT1_metaPlot_random_genes" 3>&1 1>&2 2>&3 || echo "$SCRIPT1_metaPlot_random_genes")
     elif [ "$OPTION" = "$SCRIPT1_delta_H_analysis" ]; then
       SCRIPT1_delta_H_analysis=$(whiptail --radiolist "dH analysis?" 12 70 2 \
-        "TRUE" "Yes" ON \
-        "FALSE" "No" OFF \
-        3>&1 1>&2 2>&3 || echo
+        "TRUE" "Yes" OFF \
+        "FALSE" "No" ON \
+        3>&1 1>&2 2>&3 || echo "$SCRIPT1_delta_H_analysis")
+    elif [ "$OPTION" = "$SCRIPT1_annotation_file" ]; then
+      SCRIPT1_annotation_file=$(whiptail --inputbox "Path to annotation file" 10 70 "$SCRIPT1_annotation_file" 3>&1 1>&2 2>&3 || echo "$SCRIPT1_annotation_file")
+    elif [ "$OPTION" = "$SCRIPT1_description_file" ]; then
+      SCRIPT1_description_file=$(whiptail --inputbox "Path to description file" 10 70 "$SCRIPT1_description_file" 3>&1 1>&2 2>&3 || echo "$SCRIPT1_description_file")
+    elif [ "$OPTION" = "$SCRIPT1_TEs_file" ]; then
+      SCRIPT1_TEs_file=$(whiptail --inputbox "Path to Transposable Elements file" 10 70 "$SCRIPT1_TEs_file" 3>&1 1>&2 2>&3 || echo "$SCRIPT1_TEs_file")
+    fi
   done
 }
 
@@ -430,12 +431,12 @@ if (whiptail --title "All done!" --yesno "You have chosen to run: $chosen_messag
       --annotation_file "$SCRIPT1_annotation_file" \
       --description_file "$SCRIPT1_description_file" \
       --TEs_file "$SCRIPT1_TEs_file" \
-      --TEs_metaplots "$SCRIPT1_TEs_metaplots" \
-      --Genes_metaplots "$SCRIPT1_Genes_metaplots" \
-      --Gene_features_metaplots "$SCRIPT1_Gene_features_metaplots" \
-      --bin_size_features "$SCRIPT1_bin_size_features" \
-      --metaPlot_random_genes "$SCRIPT1_metaPlot_random_genes" \
-      --delta_H_analysis "$SCRIPT1_delta_H_analysis"
+      --MP_TEs "$SCRIPT1_TEs_metaplots" \
+      --MP_Genes "$SCRIPT1_Genes_metaplots" \
+      --MP_Gene_features "$SCRIPT1_Gene_features_metaplots" \
+      --MP_features_bin_size "$SCRIPT1_bin_size_features" \
+      --metaPlot_random "$SCRIPT1_metaPlot_random_genes" \
+      --dH "$SCRIPT1_delta_H_analysis"
   fi
 
   cd "$Methylome_At_path"

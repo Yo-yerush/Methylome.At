@@ -63,10 +63,10 @@ usage() {
   echo "  --dH                          Analyze delta-H = -(p * log2(p) + (1 - p) * log2(1 - p)) [default: $dH_scripts]"
   echo ""
   echo "MetaPlots analysis arguments:"
-  echo "  --TEs                         Analyze of TEs metaPlots [logical. default: $TEs_mp]"
-  echo "  --Genes                       Analyze of Genes-body metaPlots [logical. default: $Genes_mp]"
-  echo "  --Gene_features               Analyze Gene Features metaPlots [logical. default: $Gene_features_mp]"
-  echo "  --bin_size_features           Bin-size (set only for 'Gene_features' analysis!) [default: $bin_size_features]"
+  echo "  --MP_TEs                         Analyze of TEs metaPlots [logical. default: $TEs_mp]"
+  echo "  --MP_Genes                       Analyze of Genes-body metaPlots [logical. default: $Genes_mp]"
+  echo "  --MP_Gene_features               Analyze Gene Features metaPlots [logical. default: $Gene_features_mp]"
+  echo "  --MP_features_bin_size           Bin-size (set only for 'Gene_features' analysis!) [default: $bin_size_features]"
   echo "  --metaPlot_random             Number of random genes/TEs for metaPlots. 'all' for all the coding-genes and TEs [default: $metaPlot_random_genes]"
   echo ""
   exit 1
@@ -105,10 +105,10 @@ while [[ "$#" -gt 0 ]]; do
     --TEs_file) TEs_file="$2"; shift ;;
     --Methylome_At_path) Methylome_At_path="$2"; shift ;;
     --dH) dH_scripts="$2"; shift ;;
-    --TEs) TEs_mp="$2"; shift ;;
-    --Genes) Genes_mp="$2"; shift ;;
-    --Gene_features) Gene_features_mp="$2"; shift ;;
-    --bin_size_features) bin_size_features="$2"; shift ;;
+    --MP_TEs) TEs_mp="$2"; shift ;;
+    --MP_Genes) Genes_mp="$2"; shift ;;
+    --MP_Gene_features) Gene_features_mp="$2"; shift ;;
+    --MP_features_bin_size) bin_size_features="$2"; shift ;;
     --metaPlot_random) metaPlot_random_genes="$2"; shift ;;
     -h|--help) usage ;;
     *) echo "Unknown option: $1"; usage ;;
