@@ -1,6 +1,5 @@
 trimm_and_rename <- function(gr_obj) {
 
-  seqlevels_len <- sum(grepl("\\d+", seqlevels(gr_obj))) # n chromosoms (without C and M)
   is_chr_num <- any(grepl("^\\d+$", seqlevels(gr_obj))) # is chromosomes are numeric
   
   #### change 'seqnames' to 'TAIR10' if needed
@@ -26,6 +25,7 @@ trimm_and_rename <- function(gr_obj) {
   }
   
   ### trimm 'ChrM' and 'ChrC' from the genome
+  seqlevels_len <- sum(grepl("\\d+", seqlevels(gr_obj))) # n chromosoms (without C and M)
   gr_obj <- gr_obj[seqnames(gr_obj) %in% paste0("Chr",1:seqlevels_len)]
   seqlevels(gr_obj) <- paste0("Chr", 1:seqlevels_len)
   gr_obj <- GenomicRanges::sort(gr_obj, by = ~ seqnames + start)

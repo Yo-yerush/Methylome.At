@@ -12,6 +12,7 @@ Methylome.At will produce few analysis and each analysis contains CG, CHG and CH
 * Methylation Distribution
 * Sub-contexts (CAG, CCG, etc.) methylation Distribution
 * Gene Body and Transposable Elements Meta-plots
+* Long/short TEs analysis
 * DMRs Identification (using [DMRcaller](https://github.com/nrzabet/DMRcaller))
 * DMRs Distribution Mapping
 * Genome Annotation for DMRs and DMPs
@@ -41,7 +42,7 @@ Methylome.At will produce few analysis and each analysis contains CG, CHG and CH
 * [R](https://cran.r-project.org/bin/linux/ubuntu/fullREADME.html) (≥ 4.4.0)
 * [RCurl](https://cran.r-project.org/web/packages/RCurl/index.html)
 * [textshaping](https://github.com/r-lib/textshaping) (≥ 0.4.1)
-* R packages (install 'install_R_packages.R' script)
+* R packages (install `install_R_packages.R` script)
 
  ```text
 dplyr
@@ -84,7 +85,7 @@ chmod +x ./setup_env.sh
 ./setup_env.sh
 ```
 
-###### *Check the 'setup_env' log file to verify packages installation*
+###### *Check the `setup_env` log file to verify packages installation*
 
 ###
 
@@ -114,7 +115,7 @@ chmod +x ./scripts/cx_to_cgmap.sh
 treatment PATH/TO/CX_report.txt
 ```
 
-#### 2. '**CX_report**' file is an post-alignment methylation status for every cytosine in the genome, output from [Bismark](https://www.bioinformatics.babraham.ac.uk/projects/bismark/) program
+#### 2. `CX_report` file is an post-alignment methylation status for every cytosine in the genome, output from [Bismark](https://www.bioinformatics.babraham.ac.uk/projects/bismark/) program
 
 ###### ****tab-delimited***, no header. See [columns definition](https://support.illumina.com/help/BaseSpace_App_MethylSeq_help/Content/Vault/Informatics/Sequencing_Analysis/Apps/swSEQ_mAPP_MethylSeq_CytosineReport.htm)
 
@@ -126,7 +127,7 @@ Chr1     3571    -       0       5       CHH     CAA
 Chr1     3577    +       1       5       CHH     CTA
 ```
 
-##### Convert 'CGmap' to 'CX_report' file
+##### Convert `CGmap` to `CX_report` file
 *Not needed to convert, it will determine automatically*
 
 If the methylome was generated using [CGmapTools](https://cgmaptools.github.io/)
@@ -135,10 +136,10 @@ If the methylome was generated using [CGmapTools](https://cgmaptools.github.io/)
 ./scripts/cgmap_2_cx.sh PATH/TO/input_file.CGmap PATH/TO/output_CX_report.txt
 ```
 
-##### Convert 'bedMethyl' to 'CX_report' file
-If the methylome sequenced using [Oxford Nanopore Technologies](https://nanoporetech.com/) is recommended to use [](https://github.com/PengNi/deepsignal-plant) pipeline to generate '*.bedMethyl* files.
-* *genome file as '**.fasta**' or '**.fa**'*
-* *trinucleotide context are **not required** for 'Methylome.At' pipeline*
+##### Convert `bedMethyl` to `CX_report` file
+If the methylome sequenced using [Oxford Nanopore Technologies](https://nanoporetech.com/) is recommended to use [](https://github.com/PengNi/deepsignal-plant) pipeline to generate `.bedMethyl` files.
+* *genome file as `.fasta` or `.fa`*
+* *trinucleotide context are **not required** for `Methylome.At` pipeline*
 
 ```bash
 # Without trinucleotide column:
