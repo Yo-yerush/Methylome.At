@@ -2,20 +2,26 @@ Methylome.At_main <- function(var1, # control
                               var2, # treatment
                               var1_path,
                               var2_path,
-                              Methylome.At_path,
-                              annotation_file,
-                              description_file,
-                              TEs_file,
-                              minProportionDiff, # CG, CHG, CHH
-                              binSize,
-                              minCytosinesCount,
-                              minReadsPerCytosine,
-                              pValueThreshold,
-                              methyl_files_type,
-                              img_type,
-                              n.cores,
-                              GO_analysis,
-                              KEGG_pathways) {
+                              Methylome.At_path=".",
+                              annotation_file="./annotation_files/Methylome.At_annotations.csv.gz",
+                              description_file="./annotation_files/Methylome.At_annotations.csv.gz",
+                              TEs_file="./annotation_files/Methylome.At_annotations.csv.gz",
+                              minProportionDiff=c(0.4,0.2,0.1), # CG, CHG, CHH
+                              binSize=100,
+                              minCytosinesCount=4,
+                              minReadsPerCytosine=4,
+                              pValueThreshold=0.05,
+                              methyl_files_type="CX_report",
+                              img_type="pdf",
+                              n.cores=8,
+                              GO_analysis=FALSE,
+                              KEGG_pathways=FALSE,
+                              analyze_dH=FALSE,
+                              TE_metaPlots=FALSE,
+                              GeneBody_metaPlots=FALSE,
+                              GeneFeatures_metaPlots=FALSE,
+                              gene_features_binSize=10,
+                              metaPlot.random.genes=10000) {
   ###########################################################################
 
   start_time <- Sys.time()
@@ -170,14 +176,15 @@ Methylome.At_main <- function(var1, # control
   exp_path <- paste0(Methylome.At_path, "/results/", comparison_name)
   ChrPlot_CX_path <- paste0(exp_path, "/ChrPlot_CX")
   ChrPlot_subCX_path <- paste0(exp_path, "/ChrPlot_CX/subCX")
-  dH_CX_path <- paste0(exp_path, "/deltaH")
-  dH_CX_ann_path <- paste0(exp_path, "/deltaH/genome_annotation")
   PCA_plots_path <- paste0(exp_path, "/PCA_plots")
   meth_levels_path <- paste0(exp_path, "/methylation_levels")
   gainORloss_path <- paste0(exp_path, "/gain_OR_loss")
   genome_ann_path <- paste0(exp_path, "/genome_annotation")
   DMRs_bigWig_path <- paste0(exp_path, "/DMRs_bigWig")
   ChrPlots_DMRs_path <- paste0(exp_path, "/ChrPlot_DMRs")
+  dH_CX_path <- paste0(exp_path, "/deltaH")
+  dH_CX_ann_path <- paste0(exp_path, "/deltaH/genome_annotation")
+  metaPlot_path <- paste0(exp_path, "/metaPlots")
 
   dir.create(exp_path, showWarnings = F)
   setwd(exp_path)
@@ -271,38 +278,6 @@ Methylome.At_main <- function(var1, # control
       message("fail")
     }
   )
-
-  ##### dH analysis over CX methylation #####
-  dir.create(dH_CX_path, showWarnings = F)
-  dir.create(dH_CX_ann_path, showWarnings = F)
-  setwd(dH_CX_path)
-
-  cat("\n* chromosome dH plots (ChrPlots):")
-  message("generating ChrPlot (mean of dH) and scatter-plot (dH vs dmC): ", appendLF = F)
-  tryCatch(
-    {
-      source(paste0(scripts_dir, "/mean_deltaH_CX.R"))
-      suppressWarnings(run_mean_deltaH_CX(var1, var2, meth_var1, meth_var2, TE_file, n.cores))
-      message("done")
-    },
-    error = function(cond) {
-      cat("\n*\n mean dH:\n", as.character(cond), "\n*\n")
-      message("fail")
-    }
-  )
-
-  message("generating sum dH analysis:\n", appendLF = F) # , rep("-", 29)
-  tryCatch(
-    {
-      suppressWarnings(run_sum_deltaH_CX(var1, var2, meth_var1, meth_var2, annotation.gr, TE_file, description_df, n.cores, fdr = 0.95))
-    },
-    error = function(cond) {
-      cat("\n*\n sum dH:\n", as.character(cond), "\n*\n")
-      message("fail\n")
-    }
-  )
-
-  setwd(exp_path)
 
   ###########################################################################
 
@@ -491,7 +466,7 @@ Methylome.At_main <- function(var1, # control
 
   ###########################################################################
 
-  ##### GO analysis for annotated DMRs #####
+  ##### GO analysis for annotated DMRs
   if (GO_analysis) {
     tryCatch(
       {
@@ -509,7 +484,7 @@ Methylome.At_main <- function(var1, # control
     )
   }
 
-  ##### KEGG pathways for annotated DMRs #####
+  ##### KEGG pathways for annotated DMRs
   if (KEGG_pathways) {
     tryCatch(
       {
@@ -527,6 +502,101 @@ Methylome.At_main <- function(var1, # control
     )
   }
 
+  ###########################################################################
+
+  ##### dH analysis over CX methylation #####
+  if (analyze_dH) {
+    dir.create(dH_CX_path, showWarnings = F)
+    dir.create(dH_CX_ann_path, showWarnings = F)
+    setwd(dH_CX_path)
+
+    cat("\n* chromosome dH plots (ChrPlots):")
+    message("generating ChrPlot (mean of dH) and scatter-plot (dH vs dmC): ", appendLF = F)
+    tryCatch(
+      {
+        source(paste0(scripts_dir, "/mean_deltaH_CX.R"))
+        suppressWarnings(run_mean_deltaH_CX(var1, var2, meth_var1, meth_var2, TE_file, n.cores))
+        message("done")
+      },
+      error = function(cond) {
+        cat("\n*\n mean dH:\n", as.character(cond), "\n*\n")
+        message("fail")
+      }
+    )
+
+    message("generating sum dH analysis:\n", appendLF = F) # , rep("-", 29)
+    tryCatch(
+      {
+        suppressWarnings(run_sum_deltaH_CX(var1, var2, meth_var1, meth_var2, annotation.gr, TE_file, description_df, n.cores, fdr = 0.95))
+      },
+      error = function(cond) {
+        cat("\n*\n sum dH:\n", as.character(cond), "\n*\n")
+        message("fail\n")
+      }
+    )
+  }
+
+  setwd(exp_path)
+
+  ###########################################################################
+  
+  ##### run metPlot function for coding-Genes and TEs
+  if (TE_metaPlots | GeneBody_metaPlots | GeneFeatures_metaPlots) {
+    dir.create(metaPlot_path, showWarnings = F)
+
+    # calculate metaPlot for genes bodies
+    if (TE_metaPlots) {
+      tryCatch(
+        {
+          message(paste("generate metaPlot to", metaPlot.random.genes, "protein-coding Genes..."))
+          setwd(metaPlot_path)
+          Genes_metaPlot(meth_var1, meth_var2, var1, var2, annotation.gr, metaPlot.random.genes, minReadsPerCytosine, n.cores, is_TE = F)
+          setwd(metaPlot_path)
+          delta_metaplot("Genes", var1, var2)
+        },
+        error = function(cond) {
+          cat("\n*\n", as.character(cond), "\n*\n")
+          message(paste0("process average metaPlot to ", metaPlot.random.genes, " Protein Coding Genes: fail"))
+        }
+      )
+    }
+
+    # calculate metaPlot for TEs
+    if (GeneBody_metaPlots) {
+      tryCatch(
+        {
+          message(paste("\ngenerate metaPlot to", metaPlot.random.genes, " Transposable Elements..."))
+          setwd(metaPlot_path)
+          Genes_metaPlot(meth_var1, meth_var2, var1, var2, TE.gr, metaPlot.random.genes, minReadsPerCytosine, n.cores, is_TE = T)
+          setwd(metaPlot_path)
+          delta_metaplot("TEs", var1, var2)
+        },
+        error = function(cond) {
+          cat("\n*\n", as.character(cond), "\n*\n")
+          message(paste0("process average metaPlot to ", metaPlot.random.genes, " Transposable Elements: fail\n"))
+        }
+      )
+    }
+
+    # calculate metaPlot for coding-Gene features (CDS, introns, etc.)
+    if (GeneFeatures_metaPlots) {
+      tryCatch(
+        {
+          message(paste("\ngenerate metaPlot to", metaPlot.random.genes, "protein-coding Gene Features..."))
+          setwd(metaPlot_path)
+          Genes_features_metaPlot(meth_var1, meth_var2, var1, var2, annotation.gr, metaPlot.random.genes, minReadsPerCytosine, gene_features_binSize, n.cores)
+          # delta_metaplot("Gene_features", var1, var2, is_geneFeature = TRUE)
+        },
+        error = function(cond) {
+          cat("\n*\n", as.character(cond), "\n*\n")
+          message(paste0("process average metaPlot to ", metaPlot.random.genes, " Protein Coding Gene Features: fail"))
+        }
+      )
+    }
+  }
+
+  setwd(exp_path)
+  
   ###########################################################################
 
   setwd(Methylome.At_path)

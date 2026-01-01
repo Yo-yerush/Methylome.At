@@ -25,6 +25,12 @@ img_type=pdf
 n_cores=8
 GO_analysis=FALSE
 KEGG_pathways=FALSE
+dH_scripts=FALSE
+TEs_mp=FALSE
+Genes_mp=FALSE
+Gene_features_mp=FALSE
+bin_size_features=10
+metaPlot_random_genes=10000
 
 # Function to display help text
 usage() {
@@ -35,22 +41,33 @@ usage() {
   echo "  --samples_file                Path to samples file [required]"
   echo ""
   echo "Optional arguments:"
+  echo "  --minReadsPerCytosine         Minimum reads per cytosine [default: $minReadsPerCytosine]"
+  echo "  --n_cores                     Number of cores [default: $n_cores]"
+  echo "  --image_type                  Output images format [default: '$img_type']"
+  echo "  --file_type                   Post-alignment file type - 'CX_report', 'bedMethyl' and 'CGmap' [default: '$methyl_files_type' OR determine automatically]"
+  echo "  --annotation_file             Genome Annotation file [default: Methylome.At annotations file (TAIR10 based)]"
+  echo "  --description_file            Description file [default: Methylome.At description file]"
+  echo "  --TEs_file                    Transposable Elements file [default: TAIR10 'Transposable Elements' annotations]"
+  echo "  --Methylome_At_path           Path to Methylome.At [default: $Methylome_At_path]"
+  echo ""
+  echo "DMRs analysis arguments:"
   echo "  --minProportionDiff_CG        Minimum proportion difference for CG [default: $minProportionDiff_CG]"
   echo "  --minProportionDiff_CHG       Minimum proportion difference for CHG [default: $minProportionDiff_CHG]"
   echo "  --minProportionDiff_CHH       Minimum proportion difference for CHH [default: $minProportionDiff_CHH]"
   echo "  --binSize                     DMRs bin size [default: $binSize]"
   echo "  --minCytosinesCount           Minimum cytosines count [default: $minCytosinesCount]"
-  echo "  --minReadsPerCytosine         Minimum reads per cytosine [default: $minReadsPerCytosine]"
-  echo "  --pValueThreshold             P-value threshold [default: $pValueThreshold]"
-  echo "  --file_type                   Post-alignment file type - 'CX_report', 'bedMethyl' and 'CGmap' [default: '$methyl_files_type' OR determine automatically]"
-  echo "  --image_type                  Output images format [default: '$img_type']"
-  echo "  --n_cores                     Number of cores [default: $n_cores]"
+  echo "  --pValueThreshold             P-value (padj) threshold [default: $pValueThreshold]"
   echo "  --GO_analysis                 Perform GO analysis [default: $GO_analysis]"
   echo "  --KEGG_pathways               Perform KEGG pathways analysis [default: $KEGG_pathways]"
-  echo "  --annotation_file             Genome Annotation file [default: Methylome.At annotations file (TAIR10 based)]"
-  echo "  --description_file            Description file [default: Methylome.At description file]"
-  echo "  --TEs_file                    Transposable Elements file [default: TAIR10 'Transposable Elements' annotations]"
-  echo "  --Methylome_At_path           Path to Methylome.At [default: $Methylome_At_path]"
+  echo ""
+  echo "  --dH                          Analyze delta-H = -(p * log2(p) + (1 - p) * log2(1 - p)) [default: $dH_scripts]"
+  echo ""
+  echo "MetaPlots analysis arguments:"
+  echo "  --TEs                         Analyze of TEs metaPlots [logical. default: $TEs_mp]"
+  echo "  --Genes                       Analyze of Genes-body metaPlots [logical. default: $Genes_mp]"
+  echo "  --Gene_features               Analyze Gene Features metaPlots [logical. default: $Gene_features_mp]"
+  echo "  --bin_size_features           Bin-size (set only for 'Gene_features' analysis!) [default: $bin_size_features]"
+  echo "  --metaPlot_random             Number of random genes/TEs for metaPlots. 'all' for all the coding-genes and TEs [default: $metaPlot_random_genes]"
   echo ""
   exit 1
 }
@@ -87,6 +104,12 @@ while [[ "$#" -gt 0 ]]; do
     --description_file) description_file="$2"; shift ;;
     --TEs_file) TEs_file="$2"; shift ;;
     --Methylome_At_path) Methylome_At_path="$2"; shift ;;
+    --dH) dH_scripts="$2"; shift ;;
+    --TEs) TEs_mp="$2"; shift ;;
+    --Genes) Genes_mp="$2"; shift ;;
+    --Gene_features) Gene_features_mp="$2"; shift ;;
+    --bin_size_features) bin_size_features="$2"; shift ;;
+    --metaPlot_random) metaPlot_random_genes="$2"; shift ;;
     -h|--help) usage ;;
     *) echo "Unknown option: $1"; usage ;;
   esac
@@ -153,20 +176,28 @@ echo "DMRs Min Proportion Diff CHG: $minProportionDiff_CHG"
 echo "DMRs Min Proportion Diff CHH: $minProportionDiff_CHH"
 echo "DMRs Bin size: $binSize"
 echo "DMRs Min Cytosines Count: $minCytosinesCount"
-echo "DMRs Min Reads Per Cytosine: $minReadsPerCytosine"
 echo "DMRs P-value Threshold: $pValueThreshold"
 echo ""
+echo "Min Reads Per Cytosine: $minReadsPerCytosine"
+echo "Number of Cores: $n_cores"
 echo "Post-alignment file type: $methyl_files_type"
 echo "Output images format: $img_type"
-echo "Number of Cores: $n_cores"
 echo "GO Analysis: $GO_analysis"
 echo "KEGG Pathways: $KEGG_pathways"
+echo ""
+echo "Gene-body metaPlots: $Genes_mp"
+echo "TEs metaPlots: $TEs_mp"
+echo "Gene features metaPlots: $Gene_features_mp"
+echo "Bin size for gene features: $bin_size_features"
+echo "Number of random genes/TEs for metaPlots: $metaPlot_random_genes"
 echo ""
 echo "Samples file: $samples_file"
 echo "Annotation file: $annotation_file"
 echo "Description file: $description_file"
 echo "Transposable Elements file: $TEs_file"
 echo "Methylome.At directory path: $Methylome_At_path"
+echo ""
+echo "Analyze delta-H scripts: $dH_scripts"
 echo ""
 echo "-------------------------------------"
 echo ""
@@ -199,6 +230,12 @@ Rscript ./scripts/Methylome.At_run.R \
 "$n_cores" \
 "$GO_analysis" \
 "$KEGG_pathways" \
+"$dH_scripts" \
+"$TEs_mp" \
+"$Genes_mp" \
+"$Gene_features_mp" \
+"$bin_size_features" \
+"$metaPlot_random_genes" \
     2>> "$log_file"
 
 # Output a markdown report as '.html' file
@@ -217,13 +254,18 @@ echo "DMRs Min Proportion Diff CHG: $minProportionDiff_CHG" >> "$log_file"
 echo "DMRs Min Proportion Diff CHH: $minProportionDiff_CHH" >> "$log_file"
 echo "DMRs Bin size: $binSize" >> "$log_file"
 echo "DMRs Min Cytosines Count: $minCytosinesCount" >> "$log_file"
-echo "DMRs Min Reads Per Cytosine: $minReadsPerCytosine" >> "$log_file"
 echo "DMRs P-value Threshold: $pValueThreshold" >> "$log_file"
+echo "Number of Cores: $n_cores" >> "$log_file"
+echo "Min Reads Per Cytosine: $minReadsPerCytosine" >> "$log_file"
 echo "Post-alignment file type: $methyl_files_type" >> "$log_file"
 echo "Output images format: $img_type" >> "$log_file"
-echo "Number of Cores: $n_cores" >> "$log_file"
 echo "GO Analysis: $GO_analysis" >> "$log_file"
 echo "KEGG Pathways: $KEGG_pathways" >> "$log_file"
+echo "Gene-body metaPlots: $Genes_mp"
+echo "TEs metaPlots: $TEs_mp"
+echo "Gene features metaPlots: $Gene_features_mp"
+echo "Bin size for gene features: $bin_size_features"
+echo "Number of random genes/TEs for metaPlots: $metaPlot_random_genes"
 echo "Samples file: $samples_file" >> "$log_file"
 echo "Annotation file: $annotation_file" >> "$log_file"
 echo "Description file: $description_file" >> "$log_file"
