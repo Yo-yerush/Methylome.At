@@ -70,6 +70,7 @@ DMRs_ann <- function(annotation_vec, DMRsReplicates, context, description_file, 
             row.names = F, na = ""
           )
 
+          cat(paste0("\t\tdone: TEG (", nrow(TEG), ")\n"))
           message(paste0("\t\tdone: TEG (", nrow(TEG), ")"))
         }
 
@@ -86,9 +87,11 @@ DMRs_ann <- function(annotation_vec, DMRsReplicates, context, description_file, 
           write.csv(DMRs_annotation_df, paste0(region_analysis, type_name, "_", context, "_genom_annotations.csv"),
             row.names = F, na = ""
           )
+          cat(paste0("\t\tdone: ", ann_count_df[i, 1], " (", ann_count_df[i, context], ")\n"))
           message(paste0("\t\tdone: ", ann_count_df[i, 1], " (", ann_count_df[i, context], ")"))
         },
         error = function(cond) {
+          cat(paste0("\t\tfail: ", ann_count_df[i, 1], "\n"))
           message(paste0("\t\tfail: ", ann_count_df[i, 1]))
         }
       )

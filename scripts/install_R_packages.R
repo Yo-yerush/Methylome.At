@@ -1,6 +1,6 @@
 check_if_installed <- as.logical(commandArgs(trailingOnly = TRUE))
 
-pkg_name <- c("dplyr", "tidyr", "ggplot2", "lattice", "PeakSegDisk", "geomtextpath", "parallel", "BiocManager", "RColorBrewer", "circlize", "cowplot", "knitr", "data.table")
+pkg_name <- c("dplyr", "tidyr", "ggplot2", "data.table", "lattice", "PeakSegDisk", "geomtextpath", "parallel", "BiocManager", "RColorBrewer", "circlize", "cowplot", "knitr", "kableExtra")
 pkg_biocond <- c("DMRcaller", "rtracklayer", "topGO", "KEGGREST", "Rgraphviz", "org.At.tair.db", "GenomicFeatures", "plyranges")
 
 if (!check_if_installed) {

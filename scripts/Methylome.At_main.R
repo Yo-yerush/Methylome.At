@@ -292,7 +292,7 @@ Methylome.At_main <- function(var1, # control
   cat(sep_cat)
 
   ##### call DMRs for replicates/single data
-  cat(paste0("call DMRs for replicates data: ", is_Replicates))
+  cat(paste0("\ncall DMRs for replicates data: ", is_Replicates))
   message(paste0("call DMRs for replicates data: ", is_Replicates))
 
   if (is_Replicates) {
@@ -383,7 +383,7 @@ Methylome.At_main <- function(var1, # control
     setwd(exp_path)
 
     ##### Annotate DMRs and total-methylations #####
-    cat("genome annotations for DMRs...")
+    cat("genome annotations for DMRs...\n")
     message("\tgenome annotations for DMRs...")
     dir.create(genome_ann_path, showWarnings = FALSE)
     setwd(genome_ann_path)
@@ -396,8 +396,7 @@ Methylome.At_main <- function(var1, # control
         CX_ann(ann_list, var1, var2, meth_var1, meth_var2, context) # save tables of annotate CX
         DMRs_ann_plots(var1, var2, context)
         message("\tgenome annotations for DMRs: done")
-        cat("\n")
-        # cat(" done\n")
+        cat(" done\n")
       },
       error = function(cond) {
         cat("\n*\n tgenome annotations for DMRs:\n", as.character(cond), "*\n")
