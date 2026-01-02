@@ -7,7 +7,7 @@ DMRs_ann <- function(annotation_vec, DMRsReplicates, context, description_file, 
   ) # counts DMRs for log file
   names(ann_count_df)[2] <- context
 
-  dir.create(context)
+  dir.create(context, showWarnings = F)
   setwd(context)
 
   ######################## main annotation loop

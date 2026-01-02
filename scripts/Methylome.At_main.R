@@ -25,6 +25,7 @@ Methylome.At_main <- function(var1, # control
   ###########################################################################
 
   start_time <- Sys.time()
+  sep_cat <- paste0("\n", paste(rep("-", 30), collapse = ""), "\n")
   scripts_dir <- paste0(Methylome.At_path, "/scripts")
 
   # source all R scripts
@@ -191,6 +192,8 @@ Methylome.At_main <- function(var1, # control
 
   ###########################################################################
 
+  cat(sep_cat)
+
   ##### calculate the conversion rate by the chloroplast chromosome (ChrC)
   message("\nconversion rate (C->T) along the Chloroplast genome:", appendLF = F)
   cat("\nconversion rate (C->T) along the Chloroplast genome:") # "\n"
@@ -239,7 +242,6 @@ Methylome.At_main <- function(var1, # control
     message("\n* skipping PCA plots for single-samples data")
     cat("skipping PCA plots for single-samples data\n")
   }
-  ###########################################################################
 
   ##### calculate and plot total methylation levels (%)
   dir.create(meth_levels_path, showWarnings = F)
@@ -260,6 +262,10 @@ Methylome.At_main <- function(var1, # control
     }
   )
 
+  ###########################################################################
+
+  cat(sep_cat)
+
   ##### ChrPlots for CX methylation #####
   dir.create(ChrPlot_CX_path, showWarnings = F)
   dir.create(ChrPlot_subCX_path, showWarnings = F)
@@ -279,9 +285,14 @@ Methylome.At_main <- function(var1, # control
     }
   )
 
+  setwd(exp_path)
+
   ###########################################################################
 
+  cat(sep_cat)
+
   ##### call DMRs for replicates/single data
+  cat(paste0("call DMRs for replicates data: ", is_Replicates))
   message(paste0("call DMRs for replicates data: ", is_Replicates))
 
   if (is_Replicates) {
@@ -291,6 +302,7 @@ Methylome.At_main <- function(var1, # control
   }
 
   ###########################################################################
+
 
   ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ###
   ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ###
@@ -303,15 +315,26 @@ Methylome.At_main <- function(var1, # control
 
     ##############################
     ##### Calling DMRs in Replicates #####
-    DMRs_bins <- calling_DMRs(
-      methylationDataReplicates_joints, meth_var1, meth_var2,
-      var1, var2, var1_path, var2_path, comparison_name,
-      context, minProportionDiff, binSize, pValueThreshold,
-      minCytosinesCount, minReadsPerCytosine, n.cores, is_Replicates
-    )
-    cat(paste0("statistically significant DMRs: ", length(DMRs_bins), "\nDMRs plots...\n"))
-    message(paste0("\tstatistically significant DMRs: ", length(DMRs_bins)))
-    message(paste0("\tDMRs caller in ", context, " context: done"))
+        tryCatch(
+          {
+            DMRs_bins <- calling_DMRs(
+              methylationDataReplicates_joints, meth_var1, meth_var2,
+              var1, var2, var1_path, var2_path, comparison_name,
+              context, minProportionDiff, binSize, pValueThreshold,
+              minCytosinesCount, minReadsPerCytosine, n.cores, is_Replicates
+            )
+            cat(paste0("statistically significant DMRs: ", length(DMRs_bins), "\nDMRs plots...\n"))
+            message(paste0("\tstatistically significant DMRs: ", length(DMRs_bins)))
+            message(paste0("\tDMRs caller in ", context, " context: done"))
+          },
+          error = function(cond) {
+            cat(paste0("\n*\n Calling DMRs in", context,":\n"), as.character(cond), "*\ncontinue without calling DMRs!\n\n")
+            message("\tCalling DMRs: fail\n")
+            GO_analysis <- FALSE
+            KEGG_pathways <- FALSE
+            break
+          }
+        )
 
     ##############################
     #####  Gain or Loss - DMRs #####
@@ -369,7 +392,7 @@ Methylome.At_main <- function(var1, # control
     tryCatch(
       {
         ann_list <- genome_ann(annotation.gr, TE_file) # create annotations from annotation file as a list
-        DMRs_ann(ann_list, DMRs_bins, context, description_df) # save tables of annotate DMRs
+        DMRs_ann(ann_list, DMRs_bins, context, description_df) # save tables of annotate DMRs. have to run after 'genome_ann'
         CX_ann(ann_list, var1, var2, meth_var1, meth_var2, context) # save tables of annotate CX
         DMRs_ann_plots(var1, var2, context)
         message("\tgenome annotations for DMRs: done")
@@ -410,19 +433,25 @@ Methylome.At_main <- function(var1, # control
     cat("done\n")
   }
 
+  setwd(exp_path)
+
   ### ### # finish main loop  ### ### ### ### ### ### ### ### ###
   ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ###
   ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ###
 
   ###########################################################################
 
+  cat(sep_cat)
+
   ##### DMRs density - curcular plot #####
   tryCatch(
     {
       setwd(exp_path)
+      cat("generated DMRs density plot for all contexts: ")
       # setwd(ChrPlots_DMRs_path)
       DMRs_circular_plot(annotation.gr, TE_file, comparison_name)
       DMRs_circular_plot_legends()
+      cat("done\n")
       message("generated DMRs density plot for all contexts: done\n")
     },
     error = function(cond) {
@@ -436,9 +465,10 @@ Methylome.At_main <- function(var1, # control
   ##### TEs - size and distance plots
   tryCatch(
     {
+      cat(sep_cat)
       TE_context_list <- TE_delta_meth(list(meth_var1, meth_var2), TE_file)
 
-      dir.create(paste0(genome_ann_path, "/TEs_addiotionnal_results/TE_size_n_distance/"))
+      dir.create(paste0(genome_ann_path, "/TEs_addiotionnal_results/TE_size_n_distance/"), showWarnings = FALSE)
 
       ## TE methylation levels (delta) and size
       cat("TE delta-methylation vs. TE-size\n")
@@ -452,7 +482,7 @@ Methylome.At_main <- function(var1, # control
           dpi = 1200
         )
       }
-      message("TE delta-methylation vs. TE-size: done\n")
+      message("TE delta-methylation vs. TE-size: done")
 
       ## TE methylation levels (delta) and distance from centromer
       cat("TE delta-methylation vs. distance from centromer\n")
@@ -475,8 +505,10 @@ Methylome.At_main <- function(var1, # control
 
   ###########################################################################
 
+  
   ##### GO analysis for annotated DMRs
   if (GO_analysis) {
+    cat(sep_cat)
     tryCatch(
       {
         GO_path <- paste0(exp_path, "/GO_analysis")
@@ -495,6 +527,7 @@ Methylome.At_main <- function(var1, # control
 
   ##### KEGG pathways for annotated DMRs
   if (KEGG_pathways) {
+    cat(sep_cat)
     tryCatch(
       {
         KEGG_path <- paste0(exp_path, "/KEGG_pathway")
@@ -515,6 +548,7 @@ Methylome.At_main <- function(var1, # control
 
   ##### dH analysis over CX methylation #####
   if (analyze_dH) {
+    cat(sep_cat)
     dir.create(dH_CX_path, showWarnings = F)
     dir.create(dH_CX_ann_path, showWarnings = F)
     setwd(dH_CX_path)
@@ -551,6 +585,7 @@ Methylome.At_main <- function(var1, # control
   
   ##### run metPlot function for coding-Genes and TEs
   if (TE_metaPlots | GeneBody_metaPlots | GeneFeatures_metaPlots) {
+    cat(sep_cat, "\nmetaPlots:\n----------")
     dir.create(metaPlot_path, showWarnings = F)
 
     # calculate metaPlot for genes bodies
@@ -610,6 +645,7 @@ Methylome.At_main <- function(var1, # control
 
   setwd(Methylome.At_path)
   message(paste0("**\t", var2, " vs ", var1, ": done\n"))
+  cat(sep_cat)
 
   ###########################################################################
 

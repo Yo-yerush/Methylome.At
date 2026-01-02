@@ -1,15 +1,17 @@
+Methylome.At_path <- "/home/yoyerush/yo/methylome_pipeline/Methylome.At_020126/Methylome.At/"
+CX_files_dir_path <- "/home/yoyerush/yo/methylome_pipeline/other_mutants/stroud_et_al_2013/bismark_results/"
+
 # configurations
 var1 <- "wt"
 var2 <- "suvh8"
 var1_path <- c(
-  "/home/yoyerush/yo/methylome_pipeline/other_mutants/stroud_et_al_2013/bismark_results/wt_2_bismark_se.CX_report.txt.gz",
-  "/home/yoyerush/yo/methylome_pipeline/other_mutants/stroud_et_al_2013/bismark_results/wt_3_bismark_se.CX_report.txt.gz"
+  paste0(CX_files_dir_path, "wt_2_bismark_se.CX_report.txt.gz"),
+  paste0(CX_files_dir_path, "wt_3_bismark_se.CX_report.txt.gz")
 )
-var2_path <- "/home/yoyerush/yo/methylome_pipeline/other_mutants/stroud_et_al_2013/bismark_results/suvh8_bismark_se.CX_report.txt.gz"
-Methylome.At_path <- "/home/yoyerush/yo/methylome_pipeline/Methylome.At_020126/Methylome.At/"
-annotation_file <- "/home/yoyerush/yo/methylome_pipeline/Methylome.At_020126/Methylome.At/annotation_files/Methylome.At_annotations.csv.gz"
-description_file <- "/home/yoyerush/yo/methylome_pipeline/Methylome.At_020126/Methylome.At/annotation_files/Methylome.At_description_file.csv.gz"
-TEs_file <- "/home/yoyerush/yo/methylome_pipeline/Methylome.At_020126/Methylome.At/annotation_files/TAIR10_Transposable_Elements.txt"
+var2_path <- paste0(CX_files_dir_path, "suvh8_bismark_se.CX_report.txt.gz")
+annotation_file <- paste0(Methylome.At_path, "annotation_files/Methylome.At_annotations.csv.gz")
+description_file <- paste0(Methylome.At_path, "annotation_files/Methylome.At_description_file.csv.gz")
+TEs_file <- paste0(Methylome.At_path, "annotation_files/TAIR10_Transposable_Elements.txt")
 minProportionDiff <- c(0.4, 0.2, 0.1)
 binSize <- 100
 minCytosinesCount <- 4
@@ -20,7 +22,7 @@ img_type <- "svg"
 n.cores <- 30
 GO_analysis <- FALSE
 KEGG_pathways <- FALSE
-analyze_dH <- TRUE
+analyze_dH <- FALSE
 TE_metaPlots <- TRUE
 GeneBody_metaPlots <- TRUE
 GeneFeatures_metaPlots <- TRUE
