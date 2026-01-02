@@ -25,7 +25,7 @@ Methylome.At_main <- function(var1, # control
   ###########################################################################
 
   start_time <- Sys.time()
-  sep_cat <- paste0("\n", paste(rep("-", 30), collapse = ""), "\n")
+  sep_cat <- paste0("\n", paste(rep("-", 50), collapse = ""), "\n")
   scripts_dir <- paste0(Methylome.At_path, "/scripts")
 
   # source all R scripts
@@ -664,3 +664,4 @@ Methylome.At_main <- function(var1, # control
   cat(paste0("\n\n**\tDone!\n", end_msg))
   message(end_msg)
 }
+
