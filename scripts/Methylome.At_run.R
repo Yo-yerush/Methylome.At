@@ -65,14 +65,14 @@ try({
     methyl_files_type = configs[13],
     img_type = configs[14],
     n.cores = as.numeric(configs[15]),
-    GO_analysis = configs[16],
-    KEGG_pathways = configs[17],
-    analyze_dH = configs[18],
-    TE_metaPlots = configs[19],
-    GeneBody_metaPlots = configs[20],
-    GeneFeatures_metaPlots = configs[21],
-    gene_features_binSize = configs[22],
-    metaPlot.random.genes = configs[23]
+    GO_analysis = as.logical(configs[16]),
+    KEGG_pathways = as.logical(configs[17]),
+    analyze_dH = as.logical(configs[18]),
+    TE_metaPlots = as.logical(configs[19]),
+    GeneBody_metaPlots = as.logical(configs[20]),
+    GeneFeatures_metaPlots = as.logical(configs[21]),
+    gene_features_binSize = as.numeric(configs[22]),
+    metaPlot.random.genes = as.numeric(configs[23])
   )
   # message("\n\nwarnings:\n", warnings())
 })

@@ -407,7 +407,7 @@ Methylome.At_main <- function(var1, # control
       ))
     }
     message("\tsaved all DMRs also as bigWig files\n")
-    cat
+    cat("done\n")
   }
 
   ### ### # finish main loop  ### ### ### ### ### ### ### ### ###
@@ -438,32 +438,30 @@ Methylome.At_main <- function(var1, # control
     {
       TE_context_list <- TE_delta_meth(list(meth_var1, meth_var2), TE_file)
 
+      dir.create(paste0(genome_ann_path, "/TEs_addiotionnal_results/TE_size_n_distance/"))
+
       ## TE methylation levels (delta) and size
       cat("TE delta-methylation vs. TE-size\n")
-      TE_delta_list <- list(
-        te_size_plot(TE_context_list, "CG"),
-        te_size_plot(TE_context_list, "CHG"),
-        te_size_plot(TE_context_list, "CHH")
-      )
-
-      ggsave(
-        filename = paste0(genome_ann_path, "/TEs_addiotionnal_results/TE_size_delta_scatter.png"),
-        plot = gridExtra::grid.arrange(grobs = TE_delta_list, nrow = 1, ncol = 3),
-        width = 10500,
-        height = 2500,
-        units = "px",
-        dpi = 1200
-      )
+      for (te_sz_cntx in c("CG", "CHG", "CHH")) {
+        ggsave(
+          filename = paste0(genome_ann_path, "/TEs_addiotionnal_results/TE_size_n_distance/", te_sz_cntx, "_TE_size_delta_scatter.png"),
+          plot = te_size_plot(TE_context_list, te_sz_cntx),
+          width = 3750,
+          height = 2500,
+          units = "px",
+          dpi = 1200
+        )
+      }
       message("TE delta-methylation vs. TE-size: done\n")
 
       ## TE methylation levels (delta) and distance from centromer
       cat("TE delta-methylation vs. distance from centromer\n")
-      TE_distance <- distance_from_centromer(TE_context_list, TE_gr, window_size = 1e6)
+      TE_distance <- distance_from_centromer(TE_context_list, TE_file, window_size = 1e6)
 
       ggsave(
-        filename = paste0(genome_ann_path, "/TEs_addiotionnal_results/TE_centromere_distance_delta.png"),
+        filename = paste0(genome_ann_path, "/TEs_addiotionnal_results/TE_size_n_distance/TE_centromere_distance_delta.png"),
         plot = TE_distance$plot,
-        width = 3500,
+        width = 3750,
         height = 2500,
         units = "px",
         dpi = 1200
