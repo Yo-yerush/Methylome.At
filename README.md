@@ -2,23 +2,61 @@
 
 Methylome.At is a comprehensive, R-based pipeline for *Arabidopsis thaliana* that processes post-alignment **WGBS** or **Nanopore** sequencing data for CG, CHG and CHH DNA methylation contexts, identifies differentially methylated regions (DMRs, using [DMRcaller](https://github.com/nrzabet/DMRcaller) package) to replicates/single samples data, integrates multiple genomic resources for functional interpretation, and generates extensive visualizations and annotations to advance understanding of plant epigenetic regulation.
 
-#
+## Methylome.At Script Features
 
-Methylome.At will produce few analysis and each analysis contains CG, CHG and CHH contexts:
+#### Core Methylation Analysis Features
 
-* Chloroplast Conversion Rate
-* PCA analysis
-* Total Methylation Levels
-* Methylation Distribution
-* Sub-contexts (CAG, CCG, etc.) methylation Distribution
-* Gene Body and Transposable Elements Meta-plots
-* Long/short TEs analysis
-* DMRs Identification (using [DMRcaller](https://github.com/nrzabet/DMRcaller))
-* DMRs Distribution Mapping
-* Genome Annotation for DMRs and DMPs
-* Gene Ontology (GO) Analysis
-* KEGG Pathway Enrichment Test
-* BigWig Files Generation for DMRs visualisation
+1. **Conversion Rate Calculation** - Measures C->T conversion rate using chloroplast genome (ChrC)
+2. **PCA Plots** - Principal Component Analysis for total methylation levels across CG, CHG, CHH, and all contexts (for replicate samples)
+3. **Total Methylation Levels** - Calculates and plots total methylation levels (5-mC%) for both samples
+4. **Chromosome Methylation Plots (ChrPlots)** - Visualizes methylation levels across chromosomes for each context (also for delta-methylation)
+
+#### DMR (Differentially Methylated Regions) Analysis
+1. **DMR Calling** - Utilize [DMRcaller](https://github.com/nrzabet/DMRcaller) to identifies DMRs in CG, CHG, and CHH contexts using:
+   - Beta regression (for replicates)
+   - Fisher's exact test (for single samples)
+2. **Gain or Loss Analysis** - Pie charts and ratio distributions showing methylation gain/loss patterns
+3. **DMR Chromosome Plots** - ChrPlots specifically for DMR locations
+4. **DMR Genome Annotations** - Annotates DMRs to genomic features:
+    - Promoters
+    - CDS
+    - Introns
+    - UTRs
+    - Transposable elements genes (TEGs)
+    - Pseudogenes
+  
+5. **DMR Density Circular Plot** - Circular visualization of DMR density across all contexts
+6.  **BigWig Export** - Saves DMRs as bigWig files for genome browser visualization
+
+#### Transposable Elements (TEs) Analysis
+11. **TE Annotations** - Analyzes DMR overlap with TEs
+12. **TE Family Analysis** - Frequency and distribution of TE superfamilies
+13. **TE Size vs Delta-Methylation** - Scatter plots correlating TE size with methylation changes
+14. **TE Distance from Centromere** - Analyzes methylation changes relative to centromere distance
+
+#### Functional Analysis
+15. **GO Analysis** - Gene Ontology enrichment analysis for annotated DMRs (optional)
+16. **KEGG Pathway Analysis** - KEGG pathway enrichment for annotated DMRs (optional)
+
+#### Entropy Analysis
+17. **Delta-H (ΔH) Analysis** - Analyzes methylation entropy changes:
+    - Mean ΔH chromosome plots
+    - ΔH vs ΔmC scatter plots
+    - Sum ΔH analysis with genome annotations
+
+#### MetaPlot Features
+18. **Gene Body MetaPlots** - Average methylation profiles across protein-coding genes
+19. **TE MetaPlots** - Average methylation profiles across Total/Long/Short TEs
+20. **Gene Features MetaPlots** - Methylation profiles for gene features (CDS, introns, UTRs, etc.)
+21. **Delta MetaPlots** - Shows methylation differences between samples
+
+#### Output Features
+- Multiple image format support (PDF, SVG, TIFF, PNG)
+- Parallel processing support (multi-core)
+- Automated directory structure creation
+- CSV/TSV output for tabular results
+- Comprehensive error handling and progress messages
+
 
 <img
   src="https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/pipeline_scheme.png"
@@ -48,11 +86,17 @@ Methylome.At will produce few analysis and each analysis contains CG, CHG and CH
 dplyr
 tidyr
 ggplot2
+data.table
 lattice
 PeakSegDisk
 geomtextpath
 parallel
 BiocManager
+RColorBrewer
+circlize
+cowplot
+knitr
+kableExtra
 DMRcaller
 rtracklayer
 topGO
@@ -61,8 +105,6 @@ Rgraphviz
 org.At.tair.db
 GenomicFeatures
 plyranges
-RColorBrewer
-circlize
  ```
 
 #
@@ -74,15 +116,19 @@ circlize
 ```bash
 git clone https://github.com/Yo-yerush/Methylome.At.git
 cd ./Methylome.At
+chmod +x ./setup_env.sh
 ```
 
 #### 2. Setup [conda](https://docs.conda.io/en/latest/miniconda.html) environment and install all the packages
 
 * using build-in setup script:
+*Use the `--check` flag to check if **R** and **conda** pckages are installed*
+*Use the `--permission` flag to ensure permission of scripts (if all the packages installed)*
 
 ```bash
-chmod +x ./setup_env.sh
 ./setup_env.sh
+./setup_env.sh --check
+./setup_env.sh --permission
 ```
 
 ###### *Check the `setup_env` log file to verify packages installation*
@@ -90,11 +136,12 @@ chmod +x ./setup_env.sh
 ###
 
 * or manually:
-
 ```bash
+packages=("r-curl" "r-rcurl" "zlib" "r-textshaping" "harfbuzz" "fribidi" "freetype" "libpng" "pkg-config" "libxml2" "r-xml" "bioconductor-rsamtools" "r-svglite") 
+
 conda create --name Methylome.At_env
 conda activate Methylome.At_env
-conda install -c conda-forge -c bioconda r-base=4.4.2 r-curl r-rcurl r-devtools zlib r-textshaping harfbuzz fribidi freetype libpng pkg-config libxml2 r-xml bioconductor-rsamtools
+conda install -c conda-forge -c bioconda r-base=4.4.2 ${packages[@]}
 Rscript scripts/install_R_packages.R
 chmod +x ./Methylome.At_UI.sh
 chmod +x ./Methylome.At_metaPlots.sh

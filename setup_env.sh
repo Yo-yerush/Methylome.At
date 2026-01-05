@@ -127,5 +127,6 @@ echo "" >> "$log_file"
 #---------------------------------------------------------------------------#
 
 # Run the R script to install additional R packages
+echo ""
 echo "Install R packages..." >> "$log_file"
 Rscript scripts/install_R_packages.R false 2>> "$log_file"

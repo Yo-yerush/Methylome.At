@@ -470,7 +470,7 @@ Methylome.At_main <- function(var1, # control
       dir.create(paste0(genome_ann_path, "/TEs_addiotionnal_results/TE_size_n_distance/"), showWarnings = FALSE)
 
       ## TE methylation levels (delta) and size
-      cat("TE delta-methylation vs. TE-size\n")
+      cat("\nTE delta-methylation vs. TE-size\n")
       for (te_sz_cntx in c("CG", "CHG", "CHH")) {
         ggsave(
           filename = paste0(genome_ann_path, "/TEs_addiotionnal_results/TE_size_n_distance/", te_sz_cntx, "_TE_size_delta_scatter.png"),
@@ -484,7 +484,7 @@ Methylome.At_main <- function(var1, # control
       message("TE delta-methylation vs. TE-size: done")
 
       ## TE methylation levels (delta) and distance from centromer
-      cat("TE delta-methylation vs. distance from centromer\n")
+      cat("TE delta-methylation vs. distance from centromere\n")
       TE_distance <- distance_from_centromer(TE_context_list, TE_file, window_size = 1e6)
 
       ggsave(
