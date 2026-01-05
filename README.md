@@ -2,12 +2,6 @@
 
 Methylome.At is a comprehensive, R-based pipeline for *Arabidopsis thaliana* that processes post-alignment **WGBS** or **Nanopore** sequencing data for CG, CHG and CHH DNA methylation contexts, identifies differentially methylated regions (DMRs, using [DMRcaller](https://github.com/nrzabet/DMRcaller) package) to replicates/single samples data, integrates multiple genomic resources for functional interpretation, and generates extensive visualizations and annotations to advance understanding of plant epigenetic regulation.
 
-<img
-  src="https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/pipeline_scheme.png"
-  alt="Methylome.At Flow"
-  width="80%"
-/>
-
 ---
 
 ## What the pipeline produces
@@ -360,6 +354,69 @@ A typical output tree under `results/<treatment>_vs_<control>/`:
   KEGG_pathway/               (optional)
   metaPlots/                  (optional)
   deltaH/                     (optional)
+```
+
+---
+
+## (Optional) From FASTQ to CX_report: run_bismark.sh (WGBS)
+
+If you start from raw WGBS FASTQ files, you can generate Bismark methylation calls and CX_report outputs using:
+```bash
+./scripts/run_bismark.sh --help
+```
+```text
+Usage:
+------
+run_bismark.sh [-s <required>] [-g TAIR10] [options]
+
+Options:
+--------
+-s, --samples   Tab-delimited two-column file: sample-name <TAB> fastq-path
+-g, --genome    FASTA of the reference genome [default: TAIR10]
+-o, --outdir    Output directory [default: ./bismark_results]
+-n, --ncores    Number of cores (max). multiples of 4 recommended [default: 8]
+-m, --mem       Buffer size for 'bismark_methylation_extractor' [default: 8G]
+--cx            Produce and keep only '_CX_report.txt.gz' file
+--mat           Produce samples table (.txt) for 'Methylome.At' pipeline
+--indx          Keep the genome index directory (applies only if --cx is on)
+--sort          Sort & index BAM files (applies only if --cx is off)
+--strand        Keep top/bottom strand (OT/OB) files [remove in default]
+--um            Produce and keep only unmapped files (as FASTQ)
+--help
+```
+
+### Requirements
+This script assumes you have these available in your environment:
+- bismark (and its aligner dependency, typically bowtie2)
+- samtools
+
+### Input
+- Reference genome file (as `.fasta` or `.fa`)
+- Samples table for the `.fastq` files (tab-delimited, 2 columns, no header)
+
+Format:
+> sample_name<TAB>/path/to/fastq
+
+Paired-end example (sample name appears twice: R1 + R2):
+```text
+mt_1    PATH/TO/FILE/mt1_R1.fastq
+mt_1    PATH/TO/FILE/mt1_R2.fastq
+mt_2    PATH/TO/FILE/mt2_R1.fastq
+mt_2    PATH/TO/FILE/mt2_R2.fastq
+wt_1    PATH/TO/FILE/wt1_R1.fastq
+wt_1    PATH/TO/FILE/wt1_R2.fastq
+wt_2    PATH/TO/FILE/wt2_R1.fastq
+wt_2    PATH/TO/FILE/wt2_R2.fastq
+```
+
+### Run
+
+- *Use `-g` as **TAIR10** for the standart reference genome if Arabidopsis (auto-download FASTA)*
+- *Add `--mat` to create a ready-to-use samples table for Methylome.At*
+- *Add `--cx` to produce and Keep only `*_CX_report.txt.gz` files*
+
+```bash
+./scripts/run_bismark.sh -s samples_table.txt -g TAIR10 -n 8 --cx --mat
 ```
 
 ---
