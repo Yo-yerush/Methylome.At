@@ -2,6 +2,12 @@
 
 Methylome.At is a comprehensive, R-based pipeline for *Arabidopsis thaliana* that processes post-alignment **WGBS** or **Nanopore** sequencing data for CG, CHG and CHH DNA methylation contexts, identifies differentially methylated regions (DMRs, using [DMRcaller](https://github.com/nrzabet/DMRcaller) package) to replicates/single samples data, integrates multiple genomic resources for functional interpretation, and generates extensive visualizations and annotations to advance understanding of plant epigenetic regulation.
 
+<img
+  src="https://github.com/Yo-yerush/Methylome.At/blob/main/output_example/pipeline_scheme.png"
+  alt="Methylome.At Flow"
+  width="80%"
+/>
+
 ---
 
 ## What the pipeline produces
@@ -219,20 +225,6 @@ If you provide custom files, ensure they contain the columns required by the ann
 ./Methylome.At.sh /path/to/samples_table.txt
 ```
 
-#### Meta-plots only
-
-```bash
-./Methylome.At_metaPlots.sh /path/to/samples_table.txt
-```
-
----
-
-## Parameters / arguments
-
-### Main workflow (R-level arguments)
-
-The core workflow is implemented in `scripts/Methylome.At_main.R`.
-
 #### Usage:
 
 ```text
@@ -273,55 +265,8 @@ MetaPlots analysis arguments:
   --metaPlot_random             Number of random genes/TEs for metaPlots. 'all' for all the coding-genes and TEs [default: 10000]
 ```
 
-
-```text
-var1, var2                         # control, treatment names
-var1_path, var2_path               # paths to sample tables / files
-Methylome.At_path="."
-
-annotation_file                    default: ./annotation_files/Methylome.At_annotations.csv.gz
-description_file                   default: ./annotation_files/Methylome.At_annotations.csv.gz  (override recommended)
-TEs_file                           default: ./annotation_files/Methylome.At_annotations.csv.gz  (override recommended)
-
-minProportionDiff=c(0.4,0.2,0.1)   # CG, CHG, CHH
-binSize=100
-minCytosinesCount=4
-minReadsPerCytosine=4
-pValueThreshold=0.05
-methyl_files_type="CX_report"
-img_type="pdf"
-n.cores=8
-
-GO_analysis=FALSE
-KEGG_pathways=FALSE
-analyze_dH=FALSE
-
-TE_metaPlots=FALSE
-GeneBody_metaPlots=FALSE
-GeneFeatures_metaPlots=FALSE
-gene_features_binSize=10
-metaPlot.random.genes=10000
-```
-
-> CLI flag names can differ slightly between wrapper versions (UI vs shell wrappers).  
-> Always treat `./Methylome.At.sh --help` as the source of truth for the exact flag spelling in your checkout.
-
-### Meta-plots workflow (standalone)
-
-`./Methylome.At_metaPlots.sh --help` shows the exact flags. Typical options are:
-
-```text
---Genes_n_TEs                 Meta-plots for gene bodies + TEs (default TRUE)
---Gene_features               Meta-plots for gene features (default TRUE)
---minReadsPerCytosine         Coverage filter for meta-plots (default 6)
---metaPlot_random_genes       Number of genes to sample (or 'all') (default 10000)
---bin_size_features           Bins for feature meta-plots (default 10)
---n_cores                     Parallelism (default 20)
---file_type                   CX_report / bedMethyl / CGmap
---annotation_file, --TEs_file, --Methylome_At_path
-```
-
 ---
+
 
 ## Output folders (per contrast)
 
@@ -358,13 +303,28 @@ A typical output tree under `results/<treatment>_vs_<control>/`:
 
 ---
 
+## Reports
+
+- **log**: The pipeline writes log output during the run. See [example](https://raw.githubusercontent.com/Yo-yerush/Methylome.At/refs/heads/main/output_example/Methylome.At_log_file.log) `.log` file.
+  
+- **HTML report**: *When the pipeline is done, it will produce a `.html` report file with the used configurations, results summary (including plots and tables) and statistics description.*
+Render it manually:
+```r
+rmarkdown::render(
+  "scripts/Methylome.At_report.Rmd",
+  params = list(cond1 = "wt", cond2 = "mt1"),
+  output_file = "Methylome.At_report.html"
+)
+```
+
+---
+
 ## (Optional) From FASTQ to CX_report: run_bismark.sh (WGBS)
 
 If you start from raw WGBS FASTQ files, you can generate Bismark methylation calls and CX_report outputs using:
-```bash
-./scripts/run_bismark.sh --help
-```
 ```text
+$ ./scripts/run_bismark.sh --help
+
 Usage:
 ------
 run_bismark.sh [-s <required>] [-g TAIR10] [options]
@@ -385,17 +345,17 @@ Options:
 --help
 ```
 
-### Requirements
+#### Requirements
 This script assumes you have these available in your environment:
 - bismark (and its aligner dependency, typically bowtie2)
 - samtools
 
-### Input
+#### Input
 - Reference genome file (as `.fasta` or `.fa`)
 - Samples table for the `.fastq` files (tab-delimited, 2 columns, no header)
 
 Format:
-> sample_name<TAB>/path/to/fastq
+> sample_name   /path/to/sample_R.fastq
 
 Paired-end example (sample name appears twice: R1 + R2):
 ```text
@@ -409,38 +369,15 @@ wt_2    PATH/TO/FILE/wt2_R1.fastq
 wt_2    PATH/TO/FILE/wt2_R2.fastq
 ```
 
-### Run
+#### Run
 
-- *Use `-g` as **TAIR10** for the standart reference genome if Arabidopsis (auto-download FASTA)*
+- *Use `-g TAIR10` for the standart reference genome of Arabidopsis (auto-download FASTA)*
 - *Add `--mat` to create a ready-to-use samples table for Methylome.At*
 - *Add `--cx` to produce and Keep only `*_CX_report.txt.gz` files*
 
 ```bash
 ./scripts/run_bismark.sh -s samples_table.txt -g TAIR10 -n 8 --cx --mat
 ```
-
----
-
-## Reports
-
-A report template is available under `scripts/Methylome.At_report.Rmd`.  
-You can render it with:
-
-```r
-rmarkdown::render(
-  "scripts/Methylome.At_report.Rmd",
-  params = list(cond1 = "wt", cond2 = "mto1"),
-  output_file = "Methylome.At_report.html"
-)
-```
-
----
-
-## Log files
-
-The pipeline writes log output during the run. Example log files:
-- `output_example/Methylome.At_log_file.log`
-- `output_example/MetaPlots_log_file.log`
 
 ---
 
