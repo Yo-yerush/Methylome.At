@@ -87,13 +87,8 @@ cd ./Methylome.At
 **Using the built-in setup script**:
 
 ```bash
+chmod +x ./setup_env.sh
 ./setup_env.sh
-
-# Check if R and conda pckages are installed:
-./setup_env.sh --check
-
-# Ensure permission of scripts without install:
-./setup_env.sh --permission
 ```
 
 Check if **R** and **conda** pckages are installed:
@@ -386,3 +381,4 @@ wt_2    PATH/TO/FILE/wt2_R2.fastq
 ## License
 
 This project is licensed under the [MIT License](https://github.com/Yo-yerush/Methylome.At/blob/main/LICENSE).
+
