@@ -222,7 +222,7 @@ If you provide custom files, ensure they contain the columns required by the ann
 #### Main pipeline
 
 ```bash
-./Methylome.At.sh /path/to/samples_table.txt
+./scripts/Methylome.At.sh /path/to/samples_table.txt
 ```
 
 #### Usage:
@@ -254,7 +254,6 @@ DMRs analysis arguments:
   --pValueThreshold             P-value (padj) threshold [default: 0.05]
   --GO_analysis                 Perform GO analysis [default: FALSE]
   --KEGG_pathways               Perform KEGG pathways analysis [default: FALSE]
-
   --dH                          Analyze delta-H = -(p * log2(p) + (1 - p) * log2(1 - p)) [default: FALSE]
 
 MetaPlots analysis arguments:

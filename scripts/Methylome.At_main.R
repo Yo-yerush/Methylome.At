@@ -213,7 +213,7 @@ Methylome.At_main <- function(var1, # control
     }
   )
 
-  cat("\n")
+  cat(sep_cat)
   rm(load_vars)
 
   ##### PCA plot to total methlyation in all contexts
@@ -263,8 +263,6 @@ Methylome.At_main <- function(var1, # control
   )
 
   ###########################################################################
-
-  cat(sep_cat)
 
   ##### ChrPlots for CX methylation #####
   dir.create(ChrPlot_CX_path, showWarnings = F)
@@ -396,7 +394,6 @@ Methylome.At_main <- function(var1, # control
         CX_ann(ann_list, var1, var2, meth_var1, meth_var2, context) # save tables of annotate CX
         DMRs_ann_plots(var1, var2, context)
         message("\tgenome annotations for DMRs: done")
-        cat(" done\n")
       },
       error = function(cond) {
         cat("\n*\n tgenome annotations for DMRs:\n", as.character(cond), "*\n")
@@ -446,7 +443,7 @@ Methylome.At_main <- function(var1, # control
   tryCatch(
     {
       setwd(exp_path)
-      cat("generated DMRs density plot for all contexts: ")
+      cat("\ngenerated DMRs density plot for all contexts: ")
       # setwd(ChrPlots_DMRs_path)
       DMRs_circular_plot(annotation.gr, TE_file, comparison_name)
       DMRs_circular_plot_legends()
@@ -464,7 +461,6 @@ Methylome.At_main <- function(var1, # control
   ##### TEs - size and distance plots
   tryCatch(
     {
-      cat(sep_cat)
       TE_context_list <- TE_delta_meth(list(meth_var1, meth_var2), TE_file)
 
       dir.create(paste0(genome_ann_path, "/TEs_addiotionnal_results/TE_size_n_distance/"), showWarnings = FALSE)
