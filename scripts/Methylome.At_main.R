@@ -290,7 +290,7 @@ Methylome.At_main <- function(var1, # control
   cat(sep_cat)
 
   ##### call DMRs for replicates/single data
-  cat(paste0("\ncall DMRs for replicates data: ", is_Replicates))
+  cat("\ncall DMRs for replicates data:", is_Replicates, "\n")
   message(paste0("call DMRs for replicates data: ", is_Replicates))
 
   if (is_Replicates) {

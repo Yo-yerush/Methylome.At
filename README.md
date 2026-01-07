@@ -91,12 +91,9 @@ chmod +x ./setup_env.sh
 ./setup_env.sh
 ```
 
-Check if **R** and **conda** pckages are installed:
-> ./setup_env.sh --check
+- Use `--check` flag to check if **R** and **conda** pckages are installed
 
-Ensure permission of scripts (`dos2unix`, `chmod`) without install:
-> ./setup_env.sh --permission
-
+- Use `--permission` flag to ensure permission of scripts (`dos2unix`, `chmod`) **without installation**
 
 
 **Or manually** (example):
