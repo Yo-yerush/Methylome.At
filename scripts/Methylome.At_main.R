@@ -606,12 +606,12 @@ Methylome.At_main <- function(var1, # control
         {
           message(paste("\ngenerate metaPlot to", metaPlot.random.genes, " Transposable Elements..."))
           setwd(metaPlot_path)
-          Genes_metaPlot(meth_var1, meth_var2, var1, var2, TE.gr, metaPlot.random.genes, minReadsPerCytosine, n.cores, is_TE = T)
+          Genes_metaPlot(meth_var1, meth_var2, var1, var2, TE_file, metaPlot.random.genes, minReadsPerCytosine, n.cores, is_TE = T)
           setwd(metaPlot_path)
           delta_metaplot("TEs", var1, var2)
         },
         error = function(cond) {
-          cat("\n*\n Genes-body metaPlots:\n", as.character(cond), "*\n")
+          cat("\n*\n Transposable Elements metaPlots:\n", as.character(cond), "*\n")
           message(paste0("process average metaPlot to ", metaPlot.random.genes, " Transposable Elements: fail\n"))
         }
       )
