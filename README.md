@@ -379,3 +379,4 @@ wt_2    PATH/TO/FILE/wt2_R2.fastq
 
 This project is licensed under the [MIT License](https://github.com/Yo-yerush/Methylome.At/blob/main/LICENSE).
 
+
