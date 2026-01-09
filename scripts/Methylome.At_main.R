@@ -463,7 +463,7 @@ Methylome.At_main <- function(var1, # control
     {
       setwd(genome_ann_path)
       cat("\ngenerated DMRs over TEs superfamilies: ")
-      TEs_superfamily_circular_plot(annotation.gr, TE_file)
+      TEs_superfamily_circular_plot(annotation.gr)
       cat("done\n")
       message("generated DMRs over TEs superfamilies: done\n")
     },
@@ -472,6 +472,8 @@ Methylome.At_main <- function(var1, # control
       message("generated DMRs over TEs superfamilies: fail\n")
     }
   )
+  
+  setwd(exp_path)
 
   ###########################################################################
 

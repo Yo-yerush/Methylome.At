@@ -12,7 +12,7 @@ source("https://raw.githubusercontent.com/Yo-yerush/Methylome.At/main/scripts/tr
 
 ##### Read annotation and description files #####
 
-annotation.gr <- read.csv("/home/yoyerush/yo/methylome_pipeline/leaf_senescence_vatov_22/Methylome.At/annotation_files/Methylome.At_annotations.csv.gz") %>%
+annotation.gr <- read.csv("C:/Users/YonatanY/Migal/Rachel Amir Team - General/Arabidopsis_db/RA_costume_annotations_files/Methylome.At_annotations.csv.gz") %>%
   makeGRangesFromDataFrame(., keep.extra.columns = T) %>%
   trimm_and_rename()
 
