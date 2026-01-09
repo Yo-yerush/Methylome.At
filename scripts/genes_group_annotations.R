@@ -58,13 +58,13 @@ DMRs_into_groups <- function(
 
     ### load DMRs files
     if (context != "all") {
-        DMR_file <- read.csv(paste0(DMRs_ann_dir, "/", context, "/", ann, "_", context, "_genom_annotations.csv"))
+        DMR_file <- read.csv(paste0(DMRs_ann_dir, "/", context, "/DMRs_", ann, "_", context, "_genom_annotations.csv"))
         cntx_file <- context
     } else {
         DMR_file <- rbind(
-            read.csv(paste0(DMRs_ann_dir, "/CG/", ann, "_CG_genom_annotations.csv")),
-            read.csv(paste0(DMRs_ann_dir, "/CHG/", ann, "_CHG_genom_annotations.csv")),
-            read.csv(paste0(DMRs_ann_dir, "/CHH/", ann, "_CHH_genom_annotations.csv"))
+            read.csv(paste0(DMRs_ann_dir, "/CG/DMRs_", ann, "_CG_genom_annotations.csv")),
+            read.csv(paste0(DMRs_ann_dir, "/CHG/DMRs_", ann, "_CHG_genom_annotations.csv")),
+            read.csv(paste0(DMRs_ann_dir, "/CHH/DMRs_", ann, "_CHH_genom_annotations.csv"))
         )
         cntx_file <- "all_contexts"
     }

@@ -5,45 +5,45 @@ Methylome.At is a comprehensive, R-based pipeline for *Arabidopsis thaliana* tha
 ---
 
 ```mermaid
-%%{init: {'theme':'redux-dark', 'themeVariables': { 'fontFamily':'Georgia, Times New Roman, serif', 'fontSize':'60px'}, 'flowchart': {'nodeSpacing':150, 'rankSpacing': 150}}}%%
+%%{init: {'theme':'redux-dark', 'themeVariables': { 'fontFamily':'Georgia, Times New Roman, serif', 'fontSize':'60px'}, 'flowchart': {'nodeSpacing':15, 'rankSpacing': 15}}}%%
+
 
 flowchart LR
     %% Inputs
     subgraph INPUT[" "]
         direction TB
-        SF[Samples File]
-        FASTQ[Raw FASTQ]
-        TAIR[Genome annotation]
-        TEs[TEs annotation]
-        GeneDesc[Gene descriptions]
+        SF@{ shape: tag-rect, label: "Samples File"}
+        FASTQ@{ shape: processes, label: "Raw FASTQ"}
+        TAIR@{ shape: div-rect, label: "Genome annotation"}
+        TEs@{ shape: div-rect, label: "TEs annotation"}
+        GeneDesc@{ shape: div-rect, label: "Gene descriptions"}
     end
     
     %% Pre-processing
-    subgraph PREPROC["<i>(optional)</i>"]
+    subgraph PREPROC[" "]
         direction LR
-        Trim[Trim reads]
-        Bismark[Bismark alignment]
-        MethEx[Methylation extractor]
+        Trim@{ shape: bow-rect, label: "Trim reads"}
+        Bismark@{ shape: bow-rect, label: "Bismark alignment"}
+        MethEx@{ shape: bow-rect, label: "Methylation extractor"}
     end
     
     %% CX Reports
-    CX[CX_report files]
+    CX@{ shape: processes, label: "*CX_report* files"}
     
     %% Loading Data
-    LOAD["Load_methylation_data<br/><i>(single/replicate samples)</i><br/>"]
+    LOAD@{ shape: win-pane, label: "Load methylation data"}
     
     %% QC
-    QC[QC:<br>Chloroplast C→T conversion]
+    QC@{ shape: tag-rect, label: "Chloroplast C→T conversion"}
         
     %% Visualizations
-    subgraph VIZ["<i>Visualizations</i>"]
+    subgraph VIZ[" "]
         direction TB
-        TotalMeth[Total methylation levels]
-        PCA[PCA of samples]
-        ChrPlots[ChrPlots genome-wide]
-
-        SIZE[Δ <i>vs.</i> TE size]
-        DISTANCE[Δ <i>vs.</i> TE distance-from-centromere]
+        TotalMeth@{ shape: rounded, label: "Total methylation"}
+        PCA@{ shape: rounded, label: "PCA of samples"}
+        ChrPlots@{ shape: rounded, label: "ChrPlots genome-wide"}
+        SIZE@{ shape: rounded, label: "Δ <i>vs.</i> TE size"}
+        DISTANCE@{ shape: rounded, label: "Δ <i>vs.</i> TE distance"}
         %%%% TE delta analyses
         %%subgraph TEdelta[" "]
         %%    direction TB
@@ -54,68 +54,78 @@ flowchart LR
 
     %% DMR Calling
     %%DMRCALL[Call DMRs<br/><i>Single/replicate samples</i><br/>]
-    DMRCALL["DMR calling"]
+    DMRCALL@{ shape: win-pane, label: "DMR calling"}
     
     %% DMR Annotation
     subgraph ANNOT[" "]
 
         %% DMR vissualizations
-        subgraph DIST["<i>Visualizations</i>"]
-            direction TB
-            DMRdist[DMR distribution]
-            DMRpie[Gain/Loss: pie & ratio distribution]
-            DMRchrplot[ChrPlots DMRs]
+        subgraph DIST[" "]
+            direction TB    
+            DMRdist@{ shape: rounded, label: "DMR distribution"}
+            DMRpie@{ shape: rounded, label: "Gain/Loss"}
+            DMRchrplot@{ shape: rounded, label: "ChrPlots DMRs"}
         end
 
         direction TB
-        DMRannot[DMR annotation]
-        GbDMR[Gene-body DMRs]
-        GbFeature[<i>Promoter/CDS/Intron/ 5'UTR/3'UTR/TEG/pseudogene</i>]
-        teDMR["Transposable element DMRs"]
-        
+        DMRannot@{ shape: win-pane, label: "DMR annotation"}
+        GbDMR@{ shape: win-pane, label: "<i>Promoter/Gene</i> overlapping DMRs"}
+        GbFeature@{ shape: tag-rect, label: "<i>Promoter/CDS/Intron/ 5'UTR/3'UTR/TEG/pseudogene</i>"}
+        teDMR@{ shape: win-pane, label: "Transposable element DMRs"}
+        GROUP@{ shape: tag-rect, label: "Functional groups"}        
         subgraph TEdown[" "]
             direction TB
-            SFf[Super-family frequency]
-            SFd[Super-family distribution]
+            SFf@{ shape: bow-rect, label: "Super-family frequency"}
+            SFd@{ shape: bow-rect, label: "Super-family distribution"}
         end
 
     end
     
     %% Meta Plots
-    subgraph META["<i>(optional)</i>"]
+    subgraph META[" "]
         direction TB
-        Meta[MetaPlots]    
+        Meta@{ shape: tag-rect, label: "MetaPlots"}    
         %% dH Analysis
-        dH["ΔH_analysis (entropy)"]
+        dH@{ shape: tag-rect, label: "ΔH"}
     end
     
     %% Functional Analysis
-    subgraph func["<i>(optional)</i>"]
-        direction TB
-        GO[GO_enrichment]
-        KEGG[KEGG_pathways]
+    subgraph func[ ]
+        direction LR
+        GO@{ shape: tag-rect, label: "GO enrichment"}
+        KEGG@{ shape: tag-rect, label: "KEGG pathways"}
     end
 
-
     %% Flow
-    FASTQ --> PREPROC
-    Trim --> Bismark --> MethEx --> CX
-    SF --> CX
-    %%LOAD --> TEdelta
-    CX --> LOAD
-    LOAD --> DMRCALL
-    LOAD --> VIZ
-    LOAD --> META
-    LOAD --> QC
-    TEs --> teDMR
-    TAIR --> LOAD
-    TEs --> VIZ
-    %%TAIR --> GbFeature
-    DMRCALL --> DIST
-    DMRCALL --> DMRannot
-    DMRannot --> GbDMR --> GbFeature --> func
-    GeneDesc --> DMRannot
-    DMRannot --> teDMR --> TEdown
+    FASTQ ------------> |"<i>optional</i>"| PREPROC
+    Trim ======> Bismark ======> MethEx ==========> CX
+    SF e1@==> CX
+    %%LOAD ==> TEdelta
+    CX ========> LOAD
+    LOAD e2@==> DMRCALL
+    LOAD --> |"<i>Visualizations</i>"| VIZ
+    LOAD --> |"<i>optional</i>"| META
+    LOAD ==> |"<i>QC</i>"| QC
+    TEs -.-> teDMR
+    TAIR e6@-.-> LOAD
+    TEs -.-> VIZ
+    %%TAIR ==> GbFeature
+    DMRCALL --> |"<i>Visualizations</i>"| DIST
+    DMRCALL e3@==> DMRannot
+    DMRannot e4@==> GbDMR ===> GbFeature --> |"<i>optional</i>"| func
+    GbDMR ==> GROUP
+    TAIR e7@-.-> DMRannot
+    GeneDesc e8@-.-> DMRannot
+    DMRannot e5@==> teDMR ==> TEdown
+
+    e1@{ animate: true }
+    e2@{ animate: true }
+    e3@{ animate: true }
+    e4@{ animate: true }
+    e5@{ animate: true }
+    e6@{ animate: true }
+    e7@{ animate: true }
+    e8@{ animate: true }
 ````
 
 

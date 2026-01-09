@@ -18,7 +18,7 @@ TEs_superfamily_circular_plot <- function(ann.file) {
 
     #############
 
-    cntx_file <- function(x) read.csv(paste0(x, "/Transposable_Elements_", x, "_genom_annotations.csv"))
+    cntx_file <- function(x) read.csv(paste0(x, "/DMRs_Transposable_Elements_", x, "_genom_annotations.csv"))
 
     all_cntx_gr <- rbind(
         cntx_file("CG"),

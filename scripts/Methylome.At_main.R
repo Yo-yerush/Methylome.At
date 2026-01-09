@@ -462,7 +462,7 @@ Methylome.At_main <- function(var1, # control
   tryCatch(
     {
       setwd(genome_ann_path)
-      cat("\ngenerated DMRs over TEs superfamilies: ")
+      cat("\ngenerated DMRs density plots over TEs superfamilies: ")
       TEs_superfamily_circular_plot(annotation.gr)
       cat("done\n")
       message("generated DMRs over TEs superfamilies: done\n")
@@ -472,7 +472,7 @@ Methylome.At_main <- function(var1, # control
       message("generated DMRs over TEs superfamilies: fail\n")
     }
   )
-  
+
   setwd(exp_path)
 
   ###########################################################################
@@ -504,13 +504,13 @@ Methylome.At_main <- function(var1, # control
         img_device(paste0(func_groups_path, "/", ann.l, "_groups_barPlots_", comparison_name), w = 14, h = 4.5)
         print(groups_barPlots(groups_results))
         dev.off()
+        cat(" done\n")
       },
       error = function(cond) {
         cat("\n*\n Bar-plot of *", cntx.l, "* - *", ann.l, "* annotated DMRs into functional groups:\n", as.character(cond), "*\n")
       }
     )
   }
-  cat(" done\n")
   message("Annotate DMRs into functional groups: done\n")
 
   ###########################################################################
