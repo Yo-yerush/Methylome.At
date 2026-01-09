@@ -2,26 +2,26 @@ Methylome.At_main <- function(var1, # control
                               var2, # treatment
                               var1_path,
                               var2_path,
-                              Methylome.At_path=".",
-                              annotation_file="./annotation_files/Methylome.At_annotations.csv.gz",
-                              description_file="./annotation_files/Methylome.At_annotations.csv.gz",
-                              TEs_file="./annotation_files/Methylome.At_annotations.csv.gz",
-                              minProportionDiff=c(0.4,0.2,0.1), # CG, CHG, CHH
-                              binSize=100,
-                              minCytosinesCount=4,
-                              minReadsPerCytosine=4,
-                              pValueThreshold=0.05,
-                              methyl_files_type="CX_report",
-                              img_type="pdf",
-                              n.cores=8,
-                              GO_analysis=FALSE,
-                              KEGG_pathways=FALSE,
-                              analyze_dH=FALSE,
-                              TE_metaPlots=FALSE,
-                              GeneBody_metaPlots=FALSE,
-                              GeneFeatures_metaPlots=FALSE,
-                              gene_features_binSize=10,
-                              metaPlot.random.genes=10000) {
+                              Methylome.At_path = ".",
+                              annotation_file = "./annotation_files/Methylome.At_annotations.csv.gz",
+                              description_file = "./annotation_files/Methylome.At_annotations.csv.gz",
+                              TEs_file = "./annotation_files/Methylome.At_annotations.csv.gz",
+                              minProportionDiff = c(0.4, 0.2, 0.1), # CG, CHG, CHH
+                              binSize = 100,
+                              minCytosinesCount = 4,
+                              minReadsPerCytosine = 4,
+                              pValueThreshold = 0.05,
+                              methyl_files_type = "CX_report",
+                              img_type = "pdf",
+                              n.cores = 8,
+                              GO_analysis = FALSE,
+                              KEGG_pathways = FALSE,
+                              analyze_dH = FALSE,
+                              TE_metaPlots = FALSE,
+                              GeneBody_metaPlots = FALSE,
+                              GeneFeatures_metaPlots = FALSE,
+                              gene_features_binSize = 10,
+                              metaPlot.random.genes = 10000) {
   ###########################################################################
 
   start_time <- Sys.time()
@@ -313,26 +313,26 @@ Methylome.At_main <- function(var1, # control
 
     ##############################
     ##### Calling DMRs in Replicates #####
-        tryCatch(
-          {
-            DMRs_bins <- calling_DMRs(
-              methylationDataReplicates_joints, meth_var1, meth_var2,
-              var1, var2, var1_path, var2_path, comparison_name,
-              context, minProportionDiff, binSize, pValueThreshold,
-              minCytosinesCount, minReadsPerCytosine, n.cores, is_Replicates
-            )
-            cat(paste0("statistically significant DMRs: ", length(DMRs_bins), "\nDMRs plots...\n"))
-            message(paste0("\tstatistically significant DMRs: ", length(DMRs_bins)))
-            message(paste0("\tDMRs caller in ", context, " context: done"))
-          },
-          error = function(cond) {
-            cat(paste0("\n*\n Calling DMRs in", context,":\n"), as.character(cond), "*\ncontinue without calling DMRs!\n\n")
-            message("\tCalling DMRs: fail\n")
-            GO_analysis <- FALSE
-            KEGG_pathways <- FALSE
-            break
-          }
+    tryCatch(
+      {
+        DMRs_bins <- calling_DMRs(
+          methylationDataReplicates_joints, meth_var1, meth_var2,
+          var1, var2, var1_path, var2_path, comparison_name,
+          context, minProportionDiff, binSize, pValueThreshold,
+          minCytosinesCount, minReadsPerCytosine, n.cores, is_Replicates
         )
+        cat(paste0("statistically significant DMRs: ", length(DMRs_bins), "\nDMRs plots...\n"))
+        message(paste0("\tstatistically significant DMRs: ", length(DMRs_bins)))
+        message(paste0("\tDMRs caller in ", context, " context: done"))
+      },
+      error = function(cond) {
+        cat(paste0("\n*\n Calling DMRs in", context, ":\n"), as.character(cond), "*\ncontinue without calling DMRs!\n\n")
+        message("\tCalling DMRs: fail\n")
+        GO_analysis <- FALSE
+        KEGG_pathways <- FALSE
+        break
+      }
+    )
 
     ##############################
     #####  Gain or Loss - DMRs #####
@@ -458,6 +458,61 @@ Methylome.At_main <- function(var1, # control
 
   ###########################################################################
 
+  ##### TEs superfamily - curcular plot #####
+  tryCatch(
+    {
+      setwd(genome_ann_path)
+      cat("\ngenerated DMRs over TEs superfamilies: ")
+      TEs_superfamily_circular_plot(annotation.gr, TE_file)
+      cat("done\n")
+      message("generated DMRs over TEs superfamilies: done\n")
+    },
+    error = function(cond) {
+      cat("\n*\n DMRs over TEs superfamilies:\n", as.character(cond), "*\n")
+      message("generated DMRs over TEs superfamilies: fail\n")
+    }
+  )
+
+  ###########################################################################
+
+  ##### DMRs within Genes-groups #####
+  func_groups_path <- paste0(genome_ann_path, "/functional_groups")
+  setwd(exp_path)
+  dir.create(func_groups_path, showWarnings = FALSE)
+  cat("Annotate DMRs into functional groups... ")
+  for (ann.l in c("Genes", "Promoters")) {
+    groups_results <- c()
+    for (cntx.l in c("CG", "CHG", "CHH", "all")) {
+      tryCatch(
+        {
+          cat(".")
+          groups_results <- rbind(
+            groups_results,
+            DMRs_into_groups(treatment = comparison_name, ann = ann.l, context = cntx.l)
+          )
+        },
+        error = function(cond) {
+          cat("\n*\n Annotate *", cntx.l, "* - *", ann.l, "* DMRs into functional groups:\n", as.character(cond), "*\n")
+          message(paste("Annotate", cntx.l, "-", ann.l, "DMRs into functional groups: fail\n"))
+        }
+      )
+    }
+    tryCatch(
+      {
+        img_device(paste0(func_groups_path, "/", ann.l, "_groups_barPlots_", comparison_name), w = 14, h = 4.5)
+        print(groups_barPlots(groups_results))
+        dev.off()
+      },
+      error = function(cond) {
+        cat("\n*\n Bar-plot of *", cntx.l, "* - *", ann.l, "* annotated DMRs into functional groups:\n", as.character(cond), "*\n")
+      }
+    )
+  }
+  cat(" done\n")
+  message("Annotate DMRs into functional groups: done\n")
+
+  ###########################################################################
+
   ##### TEs - size and distance plots
   tryCatch(
     {
@@ -500,7 +555,7 @@ Methylome.At_main <- function(var1, # control
 
   ###########################################################################
 
-  
+
   ##### GO analysis for annotated DMRs
   if (GO_analysis) {
     cat(sep_cat)
@@ -577,7 +632,7 @@ Methylome.At_main <- function(var1, # control
   setwd(exp_path)
 
   ###########################################################################
-  
+
   ##### run metPlot function for coding-Genes and TEs
   if (TE_metaPlots | GeneBody_metaPlots | GeneFeatures_metaPlots) {
     cat(sep_cat, "\nmetaPlots:\n----------")
@@ -635,7 +690,7 @@ Methylome.At_main <- function(var1, # control
   }
 
   setwd(exp_path)
-  
+
   ###########################################################################
 
   setwd(Methylome.At_path)
@@ -660,4 +715,3 @@ Methylome.At_main <- function(var1, # control
   cat(paste0("\n\n**\tDone!\n", end_msg))
   message(end_msg)
 }
-
