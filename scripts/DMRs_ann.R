@@ -71,7 +71,7 @@ DMRs_ann <- function(annotation_vec, DMRsReplicates, context, description_file, 
           )
 
           cat(paste0("\tTEG (", nrow(TEG), ")\n"))
-          message(paste0("\tTEG (", nrow(TEG), ")"))
+          # message(paste0("\tTEG (", nrow(TEG), ")"))
         }
 
         # remove TEG if there are (in non-TEGs annotations)
@@ -88,7 +88,7 @@ DMRs_ann <- function(annotation_vec, DMRsReplicates, context, description_file, 
             row.names = F, na = ""
           )
           cat(paste0("\t", ann_count_df[i, 1], " (", ann_count_df[i, context], ")\n"))
-          message(paste0("\t", ann_count_df[i, 1], " (", ann_count_df[i, context], ")"))
+          # message(paste0("\t", ann_count_df[i, 1], " (", ann_count_df[i, context], ")"))
         },
         error = function(cond) {
           cat(paste0("\t", ann_count_df[i, 1], "\n"))

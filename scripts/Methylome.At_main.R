@@ -291,7 +291,7 @@ Methylome.At_main <- function(var1, # control
   cat(sep_cat)
 
   ##### call DMRs for replicates/single data
-  cat("\ncall DMRs for replicates data:", is_Replicates, "\n")
+  cat(paste0("\n", time_msg(), "call DMRs for replicates data: ", is_Replicates, "\n"))
   message(time_msg(), paste0("call DMRs for replicates data: ", is_Replicates))
 
   if (is_Replicates) {
@@ -306,11 +306,6 @@ Methylome.At_main <- function(var1, # control
   ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ###
   ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ###
   ### ### main loop for 'DMRs' and its downstream results ### ###
-
-
-  # cat("\n-------------------------\n")
-  # cat("\ncalculate DMRs in", context, "context...\n")
-  # message(time_msg(), paste0("DMRs in ", context, " context..."))
 
   ##############################
   ##### Calling DMRs in Replicates #####
@@ -338,9 +333,15 @@ Methylome.At_main <- function(var1, # control
   }, mc.cores = ifelse(n.cores >= 3, 3, 1))
 
   names(DMRs_results) <- c("CG", "CHG", "CHH")
-  cat("DMRs plots...\n")
+  cat(paste0(time_msg(), "done!\n"))
+
+  ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ###
+  ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ###
+  ### ### main loop for plots ### ###
 
   for (context in c("CG", "CHG", "CHH")) {
+    cat(sep_cat)
+
     DMRs_bins <- DMRs_results[[context]]
 
     # skip if DMRs calling failed
@@ -441,7 +442,7 @@ Methylome.At_main <- function(var1, # control
       ))
     }
     message(time_msg(), "\tsaved all DMRs also as bigWig files\n")
-    cat("saved all DMRs also as bigWig files\n\n")
+    cat("saved all DMRs also as bigWig files\n")
   }
 
   setwd(exp_path)
@@ -725,10 +726,10 @@ Methylome.At_main <- function(var1, # control
   end_time <- Sys.time()
   time_diff <- difftime(end_time, start_time, units = "mins") %>% as.numeric()
   end_msg <- paste(
-    "**\ttime:",
+    time_msg(), "time:",
     paste0(floor(time_diff / 60), "hr"),
     paste0(floor(time_diff %% 60), "min\n")
   )
-  cat(paste0("\n\n**\tDone!\n", end_msg))
+  cat(paste0("\n\n",time_msg(),"Done!\n", end_msg))
   message(end_msg)
 }
