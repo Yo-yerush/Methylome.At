@@ -40,7 +40,7 @@ TEs_superfamily_circular_plot <- function(ann.file) {
 
     par(mar = c(0, 0, 0, 0))
 
-    circos.par(gap.degree = c(rep(1, chr_amount - 1), 35), start.degree = 90)
+    circos.par(gap.degree = c(rep(1, chr_amount - 1), 35), start.degree = 90, points.overflow.warning = FALSE)
     circos.genomicInitialize(as.data.frame(ann.file)[, 1:3], sector.names = paste0("Chr ", 1:chr_amount), axis.labels.cex = 0.4, labels.cex = 1.25)
     for (family.i in 1:length(family_res_list)) {
         suppressMessages({
@@ -113,7 +113,7 @@ TEs_superfamily_circular_plot <- function(ann.file) {
     )
     par(mar = c(0, 0, 0, 0))
 
-    circos.par(gap.degree = c(rep(1, chr_amount - 1), 35), start.degree = 90)
+    circos.par(gap.degree = c(rep(1, chr_amount - 1), 35), start.degree = 90, points.overflow.warning = FALSE)
     circos.genomicInitialize(as.data.frame(ann.file)[, 1:3], sector.names = paste0("Chr ", 1:chr_amount), axis.labels.cex = 0.4, labels.cex = 1.25)
     for (family.i in 1:length(family_list_gain)) {
         suppressMessages({

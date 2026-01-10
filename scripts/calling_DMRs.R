@@ -14,7 +14,7 @@ calling_DMRs <- function(methylationDataReplicates_joints, meth_var1, meth_var2,
   } else if (context == "CHH") {
     minProportionDifference_var <- minProportionDiff[3]
   }
-  message(paste0("\tmin difference in methylation proportion: ", minProportionDifference_var))
+  # message(paste0(time_msg("\t"), "min difference in ",context," methylation proportion: ", minProportionDifference_var))
 
 
   # get the range for each chromosome (needed to run in parallel)

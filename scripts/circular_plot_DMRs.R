@@ -20,7 +20,7 @@ DMRs_circular_plot <- function(ann.file, TE_4_dens, comparison_name) {
 
   par(mar = c(0, 0, 0, 0))
 
-  circos.par(gap.degree = c(rep(1, chr_amount - 1), 25), start.degree = 90)
+  circos.par(gap.degree = c(rep(1, chr_amount - 1), 25), start.degree = 90, points.overflow.warning = FALSE)
   circos.genomicInitialize(as.data.frame(ann.file)[, 1:3], sector.names = paste0("Chr ", seq(chr_amount)), axis.labels.cex = 0.325, labels.cex = 1.25)
 
   circos.genomicDensity(
