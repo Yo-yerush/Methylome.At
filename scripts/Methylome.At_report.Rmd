@@ -1,11 +1,11 @@
 ---
-title: "Methylome.At report"
-author: "[ ](https://github.com/Yo-yerush/Methylome.At)"
-date: "`r format(Sys.Date(), '%d, %B, %Y')`"
+title: "Methylome.At Report"
+author: "Methylome.At"
+date: "`r format(Sys.Date(), '%d %B %Y')`"
 output:
-    html_document:
-        toc: true
-        number_sections: true
+  html_document:
+    toc: true
+    number_sections: true
 params:
   cond1: "control"
   cond2: "treatment"
@@ -16,13 +16,13 @@ knitr::opts_chunk$set(
   echo = FALSE,
   warning = FALSE,
   message = FALSE,
-  fig.align = "left",
+  fig.align = "center",
   fig.width = 7,
-  fig.height = 5
+  fig.height = 5,
+  out.width = "80%"
 )
 
 library(dplyr)
-# library(readr)
 library(tidyr)
 library(ggplot2)
 library(knitr)
@@ -33,36 +33,30 @@ library(tools)
 
 cond1 <- params$cond1
 cond2 <- params$cond2
-contrast <- paste(cond2, "_vs_", cond1)
+contrast <- paste0(cond2, "_vs_", cond1)
 results_dir <- paste0("./results/", contrast, "/")
-
-# small helpers -----------------------------------------------------------
 
 read_if_exists <- function(path, ...) {
   if (file.exists(path)) {
     readr::read_csv(path, show_col_types = FALSE, ...)
   } else {
-    message("File not found (skipped): ", path)
     NULL
   }
 }
 
-include_if_exists <- function(path, ...) {
-  # if exact path exists – use it
+include_if_exists <- function(path) {
   if (file.exists(path)) {
-    return(knitr::include_graphics(path))
+    return(knitr::include_graphics(normalizePath(path)))
   }
-  # otherwise, try common graphical extensions for the same basename
   base <- tools::file_path_sans_ext(path)
-  exts <- c(".pdf", ".svg", ".png", ".tif", ".tiff")
+  exts <- c(".png", ".pdf", ".svg", ".tif", ".tiff", ".jpg", ".jpeg")
   for (e in exts) {
     alt <- paste0(base, e)
     if (file.exists(alt)) {
-      return(knitr::include_graphics(alt))
+      return(knitr::include_graphics(normalizePath(alt)))
     }
   }
-  message("Figure not found (skipped): ", path)
-  NULL
+  invisible(NULL)
 }
 ```
 
@@ -70,15 +64,7 @@ include_if_exists <- function(path, ...) {
 
 **`r cond2` vs `r cond1`**
 
-This report summarizes the main outputs produced by **Methylome.At** for this contrast:
-
-- Chloroplast conversion rate  
-- PCA (CG / CHG / CHH / all contexts)  
-- Whole-genome and region-specific methylation levels  
-- Chromosome-level methylation and DMR maps  
-- DMR statistics (counts, gain/loss, effect sizes)  
-- Surprisal / delta-H results  
-- Genome annotation summaries for DMRs  
+This report summarizes the outputs produced by **Methylome.At** for this contrast.
 
 # Chloroplast conversion rate
 
@@ -88,39 +74,24 @@ conv <- read_if_exists(conv_path)
 
 if (!is.null(conv)) {
   conv %>%
-    mutate(conversion_rate = round(conversion_rate, 3)) %>%
-      kable(
-        digits = 3
-      ) %>%
-      kable_styling(full_width = FALSE)
+    mutate(conversion_rate = paste0(round(as.numeric(conversion_rate), 2), "%")) %>%
+    kable(col.names = c("Sample", "Conversion Rate"), align = "lc") %>%
+    kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
 }
 ```
 
-# PCA – sample relationships
+# PCA - sample relationships
 
-```{r pca-all, fig.cap="All contexts combined"}
+```{r pca-all, out.width="60%", fig.cap="PCA: All contexts combined"}
 pca_dir <- file.path(results_dir, "PCA_plots")
-p_all <- file.path(pca_dir, paste0("all_contexts_PCA_plot_", contrast))
-include_if_exists(p_all)
+include_if_exists(file.path(pca_dir, paste0("all_contexts_PCA_plot_", contrast)))
 ```
 
-```{r pca-contexts, fig.cap="PCA plots by methylation context (CG, CHG, CHH)", fig.width=12, fig.height=4}
-p_CG   <- file.path(pca_dir, paste0("CG_PCA_plot_", contrast))
-p_CHG  <- file.path(pca_dir, paste0("CHG_PCA_plot_", contrast))
-p_CHH  <- file.path(pca_dir, paste0("CHH_PCA_plot_", contrast))
+```{r pca-contexts, out.width="32%", fig.show='hold', fig.cap="PCA by methylation context"}
+include_if_exists(file.path(pca_dir, paste0("CG_PCA_plot_", contrast)))
+include_if_exists(file.path(pca_dir, paste0("CHG_PCA_plot_", contrast)))
+include_if_exists(file.path(pca_dir, paste0("CHH_PCA_plot_", contrast)))
 ```
-
-```{r pca-contexts-side-by-side, out.width="33%", fig.show='hold'}
-include_if_exists(p_CG)
-include_if_exists(p_CHG)
-include_if_exists(p_CHH)
-```
-
-### Interpretation and parameters – PCA plots
-
-The PCA plots summarize global methylation patterns for **`r cond2`** and **`r cond1`** in each context (CG, CHG, CHH and all contexts combined). Each point represents a biological replicate; separation along PC1/PC2 reflects the major axes of methylation variation across the genome. Clear clustering of replicates from the same condition and separation between **`r cond2`** and **`r cond1`** indicate that the treatment drives consistent, genome‑wide methylation changes.
-
-Within **Methylome.At**, PCA is performed on methylation proportions at cytosines that pass the basic coverage filters used by the pipeline (typically cytosines with at least 4 reads per site in each sample). The same CX‑report input that is used for DMR calling is used here, and contexts (CG, CHG, CHH) are analyzed separately as well as jointly, providing a first quality‑control step for sample similarity and potential outliers.
 
 # Total methylation levels
 
@@ -145,63 +116,31 @@ meth_all <- bind_rows(
 if (!is.null(meth_all) && nrow(meth_all) > 0) {
   meth_all %>%
     arrange(region, type, treatment) %>%
-    kable(
-      caption = "Mean methylation levels (by region, context and treatment)",
-      digits = 3
-    ) %>%
-    kable_styling(full_width = FALSE)
+    kable(caption = "Mean methylation levels by region, context and treatment", digits = 2) %>%
+    kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
 }
 ```
 
-```{r methylation-levels-plot, fig.cap="Methylation levels by region, context and treatment"}
-if (!is.null(meth_all) && nrow(meth_all) > 0) {
-  ggplot(meth_all, aes(x = type, y = levels, fill = treatment)) +
-    geom_col(position = position_dodge(width = 0.7)) +
-    geom_errorbar(aes(ymin = levels - SD, ymax = levels + SD),
-                  position = position_dodge(width = 0.7),
-                  width = 0.3) +
-    facet_wrap(~ region) +
-    labs(x = "Context", y = "Methylation level (%)") +
-    theme_bw()
-}
-```
-
-### Interpretation and parameters – total methylation levels
-
-These bar plots compare average methylation levels between `r cond2` and `r cond1` in CG, CHG and CHH contexts, separately for the whole genome, euchromatin and heterochromatin. Increased CHG/CHH methylation in `r cond2` relative to `r cond1` in heterochromatic regions, for example, would point to reinforced silencing of transposon‑rich pericentromeric regions, whereas global CG changes might reflect broader shifts in gene‑body methylation.
-
-Total methylation levels are computed by aggregating CX‑report methylation calls over predefined genomic compartments. Cytosines are included if they meet the minimum read‑depth filter (at least 4 reads per cytosine in the main pipeline), and context‑specific proportions are then averaged per region for each treatment. Standard deviations shown as error bars reflect variability across biological replicates.
-
-```{r methylation-levels-figs, fig.cap="Figures generated by Methylome.At for methylation levels"}
+```{r methylation-levels-figs, out.width="32%", fig.show='hold', fig.cap="Methylation levels"}
 include_if_exists(file.path(meth_dir, paste0("Whole_Genome_", contrast)))
 include_if_exists(file.path(meth_dir, paste0("Euchromatin_region_", contrast)))
 include_if_exists(file.path(meth_dir, paste0("Heterochromatin_region_", contrast)))
 ```
 
-### Interpretation and parameters – methylation level figures
-
-The original Methylome.At figures provide an alternative visualization of the same statistics, often splitting the data by context and genomic compartment. Each panel summarizes mean methylation levels and dispersion across replicates for `r cond2` and `r cond1`. These plots are based on the same cytosine‑level filters as described above (minimum read coverage per cytosine, separate aggregation for CG/CHG/CHH contexts) and use the same euchromatin/heterochromatin definitions as the rest of the pipeline.
-
 # Chromosome-level methylation
 
-## CX methylation and differences
-
-```{r chr-cx, fig.cap="Chromosome-level methylation (all contexts and differences)"}
+```{r chr-cx, out.width="90%", fig.cap="Chromosome-level CX methylation profiles"}
 cx_dir <- file.path(results_dir, "ChrPlot_CX")
-
 include_if_exists(file.path(cx_dir, paste0("ChrPlot_", contrast)))
+```
+
+```{r chr-cx-diff, out.width="90%", fig.cap="Chromosome-level methylation difference"}
 include_if_exists(file.path(cx_dir, paste0("ChrPlot_difference_", contrast)))
 ```
 
-### Interpretation and parameters – chromosome-level methylation
-
-The chromosome‑scale CX plots display smoothed methylation levels along each chromosome for `r cond2` and `r cond1`, as well as their difference. Peaks typically correspond to heterochromatin and transposable element clusters near centromeres, whereas valleys correspond to gene‑rich euchromatic arms. Regions where the difference track deviates strongly from zero highlight large genomic segments with consistent methylation gains or losses in `r cond2` relative to `r cond1`.
-
-These plots are generated by binning cytosines along each chromosome into fixed‑size windows (default bin size for DMR scanning is 100 bp, and similar window sizes are used here) and summarizing methylation proportions per window. Only cytosines that pass the global coverage filters (minimum reads per cytosine) are used, ensuring that the profile reflects reliable measurements rather than local sequencing noise.
-
 # DMR statistics
 
-## DMR tables and summary
+## Summary
 
 ```{r dmrs-summary}
 dmr_files <- list(
@@ -219,249 +158,177 @@ dmr_list <- imap(dmr_files, ~{
 dmrs <- bind_rows(dmr_list[!map_lgl(dmr_list, is.null)])
 
 if (!is.null(dmrs) && nrow(dmrs) > 0) {
-
-  # ensure regionType exists if missing
-  if (!"regionType" %in% names(dmrs)) {
-    dmrs$regionType <- NA_character_
-  }
-
+  if (!"regionType" %in% names(dmrs)) dmrs$regionType <- NA_character_
+  
   dmr_summary <- dmrs %>%
     count(context, regionType, name = "n_DMRs") %>%
-    arrange(context, desc(n_DMRs))
-
-  kable(dmr_summary,
-        caption = "Number of DMRs by context and direction (gain/loss)",
-        digits = 0) %>%
-    kable_styling(full_width = FALSE)
+    pivot_wider(names_from = regionType, values_from = n_DMRs, values_fill = 0) %>%
+    mutate(Total = rowSums(across(where(is.numeric)), na.rm = TRUE))
+  
+  kable(dmr_summary, caption = "DMR counts by context and direction") %>%
+    kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
 }
 ```
 
-```{r dmrs-effect, fig.cap="Distribution of DMR effect sizes (log2FC) by context"}
-if (!is.null(dmrs) && "log2FC" %in% names(dmrs)) {
-  ggplot(dmrs, aes(x = log2FC, fill = context)) +
-    geom_histogram(bins = 60, alpha = 0.7, position = "identity") +
-    facet_wrap(~ context, scales = "free_y") +
-    labs(x = "log2FC (methylation proportion)", y = "Number of DMRs") +
-    theme_bw()
-}
-```
+## Density plot
 
-### Interpretation and parameters – DMR effect sizes
-
-The histograms of log2 fold‑change visualize the magnitude and direction of methylation changes across all DMRs in each context. Skew towards positive values indicates that `r cond2` tends to gain methylation relative to `r cond1`, whereas skew towards negative values reflects predominant methylation loss. Separate panels for CG, CHG and CHH contexts help distinguish gene‑body‑like changes (often CG‑dominated) from TE‑associated shifts (often CHG/CHH‑dominated).
-
-Effect sizes and directions are derived from methylation proportions within each DMR window, computed from cytosine counts that meet the minimum read‑depth requirement (≥ 4 reads per cytosine) and satisfy the context‑specific minimum proportion difference (0.4 for CG, 0.2 for CHG, 0.1 for CHH) with p‑value ≤ 0.05. DMRcaller’s statistical model is applied within each 100‑bp bin to estimate significance and fold‑change, and the resulting log2 ratios summarize the methylation contrast between `r cond2` and `r cond1` at each locus.
-
-```{r dmrs-head}
-if (!is.null(dmrs) && nrow(dmrs) > 0) {
-  dmrs %>%
-    arrange(context, seqnames, start) %>%
-    slice_head(n = 10) %>%
-    kable(
-      caption = "First 10 DMRs across all contexts",
-      digits = 4
-    ) %>%
-    kable_styling(full_width = FALSE)
-}
-```
-
-## DMRs density and gain/loss figures
-
-```{r dmrs-density, fig.cap="DMR density across chromosomes"}
+```{r dmrs-density, out.width="55%", fig.cap="DMR density across chromosomes"}
 include_if_exists(file.path(results_dir, paste0("DMRs_Density_", contrast)))
 ```
 
-### Interpretation and parameters – DMR density
+## Gain vs Loss
 
-The DMR density plot summarizes how many DMRs are found per genomic bin along each chromosome. Peaks in this track highlight genomic regions where methylation is particularly dynamic between `r cond2` and `r cond1`, often corresponding to TE clusters or other repetitive regions. Comparing CG, CHG and CHH densities can reveal whether methylation remodeling is driven mainly by maintenance (CG) or non‑CG/TE‑associated pathways.
-
-DMR density is computed by counting DMRs in sliding or fixed windows across the genome, using the same DMR definitions and thresholds as above (minimum cytosine count and read depth per DMR, context‑specific minimum proportion differences, and p‑value threshold 0.05). Window size matches the bin size used in DMR calling (100 bp by default), ensuring that density peaks correspond to clusters of individually significant regions rather than arbitrary smoothing artifacts.
-
-```{r dmrs-gain-loss, fig.cap="DMR direction – gain vs loss (per context)"}
+```{r dmrs-gain-loss-pie, out.width="30%", fig.show='hold', fig.cap="DMR direction"}
 gol_dir <- file.path(results_dir, "gain_OR_loss")
-
 include_if_exists(file.path(gol_dir, "pie_CG_gainORloss"))
 include_if_exists(file.path(gol_dir, "pie_CHG_gainORloss"))
 include_if_exists(file.path(gol_dir, "pie_CHH_gainORloss"))
+```
 
+```{r dmrs-gain-loss-ratio, out.width="32%", fig.show='hold', fig.cap="DMR ratio distribution"}
 include_if_exists(file.path(gol_dir, "ratio.distribution_CG_gainORloss"))
 include_if_exists(file.path(gol_dir, "ratio.distribution_CHG_gainORloss"))
 include_if_exists(file.path(gol_dir, "ratio.distribution_CHH_gainORloss"))
 ```
 
-### Interpretation and parameters – DMR gain vs loss
-
-The gain/loss pie charts and ratio distributions quantify how many DMRs become hyper‑methylated versus hypo‑methylated in `r cond2` compared with `r cond1` in each context. For instance, a strong bias towards CHG/CHH gains and relatively few losses would indicate a global reinforcement of non‑CG methylation in `r cond2`, consistent with tighter TE silencing.
-
-The direction of change for each DMR is defined from the sign of the methylation difference between conditions, after applying the minimum proportion difference and p‑value thresholds (0.4/0.2/0.1 for CG/CHG/CHH, p ≤ 0.05). The same 100‑bp bins and minimum cytosine/read‑depth filters are used across contexts, making the gain/loss proportions directly comparable between CG, CHG and CHH tracks.
-
-# Surprisal / delta-H analysis
-
-```{r deltaH-tables}
-delta_dir <- file.path(results_dir, "deltaH")
-
-surp_files <- list(
-  CG  = file.path(delta_dir, paste0("SurpMRs_CG_",  contrast, ".csv")),
-  CHG = file.path(delta_dir, paste0("SurpMRs_CHG_", contrast, ".csv")),
-  CHH = file.path(delta_dir, paste0("SurpMRs_CHH_", contrast, ".csv"))
-)
-
-surp_list <- imap(surp_files, ~{
-  df <- read_if_exists(.x)
-  if (!is.null(df)) df$context <- .y
-  df
-})
-
-surp_all <- bind_rows(surp_list[!map_lgl(surp_list, is.null)])
-
-if (!is.null(surp_all) && nrow(surp_all) > 0) {
-  surp_all %>%
-    count(context, name = "n_regions") %>%
-    kable(
-      caption = "Number of surprisal / delta-H regions per context",
-      digits = 0
-    ) %>%
-    kable_styling(full_width = FALSE)
-}
-```
-
-```{r deltaH-figs, fig.cap="Delta-H / surprisal figures"}
-include_if_exists(file.path(delta_dir, paste0("ChrPlot_delta_H_subCX_", contrast)))
-include_if_exists(file.path(delta_dir, paste0("ChrPlot_difference_", contrast)))
-include_if_exists(file.path(delta_dir, paste0("dHR_Density_", contrast)))
-include_if_exists(file.path(delta_dir, paste0("scatter_plot_difference_subCX_", contrast)))
-include_if_exists(file.path(delta_dir, paste0("sum_dH_manhattan_plot_", contrast)))
-```
-
-### Interpretation and parameters – surprisal / delta-H plots
-
-The surprisal and delta‑H plots highlight genomic regions where the local methylation pattern is unexpectedly different between `r cond2` and `r cond1` given the overall distribution. Manhattan‑style representations of summed delta‑H values across chromosomes emphasize hotspots of methylation remodeling, while density and scatter plots separate subtle, widespread changes from sharp, localized outliers.
-
-These analyses are derived from the same cytosine‑level methylation calls used for DMR detection, but instead of thresholding on a fixed proportion difference they use information‑theoretic measures (entropy/surprisal) to score each region. Windows are defined on the same genomic grid (100‑bp bins by default), and only cytosines passing the minimum read‑depth filter are included. The resulting surprisal regions (SurpMRs) are further stratified by context (CG, CHG, CHH), allowing context‑specific interpretation of unexpected methylation patterns.
-
 # Genome annotation for DMRs
 
-```{r genome-annotation}
+```{r genome-annotation-figs, out.width="30%", fig.show='hold', fig.cap="DMR distribution across genomic features"}
 annot_dir <- file.path(results_dir, "genome_annotation")
-
-# context-specific DMR annotation tables may be in subfolders; here we just show the
-# main per-context summary if available.
-annot_paths <- imap(
-  list(
-    CG  = file.path(annot_dir, "CG",  paste0("CG_",  contrast, ".csv")),
-    CHG = file.path(annot_dir, "CHG", paste0("CHG_", contrast, ".csv")),
-    CHH = file.path(annot_dir, "CHH", paste0("CHH_", contrast, ".csv"))
-  ),
-  ~ .x
-)
-
-annot_list <- imap(annot_paths, ~{
-  df <- read_if_exists(.x)
-  if (!is.null(df)) df$context <- .y
-  df
-})
-
-annot_all <- bind_rows(annot_list[!map_lgl(annot_list, is.null)])
-
-if (!is.null(annot_all) && nrow(annot_all) > 0) {
-  # quick summary: number of DMR-associated genes per context and feature type
-  feature_col <- intersect(c("type", "feature", "regionType"), names(annot_all))[1]
-
-  annot_summary <- annot_all %>%
-    group_by(context, .data[[feature_col]]) %>%
-    summarise(
-      n_genes = n_distinct(gene_id),
-      .groups = "drop"
-    ) %>%
-    arrange(context, desc(n_genes))
-
-  kable(
-    annot_summary,
-    caption = paste(
-      "Number of DMR-associated genes per context and genomic feature (using column",
-      feature_col, ")"
-    ),
-    digits = 0
-  ) %>%
-    kable_styling(full_width = FALSE)
-}
-```
-
-```{r genome-annotation-figs, fig.cap="Genome annotation figures (CG/CHG/CHH contexts)"}
-annot_dir <- file.path(results_dir, "genome_annotation")
-
 include_if_exists(file.path(annot_dir, "CG_genom_annotations"))
 include_if_exists(file.path(annot_dir, "CHG_genom_annotations"))
 include_if_exists(file.path(annot_dir, "CHH_genom_annotations"))
+```
+
+```{r genome-annotation-legend, out.width="20%", fig.cap="Legend"}
 include_if_exists(file.path(annot_dir, "legend_genom_annotations"))
 ```
 
-### Interpretation and parameters – genome annotation plots
+# TE superfamilies analysis
 
-The genome‑annotation plots summarize how DMRs are distributed across genes, promoters, intergenic regions and transposable elements in each context. Enrichment of CHG/CHH DMRs in TE bodies or pericentromeric regions, for example, points to altered TE silencing, whereas enrichment of CG DMRs in gene bodies or promoters suggests direct effects on gene regulation.
+```{r te-superfamilies-circular, out.width="48%", fig.show='hold', fig.cap="TE superfamily DMR distribution"}
+te_dir <- file.path(results_dir, "TEs_addiotionnal_results")
+include_if_exists(file.path(te_dir, "TEs_lines_density_superfamilies"))
+include_if_exists(file.path(te_dir, "TEs_direction_density_superfamilies"))
+```
 
-Annotations are derived from the GFF3/GTF and TE annotation files provided to Methylome.At. Each DMR is overlapped with features in these files using the same coordinate system and genome build, and contexts (CG, CHG, CHH) are reported separately. The default annotation set is based on TAIR10 Arabidopsis gene and TE annotations, but users can provide alternative GFF3/GTF files; the plotting code automatically uses whichever annotation file was active when the pipeline was run.
+# Functional gene groups
 
-# BigWig output (for genome browser)
+```{r gene-groups-figs, out.width="90%", fig.cap="DMRs in functional gene groups"}
+groups_dir <- file.path(results_dir, "genome_annotation", "functional_groups")
+
+for (ctx in c("CG", "CHG", "CHH")) {
+  ctx_dir <- file.path(groups_dir, ctx)
+  if (dir.exists(ctx_dir)) {
+    for (ann in c("Genes", "Promoters")) {
+      fig_path <- file.path(ctx_dir, paste0(ctx, "_", ann, "_groups_volcano_", contrast))
+      result <- include_if_exists(fig_path)
+      if (!is.null(result)) print(result)
+    }
+  }
+}
+```
+
+# Metaplots
+
+## Gene body metaplots
+
+```{r metaplots-genes, out.width="32%", fig.show='hold', fig.cap="Methylation profiles around genes"}
+metaplot_dir <- file.path(results_dir, "metaPlots", "Genes")
+include_if_exists(file.path(metaplot_dir, paste0("Genes_CG_metaPlot_", contrast)))
+include_if_exists(file.path(metaplot_dir, paste0("Genes_CHG_metaPlot_", contrast)))
+include_if_exists(file.path(metaplot_dir, paste0("Genes_CHH_metaPlot_", contrast)))
+```
+
+```{r metaplots-genes-delta, out.width="40%", fig.cap="Gene body methylation difference"}
+include_if_exists(file.path(metaplot_dir, paste0("Genes_delta_metaPlot_", contrast)))
+```
+
+## TE body metaplots
+
+```{r metaplots-tes, out.width="32%", fig.show='hold', fig.cap="Methylation profiles around TEs"}
+metaplot_dir_te <- file.path(results_dir, "metaPlots", "TEs")
+include_if_exists(file.path(metaplot_dir_te, paste0("TEs_CG_metaPlot_", contrast)))
+include_if_exists(file.path(metaplot_dir_te, paste0("TEs_CHG_metaPlot_", contrast)))
+include_if_exists(file.path(metaplot_dir_te, paste0("TEs_CHH_metaPlot_", contrast)))
+```
+
+```{r metaplots-tes-delta, out.width="40%", fig.cap="TE body methylation difference"}
+include_if_exists(file.path(metaplot_dir_te, paste0("TEs_delta_metaPlot_", contrast)))
+```
+
+## Gene feature metaplots
+
+```{r metaplots-features, out.width="48%", fig.show='hold', fig.cap="Methylation profiles across gene sub-features"}
+metaplot_dir_feat <- file.path(results_dir, "metaPlots", "Gene_features")
+include_if_exists(file.path(metaplot_dir_feat, paste0("Genes_features_CG_metaPlot_", contrast)))
+include_if_exists(file.path(metaplot_dir_feat, paste0("Genes_features_CHG_metaPlot_", contrast)))
+include_if_exists(file.path(metaplot_dir_feat, paste0("Genes_features_CHH_metaPlot_", contrast)))
+```
+
+# BigWig output
 
 ```{r bigwig-summary}
 bw_dir <- file.path(results_dir, "DMRs_bigWig")
 
-bw_files <- list.files(bw_dir, pattern = "\\.bw$", full.names = TRUE)
-
-if (length(bw_files) > 0) {
-  tibble(
-    file = basename(bw_files)
-  ) %>%
-    mutate(
-      context = str_extract(file, "CG|CHG|CHH"),
-      description = "DMR-based methylation track for genome browser"
-    ) %>%
-    kable(
-      caption = "BigWig files generated by Methylome.At",
-      align = "l"
-    ) %>%
-    kable_styling(full_width = FALSE)
+if (dir.exists(bw_dir)) {
+  bw_files <- list.files(bw_dir, pattern = "\\.bw$", full.names = FALSE)
+  
+  if (length(bw_files) > 0) {
+    tibble(File = bw_files) %>%
+      mutate(
+        Context = str_extract(File, "CG|CHG|CHH"),
+        Description = "DMR log2FC track for genome browser"
+      ) %>%
+      kable(align = "llc") %>%
+      kable_styling(bootstrap_options = c("striped"), full_width = FALSE)
+  } else {
+    cat("No BigWig files found.\n")
+  }
 } else {
-  cat("No BigWig files found in DMRs_bigWig/.\\n")
+  cat("BigWig directory not found.\n")
 }
 ```
 
-# (Optional) GO and KEGG enrichment
+# GO and KEGG enrichment
 
-If you enabled GO and KEGG in the pipeline, result tables and figures will be under `GO & KEGG analysis/`. This section will automatically show basic summaries if these files exist.
-
-```{r go-kegg, eval=TRUE}
+```{r go-kegg-tables}
 go_dir <- file.path(results_dir, "GO & KEGG analysis")
 
 if (dir.exists(go_dir)) {
-  go_files <- list.files(go_dir, pattern = "GO_.*\\.csv$", recursive = TRUE, full.names = TRUE)
-  kegg_files <- list.files(go_dir, pattern = "KEGG_.*\\.csv$", recursive = TRUE, full.names = TRUE)
-
+  go_files <- list.files(go_dir, pattern = "\\.topGO\\.csv$", recursive = TRUE, full.names = TRUE)
+  kegg_files <- list.files(go_dir, pattern = "\\.KEGG\\.csv$", recursive = TRUE, full.names = TRUE)
+  
   if (length(go_files) > 0) {
     go_df <- read_if_exists(go_files[1])
-    if (!is.null(go_df)) {
+    if (!is.null(go_df) && nrow(go_df) > 0) {
       go_df %>%
-        slice_head(n = 10) %>%
-        kable(
-          caption = "Example GO enrichment table (first 10 terms from first file)",
-          digits = 4
-        ) %>%
-        kable_styling(full_width = FALSE)
+        slice_head(n = 8) %>%
+        select(any_of(c("GO.ID", "Term", "Significant", "Annotated", "Fisher"))) %>%
+        kable(caption = paste("GO enrichment example:", basename(go_files[1])), digits = 4) %>%
+        kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
     }
   }
-
+  
   if (length(kegg_files) > 0) {
     kegg_df <- read_if_exists(kegg_files[1])
-    if (!is.null(kegg_df)) {
+    if (!is.null(kegg_df) && nrow(kegg_df) > 0) {
       kegg_df %>%
-        slice_head(n = 10) %>%
-        kable(
-          caption = "Example KEGG enrichment table (first 10 pathways from first file)",
-          digits = 4
-        ) %>%
-        kable_styling(full_width = FALSE)
+        slice_head(n = 8) %>%
+        select(any_of(c("pathway.code", "pathway.name", "Significant", "Annotated", "p.value"))) %>%
+        kable(caption = paste("KEGG enrichment example:", basename(kegg_files[1])), digits = 4) %>%
+        kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
     }
+  }
+}
+```
+
+```{r go-kegg-figs, out.width="90%", fig.cap="GO and KEGG enrichment plots"}
+if (dir.exists(go_dir)) {
+  plot_files <- list.files(go_dir, pattern = paste0(contrast, ".*\\.(png|pdf)$"), full.names = TRUE, recursive = FALSE)
+  for (pf in head(plot_files, 6)) {
+    result <- include_if_exists(pf)
+    if (!is.null(result)) print(result)
   }
 }
 ```

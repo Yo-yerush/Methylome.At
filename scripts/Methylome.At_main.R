@@ -275,11 +275,11 @@ Methylome.At_main <- function(var1, # control
     {
       source(paste0(scripts_dir, "/ChrPlots_CX.R"))
       suppressWarnings(run_ChrPlots_CX(var1, var2, meth_var1, meth_var2, TE_file, n.cores))
-      message("done")
+      message("done\n")
     },
     error = function(cond) {
       cat("\n*\n ChrPlots:\n", as.character(cond), "*\n")
-      message("fail")
+      message("fail\n")
     }
   )
 
@@ -306,33 +306,47 @@ Methylome.At_main <- function(var1, # control
   ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ###
   ### ### main loop for 'DMRs' and its downstream results ### ###
 
-  for (context in c("CG", "CHG", "CHH")) {
-    cat("\n-------------------------\n")
-    cat("\ncalculate DMRs in", context, "context...\n")
-    message(paste0("DMRs in ", context, " context..."))
 
-    ##############################
-    ##### Calling DMRs in Replicates #####
+  # cat("\n-------------------------\n")
+  # cat("\ncalculate DMRs in", context, "context...\n")
+  # message(paste0("DMRs in ", context, " context..."))
+
+  ##############################
+  ##### Calling DMRs in Replicates #####
+  DMRs_results <- mclapply(c("CG", "CHG", "CHH"), function(context) {
+    setwd(exp_path)
     tryCatch(
       {
-        DMRs_bins <- calling_DMRs(
+        DMRs_call <- calling_DMRs(
           methylationDataReplicates_joints, meth_var1, meth_var2,
           var1, var2, var1_path, var2_path, comparison_name,
           context, minProportionDiff, binSize, pValueThreshold,
-          minCytosinesCount, minReadsPerCytosine, n.cores, is_Replicates
+          minCytosinesCount, minReadsPerCytosine, ifelse(n.cores > 3, n.cores / 3, 1), is_Replicates
         )
-        cat(paste0("statistically significant DMRs: ", length(DMRs_bins), "\nDMRs plots...\n"))
-        message(paste0("\tstatistically significant DMRs: ", length(DMRs_bins)))
+        cat(paste0("statistically significant DMRs (", context, "): ", length(DMRs_call), "\n"))
+        message(paste0("\tstatistically significant DMRs (", context, "): ", length(DMRs_call)))
         message(paste0("\tDMRs caller in ", context, " context: done"))
+        return(DMRs_call)
       },
       error = function(cond) {
-        cat(paste0("\n*\n Calling DMRs in", context, ":\n"), as.character(cond), "*\ncontinue without calling DMRs!\n\n")
+        cat(paste0("\n*\n Calling DMRs in ", context, " context:\n"), as.character(cond), "*\ncontinue without calling DMRs!\n\n")
         message("\tCalling DMRs: fail\n")
-        GO_analysis <- FALSE
-        KEGG_pathways <- FALSE
-        break
+        return(NULL)
       }
     )
+  }, mc.cores = ifelse(n.cores >= 3, 3, 1))
+
+  names(DMRs_results) <- c("CG", "CHG", "CHH")
+  cat("DMRs plots...\n")
+
+  for (context in c("CG", "CHG", "CHH")) {
+    DMRs_bins <- DMRs_results[[context]]
+
+    # skip if DMRs calling failed
+    if (is.null(DMRs_bins)) {
+      message(paste0("\tSkipping ", context, " - no DMRs available"))
+      next
+    }
 
     ##############################
     #####  Gain or Loss - DMRs #####
@@ -374,14 +388,14 @@ Methylome.At_main <- function(var1, # control
         message("\tgenerated ChrPlots for all DMRs: done")
       },
       error = function(cond) {
-        cat("\n*\n tgenerated ChrPlots for all DMRs:\n", as.character(cond), "*\n")
+        cat("\n*\n generated ChrPlots for all DMRs:\n", as.character(cond), "*\n")
         message("\tgenerated ChrPlots for all DMRs: fail\n")
       }
     )
     setwd(exp_path)
 
     ##### Annotate DMRs and total-methylations #####
-    cat("genome annotations for DMRs...\n")
+    cat("genome annotations for", context, "DMRs:\n")
     message("\tgenome annotations for DMRs...")
     dir.create(genome_ann_path, showWarnings = FALSE)
     setwd(genome_ann_path)
@@ -396,7 +410,7 @@ Methylome.At_main <- function(var1, # control
         message("\tgenome annotations for DMRs: done")
       },
       error = function(cond) {
-        cat("\n*\n tgenome annotations for DMRs:\n", as.character(cond), "*\n")
+        cat("\n*\n genome annotations for DMRs:\n", as.character(cond), "*\n")
         message("\tgenome annotations for DMRs: fail")
       }
     )
@@ -426,7 +440,7 @@ Methylome.At_main <- function(var1, # control
       ))
     }
     message("\tsaved all DMRs also as bigWig files\n")
-    cat("done\n")
+    cat("saved all DMRs also as bigWig files\n\n")
   }
 
   setwd(exp_path)
@@ -483,22 +497,22 @@ Methylome.At_main <- function(var1, # control
   dir.create(func_groups_path, showWarnings = FALSE)
   cat("Annotate DMRs into functional groups... ")
   for (ann.l in c("Genes", "Promoters")) {
-    groups_results <- c()
-    for (cntx.l in c("CG", "CHG", "CHH", "all")) {
+    groups_results <- mclapply(c("CG", "CHG", "CHH", "all"), function(cntx.l) {
       tryCatch(
-        {
-          cat(".")
-          groups_results <- rbind(
-            groups_results,
-            DMRs_into_groups(treatment = comparison_name, ann = ann.l, context = cntx.l)
-          )
-        },
-        error = function(cond) {
-          cat("\n*\n Annotate *", cntx.l, "* - *", ann.l, "* DMRs into functional groups:\n", as.character(cond), "*\n")
-          message(paste("Annotate", cntx.l, "-", ann.l, "DMRs into functional groups: fail\n"))
-        }
+      {
+        cat(".")
+        DMRs_into_groups(treatment = comparison_name, ann = ann.l, context = cntx.l)
+      },
+      error = function(cond) {
+        cat("\n*\n Annotate *", cntx.l, "* - *", ann.l, "* DMRs into functional groups:\n", as.character(cond), "*\n")
+        message(paste("Annotate", cntx.l, "-", ann.l, "DMRs into functional groups: fail\n"))
+        return(NULL)
+      }
       )
-    }
+    }, mc.cores = ifelse(n.cores >= 4, 4, n.cores)) %>%
+      do.call(rbind, .) %>%
+      arrange(context)
+
     tryCatch(
       {
         img_device(paste0(func_groups_path, "/", ann.l, "_groups_barPlots_", comparison_name), w = 14, h = 4.5)

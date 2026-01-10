@@ -58,7 +58,17 @@ TEs_superfamily_circular_plot <- function(ann.file) {
                 )
 
                 ### density lines
-                colors <- ifelse(value >= 3, "green4", "gray15")
+                colors <- ifelse(value >= 15, "#00FF00",
+                    ifelse(value >= 10, "#0bca0b",
+                        ifelse(value >= 7, "#04aa04",
+                            ifelse(value >= 5, "#058605",
+                                ifelse(value >= 3, "#046804",
+                                    "gray15"
+                                )
+                            )
+                        )
+                    )
+                )
                 circos.genomicLines(region, value,
                     col = colors,
                     border = TRUE, lty = 1, lwd = 0.5, type = "h"
