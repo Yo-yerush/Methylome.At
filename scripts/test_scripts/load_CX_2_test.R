@@ -19,7 +19,7 @@ annotation.gr <- read.csv("C:/Users/YonatanY/Migal/Rachel Amir Team - General/Ar
 # TAIR10 Transposable Elements file
 
 source("https://raw.githubusercontent.com/Yo-yerush/Methylome.At/main/scripts/edit_TE_file.R")
-TE_file.df <- read.csv("/home/yoyerush/yo/methylome_pipeline/leaf_senescence_vatov_22/Methylome.At/annotation_files/TAIR10_Transposable_Elements.txt", sep = "\t")
+TE_file.df <- read.csv("https://raw.githubusercontent.com/Yo-yerush/Methylome.At/main/annotation_files/TAIR10_Transposable_Elements.txt", sep = "\t")
 TE_file <- edit_TE_file(TE_file.df)
 
 
