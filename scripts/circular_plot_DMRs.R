@@ -31,7 +31,7 @@ DMRs_circular_plot <- function(ann.file, TE_4_dens, comparison_name) {
     bg.col = "#fafcff", bg.border = NA, count_by = "number",
     col = c("#FF000080", "#304ed180"), border = T, track.height = 0.165, track.margin = c(0, 0)
   )
-  circos.text("Chr1", x = 0, y = 1, labels = "CG", facing = "downward", cex = 0.6, adj = c(1, -0.75))
+  circos.text("Chr1", x = 0, y = 1, labels = "CG", facing = "downward", cex = 0.6, adj = c(1, -0.4))
 
   circos.genomicDensity(
     list(
@@ -41,7 +41,7 @@ DMRs_circular_plot <- function(ann.file, TE_4_dens, comparison_name) {
     bg.col = "#fafcff", bg.border = NA, count_by = "number",
     col = c("#FF000080", "#304ed180"), border = T, track.height = 0.165, track.margin = c(0, 0)
   )
-  circos.text("Chr1", x = 0, y = 1, labels = "CHG", facing = "downward", cex = 0.6, adj = c(1, -0.75))
+  circos.text("Chr1", x = 0, y = 1, labels = "CHG", facing = "downward", cex = 0.6, adj = c(1, -0.4))
 
   circos.genomicDensity(
     list(
@@ -51,7 +51,7 @@ DMRs_circular_plot <- function(ann.file, TE_4_dens, comparison_name) {
     bg.col = "#fafcff", bg.border = NA, count_by = "number",
     col = c("#FF000080", "#304ed180"), border = T, track.height = 0.165, track.margin = c(0, 0)
   )
-  circos.text("Chr1", x = 0, y = 1, labels = "CHH", facing = "downward", cex = 0.6, adj = c(1, -0.75))
+  circos.text("Chr1", x = 0, y = 1, labels = "CHH", facing = "downward", cex = 0.6, adj = c(1, -0.4))
 
   circos.genomicDensity(
     list(

@@ -36,8 +36,8 @@ load_replicates <- function(var_path, n.cores, var_name, metaPlot_script = F, fi
       names(mcols(methylationDataReplicates))[names(mcols(methylationDataReplicates)) %in% c("readsM", "readsN")] <- c("readsM1", "readsN1")
     } else {
       cat("joining ", length(var_path), " replicates\t[", var_name, "]\n", sep = "")
-      # message(paste0("\t----"))
-      message(paste0("\tjoin replicates   [", var_name, "]"))
+      # message(paste0(time_msg(), "\t----"))
+      message(paste0(time_msg(), "\tjoin replicates   [", var_name, "]"))
       methylationDataReplicates <- joinReplicates(methylationDataList[[1]], methylationDataList[[2]]) # 2 samples
       if (length(var_path) > 2) {
         for (i in 3:length(var_path)) {
@@ -83,7 +83,7 @@ read_bismark <- function(cx_path, name) {
   } else {
     msg <- "unknown"
   }
-  message(paste0("\tread ", msg, " C's [", name, "]"))
+  message(paste0(time_msg(), "\tread ", msg, " C's [", name, "]"))
 
   rb_out
 }
@@ -113,7 +113,7 @@ read_CX <- function(cx_path, name) {
     readsN = as.integer(cx_df$readsM) + as.integer(cx_df$readsUnM),
     trinucleotide_context = as.character(cx_df$trinucleotide_context)
   )
-  message(paste0("\tread ", nrow(cx_df), " cytosine sites\t[", name, "]"))
+  message(paste0(time_msg(), "\tread ", nrow(cx_df), " cytosine sites\t[", name, "]"))
 
   cx_gr
 }
@@ -142,7 +142,7 @@ read_CGmap <- function(cgmap_path, name) {
     readsN = as.integer(cgmap_df$readsN),
     trinucleotide_context = as.character(rep("-", nrow(cgmap_df)))
   )
-  message(paste0("\tread ", nrow(cgmap_df), " cytosine sites\t[", name, "]"))
+  message(paste0(time_msg(), "\tread ", nrow(cgmap_df), " cytosine sites\t[", name, "]"))
 
   cgmap_gr
 }
@@ -185,7 +185,7 @@ read_bedMethyl <- function(bed_path, name) {
       "-"
     }
   )
-  message(paste0("\tread ", nrow(bed_df), " cytosine sites\t[", name, "]"))
+  message(paste0(time_msg(), "\tread ", nrow(bed_df), " cytosine sites\t[", name, "]"))
 
   bed_gr
 }

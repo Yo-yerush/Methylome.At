@@ -109,10 +109,12 @@ flowchart LR
     TEs -.-> teDMR
     TAIR e6@-.-> LOAD
     TEs -.-> VIZ
+
     %%TAIR ==> GbFeature
     DMRCALL --> |"<i>Visualizations</i>"| DIST
     DMRCALL e3@==> DMRannot
     DMRannot e4@==> GbDMR ===> GbFeature --> |"<i>optional</i>"| func
+    %% DMRannot ==> wig@{ shape: tag-rect, label: "*.wig* files output"}
     GbDMR ==> GROUP
     TAIR e7@-.-> DMRannot
     GeneDesc e8@-.-> DMRannot

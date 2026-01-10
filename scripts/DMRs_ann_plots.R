@@ -33,8 +33,7 @@ DMRs_ann_plots <- function(var1, var2, context, sum_dH = F) {
   y_lim_max <- max(y_lim_total)
   #########################
   # plot
-  img_device(paste0(context, "_genom_annotations"), w = 2.45, h = 2)
-
+  # img_device(paste0(context, "_genom_annotations"), w = 2.45, h = 2)
   ann_plot <- ann_plot_final_df %>% ggplot() +
     geom_col(
       aes(x = factor(ann, level = plot_levels), y = total, fill = -percent), # -percent beacouse of the color scale
@@ -73,22 +72,25 @@ DMRs_ann_plots <- function(var1, var2, context, sum_dH = F) {
       x = element_blank(),
       y = y_title
     )
-  plot(ann_plot)
-  dev.off()
+  # plot(ann_plot)
+  # dev.off()
+  return(ann_plot)
+}
 
-  #########################
-  ### legend
+#########################
+### legend
+gene_ann_legend <- function() {
   colfunc_ann <- list(
     colfunc_up <- colorRampPalette(c("#d96868", "#FFFFFF")),
     colfunc_down <- colorRampPalette(c("#6969db", "#FFFFFF"))
   )
   legend_ann <- as.raster(matrix(c(colfunc_ann[[1]](20), colfunc_ann[[2]](20)[20:1]), ncol = 1))
 
-  img_device("legend_genom_annotations", w = 1.34, h = 1.83)
+  # img_device("legend_genom_annotations", w = 1.34, h = 1.83)
   par(mar = c(0, 0, 2, 0))
   plot(c(0, 2), c(0, 1), type = "n", axes = F, xlab = "", ylab = "", main = "Regions type\ndistribution")
   text(x = 0.7, y = seq(0.15, 0.85, l = 5), labels = c("100% Loss", "", "Neutral", "", "100% Gain"), adj = 0)
   rasterImage(legend_ann, 0.2, 0.1, 0.6, 0.9) # xleft, ybottom, xright, ytop
   rect(0.2, 0.1, 0.6, 0.9, border = "black", lwd = 2) # xleft, ybottom, xright, ytop
-  dev.off()
+  # dev.off()
 }
