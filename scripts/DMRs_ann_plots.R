@@ -5,10 +5,10 @@ DMRs_ann_plots <- function(var1, var2, context, sum_dH = F) {
 
   for (ann.loop in plot_levels_loop) {
     if (!sum_dH) {
-      y_title <- "Number of DMRs"
+      y_title <- "DMRs count"
       DMRsReplicates_loop_path <- paste0(context, "/DMRs_", ann.loop, "_", context, "_genom_annotations.csv")
     } else {
-      y_title <- "Number of SurpMRs"
+      y_title <- "SurpMRs count"
       DMRsReplicates_loop_path <- paste0(context, "/SurpMRs_", ann.loop, "_", context, "_genom_annotations.csv")
     }
 
@@ -68,7 +68,7 @@ DMRs_ann_plots <- function(var1, var2, context, sum_dH = F) {
     ) +
     geom_text(aes(x = ann, y = y_lim_max * 0.8, label = total), size = 2.65) +
     labs(
-      title = paste0(var2, " vs ", var1, " - ", context, " context"),
+      title = paste(context, "context"),
       x = element_blank(),
       y = y_title
     )

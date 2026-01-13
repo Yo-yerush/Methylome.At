@@ -72,9 +72,9 @@ TE_ann_plots <- function(context, TE.gr, sum_dH = F) {
   GvsT_plot <- ggplot(GvsT_df, aes(x = x, y = y, fill = x)) +
     geom_bar(stat = "identity", position = "stack") +
     geom_col(color = "gray25") +
-    scale_fill_manual(values = c("Genes" = "#CCCCCC20", "TE" = "#fcba0320")) +
+    scale_fill_manual(values = c("Genes" = "#80808020", "TE" = "#86671220")) +
     xlab("") +
-    ylab(paste0("Number of ", region_analysis)) +
+    ylab(paste(region_analysis, "count")) +
     ggtitle(context) +
     theme_classic() +
     theme(axis.text.x = element_text(face = "bold", size = 11),
