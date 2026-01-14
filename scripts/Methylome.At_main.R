@@ -147,7 +147,7 @@ Methylome.At_main <- function(var1, # control
       meth_var2_replicates <- trimm_and_rename(load_vars[[2]]$methylationDataReplicates)
       cat("\nPooled ", var1, " object for example:\n\n", sep = "")
       capture.output(print(meth_var1), file = NULL)[-c(1, 16)] %>% cat(sep = "\n")
-      cat(paste("\tseq-levels:", paste(seqlevels(meth_var1), collapse = " ")), "\n\n")
+      cat(paste(" seq-levels:", paste(seqlevels(meth_var1), collapse = " ")), "\n\n")
 
       if (!is_single) {
         # join replicates
@@ -188,6 +188,8 @@ Methylome.At_main <- function(var1, # control
   dH_CX_path <- paste0(exp_path, "/deltaH")
   dH_CX_ann_path <- paste0(exp_path, "/deltaH/genome_annotation")
   metaPlot_path <- paste0(exp_path, "/metaPlots")
+
+  TAIR10_TFBS_file <- paste0(Methylome.At_path, "/annotation_files/TAIR10_compressed_TFBSs.bed.gz")
 
   dir.create(exp_path, showWarnings = F)
   setwd(exp_path)
@@ -299,7 +301,7 @@ Methylome.At_main <- function(var1, # control
   message(time_msg(), "generating transcription factors motifs plots")
   tryCatch(
     {
-      suppressWarnings(TF_motifs(methylationDataReplicates_joints, "all", 1e6, NULL))
+      suppressWarnings(TF_motifs(methylationDataReplicates_joints, "all", 1e6, NULL, annotation.gr, TAIR10_TFBS_file))
       # message("done")
     },
     error = function(cond) {

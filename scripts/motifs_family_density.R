@@ -1,4 +1,4 @@
-TF_motifs <- function(jointed_gr, context = "all", windowSize = 1e6, DMP_fdr = 0.05, tfbs_path = "https://github.com/Yo-yerush/Methylome.At/raw/refs/heads/main/annotation_files/TAIR10_compressed_TFBSs.bed.gz") {
+TF_motifs <- function(jointed_gr, context = "all", windowSize = 1e6, DMP_fdr = 0.05, ann.gr, tfbs_path = "https://github.com/Yo-yerush/Methylome.At/raw/refs/heads/main/annotation_files/TAIR10_compressed_TFBSs.bed.gz") {
     if (context != "all") {
         jointed_gr <- jointed_gr[which(jointed_gr$context == context)]
         out_file_name <- paste0(context, "_TFs_superfamilies_DMPs_density")
@@ -111,7 +111,7 @@ TF_motifs <- function(jointed_gr, context = "all", windowSize = 1e6, DMP_fdr = 0
     fam_size_order <- names(sort(table(dmp_gr$TF_family), decreasing = T))
     windowSize_legend_name <- gsub("e\\+0*", "E", format(windowSize, scientific = TRUE, upper.case = TRUE))
 
-    chr_amount <- length(seqnames(ann.file)@values)
+    chr_amount <- length(seqnames(ann.gr)@values)
 
     # heterochromatin positions (TAIR)
     heteroChr <- data.frame(
@@ -133,7 +133,7 @@ TF_motifs <- function(jointed_gr, context = "all", windowSize = 1e6, DMP_fdr = 0
     par(mar = c(0, 0, 0, 0))
 
     circos.par(gap.degree = c(rep(5, chr_amount - 1), 40), start.degree = 90, points.overflow.warning = FALSE)
-    circos.genomicInitialize(as.data.frame(ann.file)[, 1:3], sector.names = paste0("Chr ", 1:chr_amount), axis.labels.cex = 0.4, labels.cex = 1.25)
+    circos.genomicInitialize(as.data.frame(ann.gr)[, 1:3], sector.names = paste0("Chr ", 1:chr_amount), axis.labels.cex = 0.4, labels.cex = 1.25)
     for (family.i in fam_size_order) {
         cat(context, ">", family.i, "\n")
         message(time_msg(), context, ":\t", family.i)
@@ -170,7 +170,7 @@ TF_motifs <- function(jointed_gr, context = "all", windowSize = 1e6, DMP_fdr = 0
                         ifelse(value >= 7, "#21918c",
                             ifelse(value >= 5, "#35b779",
                                 ifelse(value >= 3, "#90d743",
-                                    "#d9d9d9"
+                                    "#c2c2c2"
                                 )
                             )
                         )
@@ -196,5 +196,4 @@ TF_motifs <- function(jointed_gr, context = "all", windowSize = 1e6, DMP_fdr = 0
     )
 
     dev.off()
-    message(time_msg())
 }
