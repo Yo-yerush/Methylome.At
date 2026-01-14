@@ -176,10 +176,11 @@ Methylome.At_main <- function(var1, # control
   # new folders path names
   comparison_name <- paste0(var2, "_vs_", var1)
   exp_path <- paste0(Methylome.At_path, "/results/", comparison_name)
-  ChrPlot_CX_path <- paste0(exp_path, "/ChrPlot_CX")
-  ChrPlot_subCX_path <- paste0(exp_path, "/ChrPlot_CX/subCX")
   PCA_plots_path <- paste0(exp_path, "/PCA_plots")
   meth_levels_path <- paste0(exp_path, "/methylation_levels")
+  ChrPlot_CX_path <- paste0(exp_path, "/ChrPlot_CX")
+  ChrPlot_subCX_path <- paste0(exp_path, "/ChrPlot_CX/subCX")
+  TF_motifs_path <- paste0(exp_path, "/TF_motifs")
   gainORloss_path <- paste0(exp_path, "/gain_OR_loss")
   genome_ann_path <- paste0(exp_path, "/genome_annotation")
   DMRs_bigWig_path <- paste0(exp_path, "/DMRs_bigWig")
@@ -282,6 +283,27 @@ Methylome.At_main <- function(var1, # control
     },
     error = function(cond) {
       cat("\n*\n ChrPlots:\n", as.character(cond), "*\n")
+      message("fail")
+    }
+  )
+
+  setwd(exp_path)
+
+  ###########################################################################
+
+  ##### Transcription facrots motif analysis (UniBind - TFBS) #####
+  dir.create(TF_motifs_path, showWarnings = F)
+  setwd(TF_motifs_path)
+
+  cat("\nTranscription factors motifs plot:\n")
+  message(time_msg(), "generating transcription factors motifs plots")
+  tryCatch(
+    {
+      suppressWarnings(TF_motifs(methylationDataReplicates_joints, "all", 1e6, NULL))
+      # message("done")
+    },
+    error = function(cond) {
+      cat("\n*\n nTranscription factors motifs plot:\n", as.character(cond), "*\n")
       message("fail")
     }
   )
