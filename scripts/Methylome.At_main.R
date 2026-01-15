@@ -26,7 +26,7 @@ Methylome.At_main <- function(var1, # control
 
   start_time <- Sys.time()
   time_msg <<- function(suffix = "\t") paste0(format(Sys.time(), "[%H:%M]"), suffix)
-  sep_cat <- paste0("\n", paste(rep("-", 50), collapse = ""), "\n")
+  sep_cat <- function(x, short=F) paste0("\n---- ",x," ", paste(rep("-", ifelse(short,20,50)-nchar(x)), collapse = ""), "\n")
   scripts_dir <- paste0(Methylome.At_path, "/scripts")
 
   # source all R scripts
@@ -197,7 +197,7 @@ Methylome.At_main <- function(var1, # control
   ###########################################################################
 
   cli::cli_h1("QC")
-  cat(sep_cat)
+  cat(sep_cat("QC"))
 
   ##### calculate the conversion rate by the chloroplast chromosome (ChrC)
   message("\n", time_msg(), "conversion rate (C->T) along the Chloroplast genome:", appendLF = F)
@@ -218,9 +218,9 @@ Methylome.At_main <- function(var1, # control
     }
   )
 
-  cat(sep_cat)
   rm(load_vars)
   cli::cli_h1("Total methylation")
+  cat(sep_cat("Total methylation"))
 
   ##### PCA plot to total methlyation in all contexts
   if (!is_single) {
@@ -314,13 +314,13 @@ Methylome.At_main <- function(var1, # control
 
   ###########################################################################
 
-  cat(sep_cat)
 
   ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ###
   ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ###
   ### ### DMRs and its downstream results ### ### ### ### ### ###
 
   cli::cli_h1("DMRs analysis")
+  cat(sep_cat("DMRs analysis"))
 
   ##### call DMRs for replicates/single data
   cat(paste0("\n", time_msg(" "), "call DMRs for replicates data: ", is_Replicates, "\n"))
@@ -371,7 +371,7 @@ Methylome.At_main <- function(var1, # control
   te_vs_gene_bar <- list(CG = NULL, CHG = NULL, CHH = NULL)
 
   for (context in c("CG", "CHG", "CHH")) {
-    cat(sep_cat, "\n")
+    cat(sep_cat(paste(context, "annotations"), T), "\n")
 
     DMRs_bins <- DMRs_results[[context]]
 
@@ -528,7 +528,7 @@ Methylome.At_main <- function(var1, # control
 
   ###########################################################################
 
-  cat(sep_cat)
+  cat(sep_cat("Downstream DMRs"))
 
   ##### DMRs density - curcular plot #####
   tryCatch(
@@ -649,7 +649,7 @@ Methylome.At_main <- function(var1, # control
 
   ##### GO analysis for annotated DMRs
   if (GO_analysis) {
-    cat(sep_cat)
+    cat(sep_cat("GO analysis"))
     tryCatch(
       {
         GO_path <- paste0(exp_path, "/GO_analysis")
@@ -668,7 +668,7 @@ Methylome.At_main <- function(var1, # control
 
   ##### KEGG pathways for annotated DMRs
   if (KEGG_pathways) {
-    cat(sep_cat)
+    cat(sep_cat("KEGG pathways"))
     tryCatch(
       {
         KEGG_path <- paste0(exp_path, "/KEGG_pathway")
@@ -689,7 +689,7 @@ Methylome.At_main <- function(var1, # control
 
   ##### dH analysis over CX methylation #####
   if (analyze_dH) {
-    cat(sep_cat)
+    cat(sep_cat("ΔH analysis"))
     dir.create(dH_CX_path, showWarnings = F)
     dir.create(dH_CX_ann_path, showWarnings = F)
     setwd(dH_CX_path)
@@ -726,7 +726,8 @@ Methylome.At_main <- function(var1, # control
 
   ##### run metPlot function for coding-Genes and TEs
   if (TE_metaPlots | GeneBody_metaPlots | GeneFeatures_metaPlots) {
-    cat(sep_cat, "\nmetaPlots:\n----------")
+    cat(sep_cat("MetaPlots"))
+    # cat(sep_cat, "\nmetaPlots:\n----------")
     dir.create(metaPlot_path, showWarnings = F)
 
     # calculate metaPlot for genes bodies
@@ -786,7 +787,7 @@ Methylome.At_main <- function(var1, # control
 
   setwd(Methylome.At_path)
   message(paste0("**\t", var2, " vs ", var1, ": done\n"))
-  cat(sep_cat)
+  cat(sep_cat(""))
 
   ###########################################################################
 

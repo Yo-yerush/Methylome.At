@@ -68,7 +68,7 @@ DMRs_ann_plots <- function(var1, var2, context, sum_dH = F) {
     ) +
     geom_text(aes(x = ann, y = y_lim_max * 0.8, label = total), size = 2.65) +
     labs(
-      title = paste(context, "context"),
+      title = context,
       x = element_blank(),
       y = y_title
     )
@@ -80,17 +80,37 @@ DMRs_ann_plots <- function(var1, var2, context, sum_dH = F) {
 #########################
 ### legend
 gene_ann_legend <- function() {
-  colfunc_ann <- list(
-    colfunc_up <- colorRampPalette(c("#d96868", "#FFFFFF")),
-    colfunc_down <- colorRampPalette(c("#6969db", "#FFFFFF"))
-  )
-  legend_ann <- as.raster(matrix(c(colfunc_ann[[1]](20), colfunc_ann[[2]](20)[20:1]), ncol = 1))
+  legend_df <- data.frame(x = 1, y = 1:100, fill_val = 1:100)
+  labels_left_df <- data.frame(y = c(0, 80), label = c("Loss", "Gain"))
+  labels_right_df <- data.frame(y = c(0, 50, 100), label = c("100\n", "50/50", "\n100"))
 
-  # img_device("legend_genom_annotations", w = 1.34, h = 1.83)
-  par(mar = c(0, 0, 2, 0))
-  plot(c(0, 2), c(0, 1), type = "n", axes = F, xlab = "", ylab = "", main = "Regions type\ndistribution")
-  text(x = 0.7, y = seq(0.15, 0.85, l = 5), labels = c("100% Loss", "", "Neutral", "", "100% Gain"), adj = 0)
-  rasterImage(legend_ann, 0.2, 0.1, 0.6, 0.9) # xleft, ybottom, xright, ytop
-  rect(0.2, 0.1, 0.6, 0.9, border = "black", lwd = 2) # xleft, ybottom, xright, ytop
-  # dev.off()
+  legend_plot <- ggplot(legend_df, aes(x = x, y = y, fill = fill_val)) +
+    geom_raster() +
+    scale_fill_gradient2(
+      midpoint = 50,
+      low = "#6969db",
+      mid = "#FFFFFF",
+      high = "#d96868"
+    ) +
+    geom_text(
+      data = labels_left_df, aes(x = 0.4, y = y, label = label),
+      hjust = 0, vjust = 0, size = 3, inherit.aes = FALSE, angle = 90, fontface = "bold"
+    ) +
+    geom_text(
+      data = labels_right_df, aes(x = 1.6, y = y, label = label),
+      hjust = 0, size = 3, inherit.aes = FALSE
+    ) +
+    geom_rect(aes(xmin = 0.5, xmax = 1.5, ymin = 0.5, ymax = 100.5),
+      fill = NA, color = "black", linewidth = 0.5, inherit.aes = FALSE
+    ) +
+    coord_cartesian(xlim = c(0, 4), clip = "off") +
+    labs(title = "Regions type\ndistribution (%)") +
+    theme_void() +
+    theme(
+      legend.position = "none",
+      plot.title = element_text(hjust = 0, face = "bold", size = 10),
+      plot.margin = margin(5, 5, 5, 5)
+    )
+
+  return(legend_plot)
 }
