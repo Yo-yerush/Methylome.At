@@ -196,7 +196,7 @@ Methylome.At_main <- function(var1, # control
 
   ###########################################################################
 
-  cli::cli_h1("QC")
+  message(sep_cat("QC"))
   cat(sep_cat("QC"))
 
   ##### calculate the conversion rate by the chloroplast chromosome (ChrC)
@@ -219,7 +219,7 @@ Methylome.At_main <- function(var1, # control
   )
 
   rm(load_vars)
-  cli::cli_h1("Total methylation")
+  message(sep_cat("Total methylation"))
   cat(sep_cat("Total methylation"))
 
   ##### PCA plot to total methlyation in all contexts
@@ -319,7 +319,7 @@ Methylome.At_main <- function(var1, # control
   ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ###
   ### ### DMRs and its downstream results ### ### ### ### ### ###
 
-  cli::cli_h1("DMRs analysis")
+  message(sep_cat("DMRs analysis"))
   cat(sep_cat("DMRs analysis"))
 
   ##### call DMRs for replicates/single data
