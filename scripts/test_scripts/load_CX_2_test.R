@@ -6,6 +6,8 @@ library(RColorBrewer)
 library(data.table)
 
 
+time_msg <- function() "test"
+
 source("https://raw.githubusercontent.com/Yo-yerush/Methylome.At/main/scripts/trimm_and_rename_seq.R")
 ###########################################################################
 

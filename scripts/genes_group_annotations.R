@@ -292,7 +292,7 @@ DMRs_into_groups <- function(
         facet_wrap(~group, scales = "free") +
         theme_bw() +
         guides(color = guide_legend(override.aes = list(size = 4))) +
-        labs(x = "log2FC", y = "-log10(pValue)", color = paste(context, "DMRs\noverlap", ann))
+        labs(x = "log2(fold-change)", y = "-log10(pValue)", color = paste(context, "DMRs\noverlap", ann))
 
     img_device(paste0(out_dir, "/", cntx_file, "_", ann, "_groups_volcano_", treatment), w = 10, h = 8)
     print(vol_plot)

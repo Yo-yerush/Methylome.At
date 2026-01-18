@@ -26,7 +26,7 @@ Methylome.At_main <- function(var1, # control
 
   start_time <- Sys.time()
   time_msg <<- function(suffix = "\t") paste0(format(Sys.time(), "[%H:%M]"), suffix)
-  sep_cat <- function(x, short=F) paste0("\n---- ",x," ", paste(rep("-", ifelse(short,20,50)-nchar(x)), collapse = ""), "\n")
+  sep_cat <- function(x, short = F) paste0("\n---- ", x, " ", paste(rep("-", ifelse(short, 20, 50) - nchar(x)), collapse = ""), "\n")
   scripts_dir <- paste0(Methylome.At_path, "/scripts")
 
   # source all R scripts
@@ -187,6 +187,7 @@ Methylome.At_main <- function(var1, # control
   ChrPlots_DMRs_path <- paste0(exp_path, "/ChrPlot_DMRs")
   dH_CX_path <- paste0(exp_path, "/deltaH")
   dH_CX_ann_path <- paste0(exp_path, "/deltaH/genome_annotation")
+  DMV_analysis_path <- paste0(exp_path, "/DMV_analysis")
   metaPlot_path <- paste0(exp_path, "/metaPlots")
 
   TAIR10_TFBS_file <- paste0(Methylome.At_path, "/annotation_files/TAIR10_compressed_TFBSs.bed.gz")
@@ -463,11 +464,10 @@ Methylome.At_main <- function(var1, # control
 
     ##### save DMRs as bigWig file #####
     dir.create(DMRs_bigWig_path, showWarnings = FALSE)
-    ann_res_files <- list.files(paste0(genome_ann_path, "/", context))
-    for (ann.loop.bigWig in c("all", ann_res_files)) {
+    for (cntx_g2b in c("CG", "CHG", "CHH")) {
       suppressWarnings(try(
         {
-          DMRs_2_bigWig(var1, var2, context, ann.loop.bigWig)
+          gr_2_bigWig(DMRs_results[[cntx_g2b]], paste0(paste("DMRs", cntx_g2b, comparison_name, sep = "_"), ".bw"))
         },
         silent = T
       ))
@@ -483,6 +483,8 @@ Methylome.At_main <- function(var1, # control
   ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ###
 
   ###########################################################################
+
+  cat(sep_cat("Downstream DMRs"))
 
   # save gene-body DMRs bar-plot
   tryCatch(
@@ -527,8 +529,6 @@ Methylome.At_main <- function(var1, # control
   )
 
   ###########################################################################
-
-  cat(sep_cat("Downstream DMRs"))
 
   ##### DMRs density - curcular plot #####
   tryCatch(
@@ -721,6 +721,57 @@ Methylome.At_main <- function(var1, # control
   }
 
   setwd(exp_path)
+
+
+
+  ###########################################################################
+
+  cat(sep_cat("DMV analysis"))
+
+  ##### Calling DMVs in Replicates #####
+  dir.create(DMV_analysis_path)
+  setwd(DMV_analysis_path)
+  DMVs_results <- mclapply(c("CG", "CHG", "CHH"), function(context) {
+    tryCatch(
+      {
+        DMVs_call <- calling_DMRs(
+          methylationDataReplicates_joints, meth_var1, meth_var2,
+          var1, var2, var1_path, var2_path, comparison_name,
+          context, minProportionDiff,
+          binSize = 1000, pValueThreshold,
+          minCytosinesCount = 20, minReadsPerCytosine = 5, ifelse(n.cores > 3, n.cores / 3, 1),
+          is_Replicates, analysis_name = "DMVs"
+        )
+        cat(paste0(time_msg(" "), "statistically significant DMVs (", context, "): ", length(DMVs_call), "\n"))
+        message(time_msg(), paste0("statistically significant DMVs (", context, "): ", length(DMVs_call)))
+        # message(time_msg(), paste0("\tDMVs caller in ", context, " context: done"))
+        return(DMVs_call)
+      },
+      error = function(cond) {
+        cat(paste0("\n*\n Calling DMVs in ", context, " context:\n"), as.character(cond), "*\ncontinue without calling DMVs!\n\n")
+        message(time_msg(), "\tCalling DMVs: fail\n")
+        return(NULL)
+      }
+    )
+  }, mc.cores = ifelse(n.cores >= 3, 3, 1))
+
+  names(DMVs_results) <- c("CG", "CHG", "CHH")
+  cat(paste0(time_msg(" "), "done!\n"))
+
+  ##### save DMRs as bigWig file #####
+  setwd(DMV_analysis_path)
+  for (cntx_g2b in c("CG", "CHG", "CHH")) {
+    suppressWarnings(try(
+      {
+        gr_2_bigWig(DMVs_results[[cntx_g2b]], paste0(DMV_analysis_path, paste("/DMVs", cntx_g2b, comparison_name, sep = "_"), ".bw"))
+      },
+      silent = T
+    ))
+  }
+  message(time_msg(paste0("\t", context, ":")), "\tsaved all DMRs also as bigWig files\n")
+  cat("saved all DMRs also as bigWig files\n")
+
+  message("")
 
   ###########################################################################
 
