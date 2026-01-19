@@ -1,7 +1,7 @@
 calling_DMRs <- function(methylationDataReplicates_joints, meth_var1, meth_var2,
                          var1, var2, var1_path, var2_path, comparison_name,
                          context, minProportionDiff, binSize, pValueThreshold,
-                         minCytosinesCount, minReadsPerCytosine, n.cores, is_Replicates, analysis_name="DMRs") {
+                         minCytosinesCount, minReadsPerCytosine, call_ncores, is_Replicates, analysis_name = "DMRs") {
   condition <- c(
     rep(var1, length(var1_path)),
     rep(var2, length(var2_path))
@@ -22,8 +22,25 @@ calling_DMRs <- function(methylationDataReplicates_joints, meth_var1, meth_var2,
   methData_split <- methData_split[order(names(methData_split))]
   start_min <- min(start(methData_split))
   end_max <- max(end(methData_split))
-  chromosome_ranges <- GRanges(seqnames = names(methData_split), IRanges(start = start_min, end = end_max))
 
+  if (analysis_name == "DMRs") {
+    chromosome_ranges <- GRanges(seqnames = names(methData_split), IRanges(start = start_min, end = end_max))
+
+  } else if (analysis_name == "DMVs") {
+    # 200bp steps for DMVs analysis
+    chromosome_ranges <- GRanges(
+      seqnames = rep(names(methData_split), each = 5),
+      IRanges(
+        start = unlist(lapply(start_min, `+`, seq(0, 800, by = 200))),
+        end = unlist(lapply(end_max - 1000, `+`, seq(0, 800, by = 200)))
+      )
+    )
+  } else {
+
+    stop(pate0("'analysis_name' vector must contain 'DMRs' or 'DMVs'"))
+  }
+
+  ######### run DMRcaller functions
   DMRs_gr <- GRanges()
   for (i_chr in 1:length(chromosome_ranges)) {
     tryCatch(
@@ -44,10 +61,10 @@ calling_DMRs <- function(methylationDataReplicates_joints, meth_var1, meth_var2,
                   test = "betareg", # for replicates
                   pseudocountM = 1,
                   pseudocountN = 2,
-                  pValueThreshold = 0.05,
+                  pValueThreshold = pValueThreshold,
                   minCytosinesCount = minCytosinesCount,
                   minProportionDifference = minProportionDifference_var,
-                  minGap = 0,
+                  minGap = ifelse(analysis_name == "DMVs", 200, 0),
                   minSize = 1,
                   minReadsPerCytosine = minReadsPerCytosine,
                   cores = cores
@@ -59,13 +76,13 @@ calling_DMRs <- function(methylationDataReplicates_joints, meth_var1, meth_var2,
 
           DMRs_gr.loop <- tryCatch(
             {
-              runReplicates(n.cores)
+              runReplicates(call_ncores)
             },
             error = function(e) {
-              if (n.cores > 10) {
+              if (call_ncores > 10) {
                 cat("Error encountered. Retrying with cores = 10\n")
                 runReplicates(10)
-              } else if (n.cores > 1) {
+              } else if (call_ncores > 1) {
                 cat("Error encountered. Retrying with cores = 1\n")
                 runReplicates(1)
               } else {
@@ -87,10 +104,10 @@ calling_DMRs <- function(methylationDataReplicates_joints, meth_var1, meth_var2,
                   method = "bins",
                   binSize = binSize,
                   test = "fisher", # for single samples
-                  pValueThreshold = 0.05,
+                  pValueThreshold = pValueThreshold,
                   minCytosinesCount = minCytosinesCount,
                   minProportionDifference = minProportionDifference_var,
-                  minGap = 0,
+                  minGap = ifelse(analysis_name == "DMVs", 200, 0),
                   minSize = 1,
                   minReadsPerCytosine = minReadsPerCytosine,
                   cores = cores
@@ -102,13 +119,13 @@ calling_DMRs <- function(methylationDataReplicates_joints, meth_var1, meth_var2,
 
           DMRs_gr.loop <- tryCatch(
             {
-              runPooled(n.cores)
+              runPooled(call_ncores)
             },
             error = function(e) {
-              if (n.cores > 10) {
+              if (call_ncores > 10) {
                 cat("Error encountered. Retrying with cores = 10\n")
                 runPooled(10)
-              } else if (n.cores > 1) {
+              } else if (call_ncores > 1) {
                 cat("Error encountered. Retrying with cores = 1\n")
                 runPooled(1)
               } else {
@@ -122,14 +139,14 @@ calling_DMRs <- function(methylationDataReplicates_joints, meth_var1, meth_var2,
       },
       error = function(cond) {
         DMRs_gr <- c(DMRs_gr, NULL)
-        message("\t* fail to calculate DMRs in chromosome ", i_chr)
+        message("\t* fail to calculate ", analysis_name, " in chromosome ", seqnames(chromosome_ranges)[i_chr])
       }
     )
   }
 
   if (length(DMRs_gr) != 0) {
     mcols(DMRs_gr)[, paste0("proportionsR", 1:length(condition))] <- NULL # remove 'NA' cols
-    
+
     # normelized log2FC (to not get INF values)
     DMRs_gr$log2FC <- log2((DMRs_gr$proportion2 + 1e-5) / (DMRs_gr$proportion1 + 1e-5))
 

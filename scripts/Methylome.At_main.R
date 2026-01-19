@@ -201,7 +201,7 @@ Methylome.At_main <- function(var1, # control
   cat(sep_cat("QC"))
 
   ##### calculate the conversion rate by the chloroplast chromosome (ChrC)
-  message("\n", time_msg(), "conversion rate (C->T) along the Chloroplast genome:", appendLF = F)
+  message(time_msg(), "conversion rate (C->T) along the Chloroplast genome:", appendLF = F)
   cat("\nconversion rate (C->T) along the Chloroplast genome:") # "\n"
   tryCatch(
     {
@@ -228,7 +228,7 @@ Methylome.At_main <- function(var1, # control
     dir.create(PCA_plots_path, showWarnings = F)
     setwd(PCA_plots_path)
 
-    message("\n", time_msg(), "generating PCA plots of total methylation levels: ", appendLF = F)
+    message(time_msg(), "generating PCA plots of total methylation levels: ", appendLF = F)
     cat("\nPCA plots...")
     tryCatch(
       {
@@ -246,7 +246,7 @@ Methylome.At_main <- function(var1, # control
     setwd(exp_path)
     cat(" done\n")
   } else {
-    message("\n", time_msg(), "* skipping PCA plots for single-samples data")
+    message(time_msg(), "* skipping PCA plots for single-samples data")
     cat("skipping PCA plots for single-samples data\n")
   }
 
@@ -324,8 +324,8 @@ Methylome.At_main <- function(var1, # control
   cat(sep_cat("DMRs analysis"))
 
   ##### call DMRs for replicates/single data
+  message(time_msg(), "call DMRs for replicates data: ", is_Replicates)
   cat(paste0("\n", time_msg(" "), "call DMRs for replicates data: ", is_Replicates, "\n"))
-  message("\n", time_msg(), "call DMRs for replicates data: ", is_Replicates)
 
   if (is_Replicates) {
     cat(paste0(time_msg(" "), "compute ", binSize, "bp DMRs using: beta regression\n"))
@@ -484,6 +484,7 @@ Methylome.At_main <- function(var1, # control
 
   ###########################################################################
 
+  message(sep_cat("Downstream DMRs"))
   cat(sep_cat("Downstream DMRs"))
 
   # save gene-body DMRs bar-plot
@@ -689,6 +690,7 @@ Methylome.At_main <- function(var1, # control
 
   ##### dH analysis over CX methylation #####
   if (analyze_dH) {
+    message(sep_cat("ΔH analysis"))
     cat(sep_cat("ΔH analysis"))
     dir.create(dH_CX_path, showWarnings = F)
     dir.create(dH_CX_ann_path, showWarnings = F)
@@ -722,11 +724,10 @@ Methylome.At_main <- function(var1, # control
 
   setwd(exp_path)
 
-
-
   ###########################################################################
 
-  cat(sep_cat("DMV analysis"))
+  message(sep_cat("DMV analysis"))
+  cat(sep_cat("DMV analysis\n"))
 
   ##### Calling DMVs in Replicates #####
   dir.create(DMV_analysis_path)
@@ -768,8 +769,8 @@ Methylome.At_main <- function(var1, # control
       silent = T
     ))
   }
-  message(time_msg(paste0("\t", context, ":")), "\tsaved all DMRs also as bigWig files\n")
-  cat("saved all DMRs also as bigWig files\n")
+  message(time_msg(), "saved all DMRs also as bigWig files\n")
+  cat("saved all DMVs also as bigWig files\n")
 
   message("")
 
@@ -777,6 +778,7 @@ Methylome.At_main <- function(var1, # control
 
   ##### run metPlot function for coding-Genes and TEs
   if (TE_metaPlots | GeneBody_metaPlots | GeneFeatures_metaPlots) {
+    message(sep_cat("MetaPlots"))
     cat(sep_cat("MetaPlots"))
     # cat(sep_cat, "\nmetaPlots:\n----------")
     dir.create(metaPlot_path, showWarnings = F)
@@ -838,13 +840,13 @@ Methylome.At_main <- function(var1, # control
 
   setwd(Methylome.At_path)
   message(paste0("**\t", var2, " vs ", var1, ": done\n"))
-  cat(sep_cat(""))
+  cat(paste0("\n", rep("-", 56)))
 
   ###########################################################################
 
   # date and time of the end
   message(paste0(
-    "\n**\t",
+    "**\t",
     paste(format(Sys.time(), "%d"), format(Sys.time(), "%m"), format(Sys.time(), "%Y"), sep = "-"),
     " ", format(Sys.time(), "%H:%M")
   ))
@@ -855,6 +857,6 @@ Methylome.At_main <- function(var1, # control
     paste0(floor(time_diff / 60), "hr"),
     paste0(floor(time_diff %% 60), "min\n")
   )
-  cat(paste0("\n\n", time_msg(), "Done!\n", end_msg))
+  cat(paste0("\n\n", time_msg(), "Done!\n", end_msg, "----\n"))
   message(end_msg)
 }
