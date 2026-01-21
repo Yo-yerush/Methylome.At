@@ -464,6 +464,7 @@ Methylome.At_main <- function(var1, # control
 
     ##### save DMRs as bigWig file #####
     dir.create(DMRs_bigWig_path, showWarnings = FALSE)
+    setwd(DMRs_bigWig_path)
     for (cntx_g2b in c("CG", "CHG", "CHH")) {
       suppressWarnings(try(
         {
@@ -840,7 +841,7 @@ Methylome.At_main <- function(var1, # control
 
   setwd(Methylome.At_path)
   message(paste0("**\t", var2, " vs ", var1, ": done\n"))
-  cat(paste0("\n", rep("-", 56)))
+  cat("\n", rep("-", 56))
 
   ###########################################################################
 
