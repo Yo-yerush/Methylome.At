@@ -1,15 +1,24 @@
-DMRs_ann_plots <- function(var1, var2, context, sum_dH = F) {
+DMRs_ann_plots <- function(var1, var2, context, dH_analysis = F) {
   ###### prepare plot df
   plot_levels_loop <- c("Promoters", "CDS", "Introns", "fiveUTRs", "threeUTRs") # ,"Transposable_Elements")
   ann_plot_final_df <- data.frame(ann = plot_levels_loop, total = NA, gain = NA)
 
   for (ann.loop in plot_levels_loop) {
-    if (!sum_dH) {
+    if (!dH_analysis) {
       y_title <- "DMRs count"
       DMRsReplicates_loop_path <- paste0(context, "/DMRs_", ann.loop, "_", context, "_genom_annotations.csv")
+      up_col = "#d97777"
+      down_col = "#7676d6"
+      up_col_leg = "#d96868"
+      down_col_leg = "#6969db"
     } else {
       y_title <- "SurpMRs count"
       DMRsReplicates_loop_path <- paste0(context, "/SurpMRs_", ann.loop, "_", context, "_genom_annotations.csv")
+      up_col = "#e2b25d"
+      down_col = "#47cf79"
+      up_col_leg = "#c58741"
+      down_col_leg = "#31a35b"
+
     }
 
     if (file.exists(DMRsReplicates_loop_path)) {
@@ -43,7 +52,7 @@ DMRs_ann_plots <- function(var1, var2, context, sum_dH = F) {
     ) +
     # scale_fill_gradient(low="mediumblue", high="tomato", limits=c(0,100), breaks=seq(0,100,by=10)) +
     scale_fill_gradient2("Regions type\ndistribution",
-      midpoint = -50, low = "#d97777", mid = "#FFFFFF", high = "#7676d6",
+      midpoint = -50, low = up_col, mid = "#FFFFFF", high = down_col,
       limits = c(-100, 0), breaks = seq(-100, 0, by = 50),
       labels = c("100% Gain", "50%", "100% Loss")
     ) +
@@ -88,9 +97,9 @@ gene_ann_legend <- function() {
     geom_raster() +
     scale_fill_gradient2(
       midpoint = 50,
-      low = "#6969db",
+      low = down_col,
       mid = "#FFFFFF",
-      high = "#d96868"
+      high = up_col
     ) +
     geom_text(
       data = labels_left_df, aes(x = 0.4, y = y, label = label),

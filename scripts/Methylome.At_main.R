@@ -24,6 +24,13 @@ Methylome.At_main <- function(var1, # control
                               metaPlot.random.genes = 10000) {
   ###########################################################################
 
+  run_PCA_plot <- F
+  run_total_meth_plot <- F
+  run_CX_Chrplot <- F
+  run_TF_motifs <- F
+
+  ###########################################################################
+
   start_time <- Sys.time()
   time_msg <<- function(suffix = "\t") paste0(format(Sys.time(), "[%H:%M]"), suffix)
   sep_cat <- function(x, short = F) paste0("\n---- ", x, " ", paste(rep("-", ifelse(short, 20, 50) - nchar(x)), collapse = ""), "\n")
@@ -37,8 +44,11 @@ Methylome.At_main <- function(var1, # control
   script_files <- script_files[!grepl("MetaPlots_run\\.R$", script_files)]
   script_files <- script_files[!grepl("mean_deltaH_CX\\.R", script_files)] # have match functions with 'ChrPlots' functions
   script_files <- script_files[!grepl("ChrPlots_", script_files)]
-  invisible(lapply(script_files, source))
+  if (!analyze_dH) {
+    script_files <- script_files[!grepl("delta_H_option\\.r$", script_files)]
+  }
 
+  invisible(lapply(script_files, source))
   ###########################################################################
 
   # image device function
@@ -224,92 +234,100 @@ Methylome.At_main <- function(var1, # control
   cat(sep_cat("Total methylation"))
 
   ##### PCA plot to total methlyation in all contexts
-  if (!is_single) {
-    dir.create(PCA_plots_path, showWarnings = F)
-    setwd(PCA_plots_path)
+  if (run_PCA_plot) {
+    if (!is_single) {
+      dir.create(PCA_plots_path, showWarnings = F)
+      setwd(PCA_plots_path)
 
-    message(time_msg(), "generating PCA plots of total methylation levels: ", appendLF = F)
-    cat("\nPCA plots...")
-    tryCatch(
-      {
-        pca_plot(methylationDataReplicates_joints, var1, var2, var1_path, var2_path, "CG")
-        pca_plot(methylationDataReplicates_joints, var1, var2, var1_path, var2_path, "CHG")
-        pca_plot(methylationDataReplicates_joints, var1, var2, var1_path, var2_path, "CHH")
-        pca_plot(methylationDataReplicates_joints, var1, var2, var1_path, var2_path, "all_contexts")
-        message("done")
-      },
-      error = function(cond) {
-        cat("\n*\n PCA plot:\n", as.character(cond), "*\n")
-        message("fail")
-      }
-    )
-    setwd(exp_path)
-    cat(" done\n")
-  } else {
-    message(time_msg(), "* skipping PCA plots for single-samples data")
-    cat("skipping PCA plots for single-samples data\n")
+      message(time_msg(), "generating PCA plots of total methylation levels: ", appendLF = F)
+      cat("\nPCA plots...")
+      tryCatch(
+        {
+          pca_plot(methylationDataReplicates_joints, var1, var2, var1_path, var2_path, "CG")
+          pca_plot(methylationDataReplicates_joints, var1, var2, var1_path, var2_path, "CHG")
+          pca_plot(methylationDataReplicates_joints, var1, var2, var1_path, var2_path, "CHH")
+          pca_plot(methylationDataReplicates_joints, var1, var2, var1_path, var2_path, "all_contexts")
+          message("done")
+        },
+        error = function(cond) {
+          cat("\n*\n PCA plot:\n", as.character(cond), "*\n")
+          message("fail")
+        }
+      )
+      setwd(exp_path)
+      cat(" done\n")
+    } else {
+      message(time_msg(), "* skipping PCA plots for single-samples data")
+      cat("skipping PCA plots for single-samples data\n")
+    }
   }
 
   ##### calculate and plot total methylation levels (%)
-  dir.create(meth_levels_path, showWarnings = F)
-  setwd(meth_levels_path)
+  if (run_total_meth_plot) {
+    dir.create(meth_levels_path, showWarnings = F)
+    setwd(meth_levels_path)
 
-  message(time_msg(), "bar-plots for total methylation levels (5-mC%): ", appendLF = F)
-  cat("bar-plots for total methylation levels...")
-  tryCatch(
-    {
-      total_meth_levels <- total_meth_levels(meth_var1_replicates, meth_var2_replicates, var1, var2)
-      message("done")
-      cat(" done\n")
-    },
-    error = function(cond) {
-      cat("\n*\n total methylation levels:\n", as.character(cond), "*\n")
-      message("fail")
-      cat(" fail\n")
-    }
-  )
+    message(time_msg(), "bar-plots for total methylation levels (5-mC%): ", appendLF = F)
+    cat("bar-plots for total methylation levels...")
+    tryCatch(
+      {
+        total_meth_levels <- total_meth_levels(meth_var1_replicates, meth_var2_replicates, var1, var2)
+        message("done")
+        cat(" done\n")
+      },
+      error = function(cond) {
+        cat("\n*\n total methylation levels:\n", as.character(cond), "*\n")
+        message("fail")
+        cat(" fail\n")
+      }
+    )
+  }
 
   ###########################################################################
 
   ##### ChrPlots for CX methylation #####
-  dir.create(ChrPlot_CX_path, showWarnings = F)
-  dir.create(ChrPlot_subCX_path, showWarnings = F)
-  setwd(ChrPlot_CX_path)
+  if (run_CX_Chrplot) {
+    dir.create(ChrPlot_CX_path, showWarnings = F)
+    dir.create(ChrPlot_subCX_path, showWarnings = F)
+    setwd(ChrPlot_CX_path)
 
-  cat("\n* chromosome methylation plots (ChrPlots):")
-  message(time_msg(), "generating chromosome methylation plots (ChrPlots): ", appendLF = F)
-  tryCatch(
-    {
-      source(paste0(scripts_dir, "/ChrPlots_CX.R"))
-      suppressWarnings(run_ChrPlots_CX(var1, var2, meth_var1, meth_var2, TE_file, n.cores))
-      message("done")
-    },
-    error = function(cond) {
-      cat("\n*\n ChrPlots:\n", as.character(cond), "*\n")
-      message("fail")
-    }
-  )
+    cat("\n* chromosome methylation plots (ChrPlots):")
+    message(time_msg(), "generating chromosome methylation plots (ChrPlots): ", appendLF = F)
+    tryCatch(
+      {
+        source(paste0(scripts_dir, "/ChrPlots_CX.R"))
+        suppressWarnings(run_ChrPlots_CX(var1, var2, meth_var1, meth_var2, TE_file, n.cores))
+        message("done")
+      },
+      error = function(cond) {
+        cat("\n*\n ChrPlots:\n", as.character(cond), "*\n")
+        message("fail")
+      }
+    )
+  }
 
   setwd(exp_path)
 
   ###########################################################################
 
   ##### Transcription facrots motif analysis (UniBind - TFBS) #####
-  dir.create(TF_motifs_path, showWarnings = F)
-  setwd(TF_motifs_path)
+  if (run_TF_motifs) {
+    dir.create(TF_motifs_path, showWarnings = F)
+    setwd(TF_motifs_path)
 
-  cat("\nTranscription factors motifs plot:\n")
-  message(time_msg(), "generating transcription factors motifs plots")
-  tryCatch(
-    {
-      suppressWarnings(TF_motifs(methylationDataReplicates_joints, "all", 1e6, NULL, annotation.gr, TAIR10_TFBS_file))
-      # message("done")
-    },
-    error = function(cond) {
-      cat("\n*\n nTranscription factors motifs plot:\n", as.character(cond), "*\n")
-      message("fail")
-    }
-  )
+    cat("\nTranscription factors motifs plot:\n")
+    message(time_msg(), "generating transcription factors motifs plots")
+    tryCatch(
+      {
+        suppressWarnings(TF_motifs(methylationDataReplicates_joints, "all", 1e6, NULL, annotation.gr, TAIR10_TFBS_file))
+        # message("done")
+      },
+      error = function(cond) {
+        cat("\n*\n nTranscription factors motifs plot:\n", as.character(cond), "*\n")
+        message("fail")
+      }
+    )
+  }
 
   setwd(exp_path)
 
@@ -347,6 +365,12 @@ Methylome.At_main <- function(var1, # control
           context, minProportionDiff, binSize, pValueThreshold,
           minCytosinesCount, minReadsPerCytosine, ifelse(n.cores > 3, n.cores / 3, 1), is_Replicates
         )
+
+        # quatiles cutoff for dH analysis
+        if (analyze_dH) {
+          DMRs_call <- proportions_cutoff(DMRs_call, meth_var1_replicates, q = 0.99)
+        }
+
         cat(paste0(time_msg(" "), "statistically significant DMRs (", context, "): ", length(DMRs_call), "\n"))
         message(time_msg(), paste0("statistically significant DMRs (", context, "): ", length(DMRs_call)))
         # message(time_msg(), paste0("\tDMRs caller in ", context, " context: done"))
@@ -711,16 +735,16 @@ Methylome.At_main <- function(var1, # control
       }
     )
 
-    message(time_msg(), "generating sum dH analysis:\n", appendLF = F) # , rep("-", 29)
-    tryCatch(
-      {
-        suppressWarnings(run_sum_deltaH_CX(var1, var2, meth_var1, meth_var2, annotation.gr, TE_file, description_df, n.cores, fdr = 0.95))
-      },
-      error = function(cond) {
-        cat("\n*\n sum dH:\n", as.character(cond), "*\n")
-        message("fail\n")
-      }
-    )
+    # message(time_msg(), "generating sum dH analysis:\n", appendLF = F) # , rep("-", 29)
+    # tryCatch(
+    #   {
+    #     suppressWarnings(run_sum_deltaH_CX(var1, var2, meth_var1, meth_var2, annotation.gr, TE_file, description_df, n.cores, fdr = 0.95))
+    #   },
+    #   error = function(cond) {
+    #     cat("\n*\n sum dH:\n", as.character(cond), "*\n")
+    #     message("fail\n")
+    #   }
+    # )
   }
 
   setwd(exp_path)

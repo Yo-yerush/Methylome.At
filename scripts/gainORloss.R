@@ -1,4 +1,4 @@
-gainORloss <- function(DMRsReplicates, context, add_count = FALSE) {
+gainORloss <- function(DMRsReplicates, context, up_col = "#d96c6c", down_col = "#6c96d9", add_count = FALSE) {
   gainORloss_vec <- DMRsReplicates$regionType
 
   gain_DMRs <- length(grep("gain", gainORloss_vec))
@@ -20,7 +20,7 @@ gainORloss <- function(DMRsReplicates, context, add_count = FALSE) {
   pie_plot <- ggplot(pie_data, aes(x = "", y = value, fill = group)) +
     geom_bar(stat = "identity", width = 1, color = "white", lwd = 0.5) +
     coord_polar(theta = "y", start = pi / 2, direction = 1) +
-    scale_fill_manual(values = c(gain = "#d96c6c", loss = "#6c96d9")) +
+    scale_fill_manual(values = c(gain = up_col, loss = down_col)) +
     theme_void() +
     theme(
       axis.line = element_blank(),
@@ -46,9 +46,9 @@ gainORloss <- function(DMRsReplicates, context, add_count = FALSE) {
   )
 
   if (add_count) {
-     x_pos <- c(0.375, 0.51)
+    x_pos <- c(0.375, 0.51)
   } else {
-     x_pos <- c(0.410, 0.575)
+    x_pos <- c(0.410, 0.575)
   }
   final_plot <- ggdraw(comb_plot) +
     # hyper line
@@ -74,23 +74,24 @@ gainORloss <- function(DMRsReplicates, context, add_count = FALSE) {
 
 ########################################################
 
-ratio.distribution = function(DMRsReplicates, var1, var2, context, comparison_name) {
-  
-  dmrs_ratio = DMRsReplicates$proportion2/DMRsReplicates$proportion1
-  
-  img_device(paste0("ratio.distribution_",context,"_gainORloss"), w = 3.58, h = 3.3)
-  
-  h <- hist(log(dmrs_ratio), breaks=1000, plot=FALSE)
-  hist(log(dmrs_ratio),
-       main = paste(context, "-", length(DMRsReplicates$regionType),"DMRs"),
-       xlab = "Ratio of methylation proportions (log scale)",
-       ylab = "Frequency",
-       #xlim = c(-10,10),
-       #col = c(rep("blue",length(h$counts)/2),rep("red",length(h$counts)/2)),
-       #border = c(rep("blue",length(h$counts)/2),rep("red",length(h$counts)/2)),
-       border = ifelse((h$mids > 0), "#b36b74", "#9396c2"),
-       breaks = 1000)
-  # if((length(h$breaks) %% 2) != 0) {bar_colors = append(bar_colors,"red",after = T)} 
-  
+ratio.distribution <- function(DMRsReplicates, var1, var2, context, comparison_name, up_col = "#b36b74", down_col = "#9396c2") {
+  dmrs_ratio <- DMRsReplicates$proportion2 / DMRsReplicates$proportion1
+  n_breaks <- ifelse(length(dmrs_ratio) > 1e4, 1e3, length(dmrs_ratio) / 10)
+
+  img_device(paste0("ratio.distribution_", context, "_gainORloss"), w = 3.58, h = 3.3)
+
+  h <- hist(log2(dmrs_ratio), breaks = 1000, plot = FALSE)
+  hist(log2(dmrs_ratio),
+    main = paste(context, "-", length(DMRsReplicates$regionType), "DMRs"),
+    xlab = "log2(fold-change)",
+    ylab = "Frequency",
+    # xlim = c(-10,10),
+    # col = c(rep("blue",length(h$counts)/2),rep("red",length(h$counts)/2)),
+    # border = c(rep("blue",length(h$counts)/2),rep("red",length(h$counts)/2)),
+    border = ifelse((h$mids > 0), up_col, down_col),
+    breaks = 1000
+  )
+  # if((length(h$breaks) %% 2) != 0) {bar_colors = append(bar_colors,"red",after = T)}
+
   dev.off()
 }

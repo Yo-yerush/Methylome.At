@@ -1,21 +1,81 @@
+#################################################################
+
+# Shannon entropy
+# H(p) = -[p log2 p + (1-p) log2(1-p)]
+calculate_surp <- function(p, eps = 1e-6) {
+    p[!is.na(p)] <- pmin(pmax(p[!is.na(p)], eps), 1 - eps)
+    -(p * log2(p) + (1 - p) * log2(1 - p))
+}
+
 ### op1
 # calculate_surp <- function(p) {
 #     p * log2(1 / (p + 1e-6))
 # }
 
-### op2
-calculate_surp <- function(p) {
-    -(p * log2(p) + (1 - p) * log2(1 - p))
+#################################################################
+
+# minimum proportion cutoff
+minProportionDiff <<- rep(0.001, 3)
+
+remove_r_col <- function(x, n_sample) {
+    names(mcols(x))[names(mcols(x)) == paste0("readsM", n_sample)] <- "readsM"
+    names(mcols(x))[names(mcols(x)) == paste0("readsN", n_sample)] <- "readsN"
+
+    mcols(x) <- mcols(x)[, !grepl("^reads[MN]\\d+$", names(mcols(x)))]
+    x
 }
 
-# calculate_surp <- function(x, m_ctrl, n_ctrl, m_trnt, n_trnt) {
-#     mutate(x,
-#         pi0 = pmin(pmax(m_ctrl / n_ctrl, 1e-6), 1 - 1e-6), # ctrl expectation π0
-#         surprisal = -(lchoose(n_trnt, m_trnt) +
-#             m_trnt * log(pi0) +
-#             (n_trnt - m_trnt) * log(1 - pi0))
-#     )
-# }
+proportions_cutoff <- function(gr, ctrl_gr_joined, cntx, q = 0.99) {
+    methData_split <- split(ctrl_gr_joined, seqnames(ctrl_gr_joined))
+    methData_split <- methData_split[order(names(methData_split))]
+    start_min <- min(start(methData_split))
+    end_max <- max(end(methData_split))
+
+    chromosome_ranges <- GRanges(seqnames = names(methData_split), IRanges(start = start_min, end = end_max))
+    x <- GRanges()
+    for (i_chr in 1:length(chromosome_ranges)) {
+        x_loop <- computeDMRs(
+            remove_r_col(gr_joined, 1),
+            remove_r_col(gr_joined, 2),
+            regions = chromosome_ranges[i_chr],
+            context = cntx,
+            method = "bins",
+            binSize = binSize,
+            test = "fisher", # for single samples
+            pValueThreshold = pValueThreshold,
+            minCytosinesCount = minCytosinesCount,
+            minProportionDifference = 0.001,
+            minGap = ifelse(analysis_name == "DMVs", 200, 0),
+            minSize = 1,
+            minReadsPerCytosine = minReadsPerCytosine,
+            cores = n_cores / 3
+        )
+        x <- c(x, x_loop)
+    }
+
+    x$diff_tmp <- abs(x$proportion1 - x$proportion2)
+    q_diff <- as.numeric(quantile(x$diff_tmp, q, na.rm = TRUE))
+
+    # histogram
+    img_device(paste0(cntx, "_min_proportion_cutoff"), w = 2, h = 2)
+    hist(x$diff_tmp, breaks = 100)
+    abline(
+        v = q_diff,
+        lty = 2,
+        col = ifelse(cntx == "CG", "blue",
+            ifelse(cntx == "CHG", "green",
+                "red"
+            )
+        )
+    )
+    dev.off()
+
+    # filter by cutoff
+    x <- x[which(diff_tmp > q_diff)]
+    x$diff_tmp <- NULL
+
+    return(x)
+}
 
 #################################################################
 

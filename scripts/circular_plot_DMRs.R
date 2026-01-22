@@ -1,4 +1,4 @@
-DMRs_circular_plot <- function(ann.file, TE_4_dens, comparison_name) {
+DMRs_circular_plot <- function(ann.file, TE_4_dens, comparison_name, up_col = "#FF0000", down_col = "#304ed1") {
   chr_amount <- length(seqnames(ann.file)@values)
 
   genes_type <- ann.file[which(ann.file$type == "gene")]
@@ -29,7 +29,7 @@ DMRs_circular_plot <- function(ann.file, TE_4_dens, comparison_name) {
       CG_file[CG_file$log2FC < 0, 1:3]
     ),
     bg.col = "#fafcff", bg.border = NA, count_by = "number",
-    col = c("#FF000080", "#304ed180"), border = T, track.height = 0.165, track.margin = c(0, 0)
+    col = c(paste0(up_col, 80), paste0(down_col, 80)), border = T, track.height = 0.165, track.margin = c(0, 0)
   )
   circos.text("Chr1", x = 0, y = 1, labels = "CG", facing = "downward", cex = 0.6, adj = c(1, -0.4))
 
@@ -39,7 +39,7 @@ DMRs_circular_plot <- function(ann.file, TE_4_dens, comparison_name) {
       CHG_file[CHG_file$log2FC < 0, 1:3]
     ),
     bg.col = "#fafcff", bg.border = NA, count_by = "number",
-    col = c("#FF000080", "#304ed180"), border = T, track.height = 0.165, track.margin = c(0, 0)
+    col = c(paste0(up_col, 80), paste0(down_col, 80)), border = T, track.height = 0.165, track.margin = c(0, 0)
   )
   circos.text("Chr1", x = 0, y = 1, labels = "CHG", facing = "downward", cex = 0.6, adj = c(1, -0.4))
 
@@ -49,7 +49,7 @@ DMRs_circular_plot <- function(ann.file, TE_4_dens, comparison_name) {
       CHH_file[CHH_file$log2FC < 0, 1:3]
     ),
     bg.col = "#fafcff", bg.border = NA, count_by = "number",
-    col = c("#FF000080", "#304ed180"), border = T, track.height = 0.165, track.margin = c(0, 0)
+    col = c(paste0(up_col, 80), paste0(down_col, 80)), border = T, track.height = 0.165, track.margin = c(0, 0)
   )
   circos.text("Chr1", x = 0, y = 1, labels = "CHH", facing = "downward", cex = 0.6, adj = c(1, -0.4))
 
@@ -66,7 +66,7 @@ DMRs_circular_plot <- function(ann.file, TE_4_dens, comparison_name) {
 
   legend("topleft",
     legend = c("Hyper-DMRs", "Hypo-DMRs", "Overlay", "Genes", "TEs"),
-    fill = c("#FF000095", "#304ed195", "#8208b695", "#9c9c9c", "#fcba0360"),
+    fill = c(paste0(up_col, 95), paste0(down_col, 95), "#8208b695", "#9c9c9c", "#fcba0360"),
     cex = 0.5,
     bty = "n"
   )
