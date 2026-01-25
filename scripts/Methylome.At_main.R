@@ -26,7 +26,6 @@ Methylome.At_main <- function(var1, # control
                               run_GeneFeatures_metaPlots = FALSE,
                               gene_features_binSize = 10,
                               metaPlot.random.genes = 10000) {
-
   ###########################################################################
 
   start_time <- Sys.time()
@@ -216,8 +215,13 @@ Methylome.At_main <- function(var1, # control
   )
 
   rm(load_vars)
-  message(sep_cat("Total methylation"))
-  cat(sep_cat("Total methylation"))
+
+  ###########################################################################
+
+  if (run_PCA_plot | run_total_meth_plot | run_CX_Chrplot | run_TF_motifs) {
+    message(sep_cat("Total methylation"))
+    cat(sep_cat("Total methylation"))
+  }
 
   ##### PCA plot to total methlyation in all contexts
   if (run_PCA_plot) {
@@ -657,7 +661,6 @@ Methylome.At_main <- function(var1, # control
   )
 
   ###########################################################################
-
 
   ##### GO analysis for annotated DMRs
   if (run_GO_analysis) {
