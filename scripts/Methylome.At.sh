@@ -272,8 +272,8 @@ Rscript ./scripts/Methylome.At_run.R \
 "$func_groups" \
 "$GO_analysis" \
 "$KEGG_pathways" \
-"$dH_scripts" \
 "$DMV_analysis" \
+"$dH_scripts" \
 "$TEs_mp" \
 "$Genes_mp" \
 "$Gene_features_mp" \
@@ -292,6 +292,7 @@ echo "" >> "$log_file"
 echo "" >> "$log_file"
 echo "" >> "$log_file"
 echo "configuration:" >> "$log_file"
+echo "--------------" >> "$log_file"
 echo "DMRs Min Proportion Diff CG: $minProportionDiff_CG" >> "$log_file"
 echo "DMRs Min Proportion Diff CHG: $minProportionDiff_CHG" >> "$log_file"
 echo "DMRs Min Proportion Diff CHH: $minProportionDiff_CHH" >> "$log_file"

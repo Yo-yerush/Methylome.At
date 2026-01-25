@@ -135,7 +135,7 @@ edit_script1_parameters() {
   # Parameters are expected to be set before calling this function
   while true; do
         OPTION=$(whiptail --title "'Methylome.At' Parameters" \
-            --menu "Select a parameter to change or proceed with current settings." 34 90 26 \
+            --menu "Select a parameter to change or proceed with current settings." 38 50 30 \
             "Proceed."                "$(fmt '' 'Use current parameters')" \
             "Min diff (CG)"           "$(fmt "$SCRIPT1_minProportionDiff_CG" 'Min methylation proportion difference to call CG DMRs')" \
             "Min diff (CHG)"          "$(fmt "$SCRIPT1_minProportionDiff_CHG" 'Min methylation proportion difference to call CHG DMRs')" \

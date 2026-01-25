@@ -68,15 +68,19 @@ try({
     run_PCA_plot = as.logical(configs[16]),
     run_total_meth_plot = as.logical(configs[17]),
     run_CX_Chrplot = as.logical(configs[18]),
-    run_TF_motifs = as.logical(configs[19]),
-    run_GO_analysis = as.logical(configs[20]),
-    run_KEGG_pathways = as.logical(configs[21]),
-    analyze_dH = as.logical(configs[22]),
-    run_TE_metaPlots = as.logical(configs[23]),
-    run_GeneBody_metaPlots = as.logical(configs[24]),
-    run_GeneFeatures_metaPlots = as.logical(configs[25]),
-    gene_features_binSize = as.numeric(configs[26]),
-    metaPlot.random.genes = as.numeric(configs[27])
+    run_TEs_distance_n_size = as.logical(configs[19]),
+    total_meth_annotation = as.logical(configs[20]),
+    run_TF_motifs = as.logical(configs[21]),
+    run_functional_groups = as.logical(configs[22]),
+    run_GO_analysis = as.logical(configs[23]),
+    run_KEGG_pathways = as.logical(configs[24]),
+    analyze_DMVs = as.logical(configs[25]),
+    analyze_dH = as.logical(configs[26]),
+    run_TE_metaPlots = as.logical(configs[27]),
+    run_GeneBody_metaPlots = as.logical(configs[28]),
+    run_GeneFeatures_metaPlots = as.logical(configs[29]),
+    gene_features_binSize = as.numeric(configs[30]),
+    metaPlot.random.genes = as.numeric(configs[31])
     )
   # message("\n\nwarnings:\n", warnings())
 })

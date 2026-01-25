@@ -23,8 +23,8 @@ Methylome.At_main <- function(var1, # control
                               run_functional_groups = TRUE,
                               run_GO_analysis = FALSE,
                               run_KEGG_pathways = FALSE,
-                              analyze_dH = FALSE,
                               analyze_DMVs = FALSE,
+                              analyze_dH = FALSE,
                               run_TE_metaPlots = FALSE,
                               run_GeneBody_metaPlots = FALSE,
                               run_GeneFeatures_metaPlots = FALSE,
@@ -175,7 +175,8 @@ Methylome.At_main <- function(var1, # control
   # new folders path names
   comparison_name <- paste0(var2, "_vs_", var1)
   exp_path <- paste0(Methylome.At_path, "/results/", comparison_name)
-  total_meth_path <- paste0(exp_path, "/total_methylation")
+
+  total_meth_path <- paste0(exp_path, "/total_methylation_analysis")
   PCA_plots_path <- paste0(total_meth_path, "/PCA_plots")
   meth_levels_path <- paste0(total_meth_path, "/methylation_levels")
   ChrPlot_CX_path <- paste0(total_meth_path, "/ChrPlot_CX")
@@ -183,10 +184,12 @@ Methylome.At_main <- function(var1, # control
   TEs_distance_n_size_path <- paste0(total_meth_path, "/TE_size_n_distance")
   total_meth_annotation_path <- paste0(total_meth_path, "/total_methylation_annotations")
   TF_motifs_path <- paste0(total_meth_path, "/TF_motifs")
-  gainORloss_path <- paste0(exp_path, "/gain_OR_loss")
-  genome_ann_path <- paste0(exp_path, "/genome_annotation")
-  DMRs_bigWig_path <- paste0(exp_path, "/DMRs_bigWig")
-  ChrPlots_DMRs_path <- paste0(exp_path, "/ChrPlot_DMRs")
+
+  DMRs_analysis_path <- paste0(exp_path, "/DMR_analysis")
+  gainORloss_path <- paste0(DMRs_analysis_path, "/gain_OR_loss")
+  genome_ann_path <- paste0(DMRs_analysis_path, "/genome_annotation")
+  DMRs_bigWig_path <- paste0(DMRs_analysis_path, "/DMRs_bigWig")
+  ChrPlots_DMRs_path <- paste0(DMRs_analysis_path, "/ChrPlot_DMRs")
   dH_CX_path <- paste0(exp_path, "/deltaH")
   dH_CX_ann_path <- paste0(exp_path, "/deltaH/genome_annotation")
   DMV_analysis_path <- paste0(exp_path, "/DMV_analysis")
@@ -359,17 +362,19 @@ Methylome.At_main <- function(var1, # control
 
     cat("\nAnnotations over total methylation levels:\n")
     message(time_msg(), "annotations over total methylation levels")
-    tryCatch(
-      {
-        ann_list <- genome_ann(annotation.gr, TE_file)
-        total_methylation_ann(ann_list, var1, var2, meth_var1, meth_var2, context) # save tables of annotate CX
-        # message("done")
-      },
-      error = function(cond) {
-        cat("\n*\n Annotations over total methylation levels:\n", as.character(cond), "*\n")
-        message("fail")
-      }
-    )
+    for (cntx_ann in c("CG", "CHG", "CHH")) {
+      tryCatch(
+        {
+          ann_list <- genome_ann(annotation.gr, TE_file)
+          total_methylation_ann(ann_list, var1, var2, meth_var1, meth_var2, cntx_ann)
+          # message("done")
+        },
+        error = function(cond) {
+          cat("\n*\n Annotations over total methylation levels:\n", as.character(cond), "*\n")
+          message("fail")
+        }
+      )
+    }
   }
 
   setwd(exp_path)
@@ -421,8 +426,9 @@ Methylome.At_main <- function(var1, # control
 
   ##############################
   ##### Calling DMRs in Replicates #####
+  dir.create(DMRs_analysis_path, showWarnings = F)
+  setwd(DMRs_analysis_path)
   DMRs_results <- mclapply(c("CG", "CHG", "CHH"), function(context) {
-    setwd(exp_path)
     tryCatch(
       {
         DMRs_call <- calling_DMRs(
