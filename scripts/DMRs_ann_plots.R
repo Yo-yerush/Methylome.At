@@ -7,18 +7,17 @@ DMRs_ann_plots <- function(var1, var2, context, dH_analysis = F) {
     if (!dH_analysis) {
       y_title <- "DMRs count"
       DMRsReplicates_loop_path <- paste0(context, "/DMRs_", ann.loop, "_", context, "_genom_annotations.csv")
-      up_col = "#d97777"
-      down_col = "#7676d6"
-      up_col_leg = "#d96868"
-      down_col_leg = "#6969db"
+      up_col <- "#d97777"
+      down_col <- "#7676d6"
+      # up_col_leg = "#d96868"
+      # down_col_leg = "#6969db"
     } else {
       y_title <- "SurpMRs count"
       DMRsReplicates_loop_path <- paste0(context, "/SurpMRs_", ann.loop, "_", context, "_genom_annotations.csv")
-      up_col = "#e2b25d"
-      down_col = "#47cf79"
-      up_col_leg = "#c58741"
-      down_col_leg = "#31a35b"
-
+      up_col <- "#e2b25d"
+      down_col <- "#47cf79"
+      # up_col_leg = "#c58741"
+      # down_col_leg = "#31a35b"
     }
 
     if (file.exists(DMRsReplicates_loop_path)) {
@@ -88,15 +87,15 @@ DMRs_ann_plots <- function(var1, var2, context, dH_analysis = F) {
 
 #########################
 ### legend
-gene_ann_legend <- function() {
-  legend_df <- data.frame(x = 1, y = 1:100, fill_val = 1:100)
-  labels_left_df <- data.frame(y = c(0, 80), label = c("Loss", "Gain"))
-  labels_right_df <- data.frame(y = c(0, 50, 100), label = c("100\n", "50/50", "\n100"))
+gene_ann_legend <- function(up_col = "#d96868", down_col = "#6969db") {
+  legend_df <- data.frame(x = 1, y = 51:100, fill_val = 51:100)
+  labels_left_df <- data.frame(y = c(50, 90), label = c("Loss", "Gain"))
+  labels_right_df <- data.frame(y = c(0, 50, 75, 100), label = c("", "100\n", "50", "\n100"))
 
   legend_plot <- ggplot(legend_df, aes(x = x, y = y, fill = fill_val)) +
     geom_raster() +
     scale_fill_gradient2(
-      midpoint = 50,
+      midpoint = 75,
       low = down_col,
       mid = "#FFFFFF",
       high = up_col
@@ -109,8 +108,8 @@ gene_ann_legend <- function() {
       data = labels_right_df, aes(x = 1.6, y = y, label = label),
       hjust = 0, size = 3, inherit.aes = FALSE
     ) +
-    geom_rect(aes(xmin = 0.5, xmax = 1.5, ymin = 0.5, ymax = 100.5),
-      fill = NA, color = "black", linewidth = 0.5, inherit.aes = FALSE
+    geom_rect(aes(xmin = 0.5, xmax = 1.5, ymin = 50.5, ymax = 100.5),
+      fill = NA, color = "black", linewidth = 0.25, inherit.aes = FALSE
     ) +
     coord_cartesian(xlim = c(0, 4), clip = "off") +
     labs(title = "Regions type\ndistribution (%)") +

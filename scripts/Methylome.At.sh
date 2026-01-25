@@ -30,6 +30,7 @@ CX_ChrPlot=TRUE
 TF_motifs=TRUE
 GO_analysis=FALSE
 KEGG_pathways=FALSE
+DMV_analysis=FALSE
 dH_scripts=FALSE
 TEs_mp=FALSE
 Genes_mp=FALSE
@@ -70,6 +71,7 @@ usage() {
   echo "  --GO_analysis                 Perform GO analysis [default: $GO_analysis]"
   echo "  --KEGG_pathways               Perform KEGG pathways analysis [default: $KEGG_pathways]"
   echo ""
+  echo "  --DMVs                        Analyze differentially methylated vallies (1kbp) [default: $DMV_analysis]"
   echo "  --dH                          instead of DMRs, analyze delta-H = -(p * log2(p) + (1 - p) * log2(1 - p)) [default: $dH_scripts]"
   echo ""
   echo "MetaPlots analysis arguments:"
@@ -114,6 +116,7 @@ while [[ "$#" -gt 0 ]]; do
     --description_file) description_file="$2"; shift ;;
     --TEs_file) TEs_file="$2"; shift ;;
     --Methylome_At_path) Methylome_At_path="$2"; shift ;;
+    --DMVs) DMV_analysis="$2"; shift ;;
     --dH) dH_scripts="$2"; shift ;;
     --pca) pca="$2"; shift ;;
     --total_methylation) total_methylation="$2"; shift ;;
@@ -216,6 +219,7 @@ echo "Description file: $description_file"
 echo "Transposable Elements file: $TEs_file"
 echo "Methylome.At directory path: $Methylome_At_path"
 echo ""
+echo "Analyze differentially methylated vallies (1kbp): $DMV_analysis"
 echo "Analyze delta-H scripts: $dH_scripts"
 echo ""
 echo "-------------------------------------"
@@ -254,6 +258,7 @@ Rscript ./scripts/Methylome.At_run.R \
 "$GO_analysis" \
 "$KEGG_pathways" \
 "$dH_scripts" \
+"$DMV_analysis" \
 "$TEs_mp" \
 "$Genes_mp" \
 "$Gene_features_mp" \
@@ -288,6 +293,7 @@ echo "Total methylation chromosome plot: $CX_ChrPlot" >> "$log_file"
 echo "Transcription factors motif analysis: $TF_motifs" >> "$log_file"
 echo "GO Analysis: $GO_analysis" >> "$log_file"
 echo "KEGG Pathways: $KEGG_pathways" >> "$log_file"
+echo "Analyze differentially methylated vallies (1kbp): $DMV_analysis" >> "$log_file"
 echo "Analyze delta-H scripts: $dH_scripts" >> "$log_file"
 echo "Gene-body metaPlots: $Genes_mp" >> "$log_file"
 echo "TEs metaPlots: $TEs_mp" >> "$log_file"

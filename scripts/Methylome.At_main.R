@@ -21,6 +21,7 @@ Methylome.At_main <- function(var1, # control
                               run_GO_analysis = FALSE,
                               run_KEGG_pathways = FALSE,
                               analyze_dH = FALSE,
+                              analyze_DMVs = FALSE,
                               run_TE_metaPlots = FALSE,
                               run_GeneBody_metaPlots = FALSE,
                               run_GeneFeatures_metaPlots = FALSE,
@@ -129,7 +130,7 @@ Methylome.At_main <- function(var1, # control
       # load 'CX_reports'
       n.cores.load <- ifelse(n.cores > 1, 2, 1)
       load_vars <- mclapply(var_args, function(x) {
-        Sys.sleep(ifelse(x$name == var1, 0, 2))
+        Sys.sleep(ifelse(x$name == var1, 0, 0.5))
         load_replicates(x$path, n.cores, x$name, F, methyl_files_type)
       },
       mc.cores = n.cores.load
@@ -740,53 +741,55 @@ Methylome.At_main <- function(var1, # control
 
   ###########################################################################
 
-  message(sep_cat("DMV analysis"))
-  cat(sep_cat("DMV analysis\n"))
+  if (analyze_DMVs) {
+    message(sep_cat("DMV analysis"))
+    cat(sep_cat("DMV analysis\n"))
 
-  ##### Calling DMVs in Replicates #####
-  dir.create(DMV_analysis_path)
-  setwd(DMV_analysis_path)
-  DMVs_results <- mclapply(c("CG", "CHG", "CHH"), function(context) {
-    tryCatch(
-      {
-        DMVs_call <- calling_DMRs(
-          methylationDataReplicates_joints, meth_var1, meth_var2,
-          var1, var2, var1_path, var2_path, comparison_name,
-          context, minProportionDiff,
-          binSize = 1000, pValueThreshold,
-          minCytosinesCount = 20, minReadsPerCytosine = 5, ifelse(n.cores > 3, n.cores / 3, 1),
-          is_Replicates, analysis_name = "DMVs"
-        )
-        cat(paste0(time_msg(" "), "statistically significant DMVs (", context, "): ", length(DMVs_call), "\n"))
-        message(time_msg(), paste0("statistically significant DMVs (", context, "): ", length(DMVs_call)))
-        # message(time_msg(), paste0("\tDMVs caller in ", context, " context: done"))
-        return(DMVs_call)
-      },
-      error = function(cond) {
-        cat(paste0("\n*\n Calling DMVs in ", context, " context:\n"), as.character(cond), "*\ncontinue without calling DMVs!\n\n")
-        message(time_msg(), "\tCalling DMVs: fail\n")
-        return(NULL)
-      }
-    )
-  }, mc.cores = ifelse(n.cores >= 3, 3, 1))
+    ##### Calling DMVs in Replicates #####
+    dir.create(DMV_analysis_path)
+    setwd(DMV_analysis_path)
+    DMVs_results <- mclapply(c("CG", "CHG", "CHH"), function(context) {
+      tryCatch(
+        {
+          DMVs_call <- calling_DMRs(
+            methylationDataReplicates_joints, meth_var1, meth_var2,
+            var1, var2, var1_path, var2_path, comparison_name,
+            context, minProportionDiff,
+            binSize = 1000, pValueThreshold,
+            minCytosinesCount = 20, minReadsPerCytosine = 5, ifelse(n.cores > 3, n.cores / 3, 1),
+            is_Replicates, analysis_name = "DMVs"
+          )
+          cat(paste0(time_msg(" "), "statistically significant DMVs (", context, "): ", length(DMVs_call), "\n"))
+          message(time_msg(), paste0("statistically significant DMVs (", context, "): ", length(DMVs_call)))
+          # message(time_msg(), paste0("\tDMVs caller in ", context, " context: done"))
+          return(DMVs_call)
+        },
+        error = function(cond) {
+          cat(paste0("\n*\n Calling DMVs in ", context, " context:\n"), as.character(cond), "*\ncontinue without calling DMVs!\n\n")
+          message(time_msg(), "\tCalling DMVs: fail\n")
+          return(NULL)
+        }
+      )
+    }, mc.cores = ifelse(n.cores >= 3, 3, 1))
 
-  names(DMVs_results) <- c("CG", "CHG", "CHH")
-  cat(paste0(time_msg(" "), "done!\n"))
+    names(DMVs_results) <- c("CG", "CHG", "CHH")
+    cat(paste0(time_msg(" "), "done!\n"))
 
-  ##### save DMRs as bigWig file #####
-  setwd(DMV_analysis_path)
-  for (cntx_g2b in c("CG", "CHG", "CHH")) {
-    suppressWarnings(try(
-      {
-        gr_2_bigWig(DMVs_results[[cntx_g2b]], paste0(DMV_analysis_path, paste("/DMVs", cntx_g2b, comparison_name, sep = "_"), ".bw"))
-      },
-      silent = T
-    ))
+    ##### save DMRs as bigWig file #####
+    setwd(DMV_analysis_path)
+    for (cntx_g2b in c("CG", "CHG", "CHH")) {
+      suppressWarnings(try(
+        {
+          gr_2_bigWig(DMVs_results[[cntx_g2b]], paste0(DMV_analysis_path, paste("/DMVs", cntx_g2b, comparison_name, sep = "_"), ".bw"))
+        },
+        silent = T
+      ))
+    }
+    message(time_msg(), "saved all DMRs also as bigWig files\n")
+    cat("saved all DMVs also as bigWig files\n")
+
+    message("")
   }
-  message(time_msg(), "saved all DMRs also as bigWig files\n")
-  cat("saved all DMVs also as bigWig files\n")
-
-  message("")
 
   ###########################################################################
 

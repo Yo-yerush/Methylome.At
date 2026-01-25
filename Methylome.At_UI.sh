@@ -45,6 +45,7 @@ SCRIPT1_DEFAULT_img_type="pdf"
 SCRIPT1_DEFAULT_annotation_file="annotation_files/Methylome.At_annotations.csv.gz"
 SCRIPT1_DEFAULT_description_file="annotation_files/Methylome.At_description_file.csv.gz"
 SCRIPT1_DEFAULT_TEs_file="annotation_files/TAIR10_Transposable_Elements.txt"
+SCRIPT1_DEFAULT_DMVs="FALSE"
 SCRIPT1_DEFAULT_delta_H="FALSE"
 SCRIPT1_DEFAULT_TEs_metaplots="FALSE"
 SCRIPT1_DEFAULT_Genes_metaplots="FALSE"
@@ -154,6 +155,7 @@ edit_script1_parameters() {
             "Gene-feature meta-plots" "$(fmt "$SCRIPT1_Gene_features_metaplots" 'Metaplots over gene features (promoter/CDS/intron/UTR)')" \
             "Feature bin size"        "$(fmt "$SCRIPT1_bin_size_features" 'Bins-size for each gene feature region in feature meta-plots')" \
             "Random genes"            "$(fmt "$SCRIPT1_metaPlot_random_genes" 'Number of genes to sample for meta-plots (or all)')" \
+            "DMVs analysis"            "$(fmt "$SCRIPT1_DMVs" '')" \
             "dH analysis"            "$(fmt "$SCRIPT1_delta_H" '')" \
             "Annotation file (gtf/gff/csv)"  "$(fmt "$SCRIPT1_annotation_file" '')" \
             "Gene descriptions (txt/csv)"    "$(fmt "$SCRIPT1_description_file" '')" \
@@ -393,6 +395,7 @@ if [[ " ${SELECTED_SCRIPTS[*]} " =~ "Methylome.At" ]]; then
     SCRIPT1_Gene_features_metaplots="$SCRIPT1_DEFAULT_Gene_features_metaplots"
     SCRIPT1_bin_size_features="$SCRIPT1_DEFAULT_bin_size_features"
     SCRIPT1_metaPlot_random_genes="$SCRIPT1_DEFAULT_metaPlot_random_genes"
+    SCRIPT1_DMVs="$SCRIPT1_DEFAULT_DMVs"
     SCRIPT1_delta_H="$SCRIPT1_DEFAULT_delta_H"
 
     # Directly go to the parameters selection menu
@@ -464,6 +467,7 @@ if (whiptail --title "All done!" --yesno "You have chosen to run: $chosen_messag
       --MP_Gene_features "$SCRIPT1_Gene_features_metaplots" \
       --MP_features_bin_size "$SCRIPT1_bin_size_features" \
       --metaPlot_random "$SCRIPT1_metaPlot_random_genes" \
+      --DMVs "$SCRIPT1_DMVs" \
       --dH "$SCRIPT1_delta_H"
   fi
 else

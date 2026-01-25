@@ -46,7 +46,6 @@ calling_DMRs <- function(methylationDataReplicates_joints, meth_var1, meth_var2,
   ######### run DMRcaller functions
   DMRs_gr <- GRanges()
 
-  # Use mclapply for parallel chromosome processing
   DMRs_list <- parallel::mclapply(
     seq_along(chromosome_ranges),
     function(i_chr) {
