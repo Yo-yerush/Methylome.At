@@ -1,4 +1,4 @@
-  img_device <<- function(filename, w, h) {
+  img_device <- function(filename, w, h) {
     dev_call <- ifelse(img_type == "pdf", "cairo_pdf", img_type)
     img_env <- get(dev_call, envir = asNamespace("grDevices"))
     full_file_name <- paste0(filename, ".", img_type)
