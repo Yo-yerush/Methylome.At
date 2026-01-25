@@ -23,6 +23,11 @@ pValueThreshold=0.05
 methyl_files_type=CX_report
 img_type=pdf
 n_cores=8
+
+pca=TRUE
+total_methylation=TRUE
+CX_ChrPlot=TRUE
+TF_motifs=TRUE
 GO_analysis=FALSE
 KEGG_pathways=FALSE
 dH_scripts=FALSE
@@ -57,16 +62,21 @@ usage() {
   echo "  --binSize                     DMRs bin size [default: $binSize]"
   echo "  --minCytosinesCount           Minimum cytosines count [default: $minCytosinesCount]"
   echo "  --pValueThreshold             P-value (padj) threshold [default: $pValueThreshold]"
+  echo ""
+  echo "  --pca                         Perform PCA for total methylation levels [default: $pca]"
+  echo "  --total_methylation           Total methylation bar-plot [default: $total_methylation]"
+  echo "  --CX_ChrPlot                  total methylation chromosome plot [default: $CX_ChrPlot]"
+  echo "  --TF_motifs                   Transcription factors motif analysis [default: $TF_motifs]"
   echo "  --GO_analysis                 Perform GO analysis [default: $GO_analysis]"
   echo "  --KEGG_pathways               Perform KEGG pathways analysis [default: $KEGG_pathways]"
   echo ""
-  echo "  --dH                          Analyze delta-H = -(p * log2(p) + (1 - p) * log2(1 - p)) [default: $dH_scripts]"
+  echo "  --dH                          instead of DMRs, analyze delta-H = -(p * log2(p) + (1 - p) * log2(1 - p)) [default: $dH_scripts]"
   echo ""
   echo "MetaPlots analysis arguments:"
-  echo "  --MP_TEs                         Analyze of TEs metaPlots [logical. default: $TEs_mp]"
-  echo "  --MP_Genes                       Analyze of Genes-body metaPlots [logical. default: $Genes_mp]"
-  echo "  --MP_Gene_features               Analyze Gene Features metaPlots [logical. default: $Gene_features_mp]"
-  echo "  --MP_features_bin_size           Bin-size (set only for 'Gene_features' analysis!) [default: $bin_size_features]"
+  echo "  --MP_TEs                      Analyze of TEs metaPlots [logical. default: $TEs_mp]"
+  echo "  --MP_Genes                    Analyze of Genes-body metaPlots [logical. default: $Genes_mp]"
+  echo "  --MP_Gene_features            Analyze Gene Features metaPlots [logical. default: $Gene_features_mp]"
+  echo "  --MP_features_bin_size        Bin-size (set only for 'Gene_features' analysis!) [default: $bin_size_features]"
   echo "  --metaPlot_random             Number of random genes/TEs for metaPlots. 'all' for all the coding-genes and TEs [default: $metaPlot_random_genes]"
   echo ""
   exit 1
@@ -105,6 +115,10 @@ while [[ "$#" -gt 0 ]]; do
     --TEs_file) TEs_file="$2"; shift ;;
     --Methylome_At_path) Methylome_At_path="$2"; shift ;;
     --dH) dH_scripts="$2"; shift ;;
+    --pca) pca="$2"; shift ;;
+    --total_methylation) total_methylation="$2"; shift ;;
+    --CX_ChrPlot) CX_ChrPlot="$2"; shift ;;
+    --TF_motifs) TF_motifs="$2"; shift ;;
     --MP_TEs) TEs_mp="$2"; shift ;;
     --MP_Genes) Genes_mp="$2"; shift ;;
     --MP_Gene_features) Gene_features_mp="$2"; shift ;;
@@ -182,6 +196,11 @@ echo "Min Reads Per Cytosine: $minReadsPerCytosine"
 echo "Number of Cores: $n_cores"
 echo "Post-alignment file type: $methyl_files_type"
 echo "Output images format: $img_type"
+echo ""
+echo "PCA: $pca"
+echo "Total methylation bar-plot: $total_methylation"
+echo "Total methylation chromosome plot: $CX_ChrPlot"
+echo "Transcription factors motif analysis: $TF_motifs"
 echo "GO Analysis: $GO_analysis"
 echo "KEGG Pathways: $KEGG_pathways"
 echo ""
@@ -236,6 +255,10 @@ Rscript ./scripts/Methylome.At_run.R \
 "$Gene_features_mp" \
 "$bin_size_features" \
 "$metaPlot_random_genes" \
+"$pca" \
+"$total_methylation" \
+"$CX_ChrPlot" \
+"$TF_motifs" \
     2>> "$log_file"
 
 # Output a markdown report as '.html' file
@@ -259,8 +282,13 @@ echo "Number of Cores: $n_cores" >> "$log_file"
 echo "Min Reads Per Cytosine: $minReadsPerCytosine" >> "$log_file"
 echo "Post-alignment file type: $methyl_files_type" >> "$log_file"
 echo "Output images format: $img_type" >> "$log_file"
+echo "PCA: $pca" >> "$log_file"
+echo "Total methylation bar-plot: $total_methylation" >> "$log_file"
+echo "Total methylation chromosome plot: $CX_ChrPlot" >> "$log_file"
+echo "Transcription factors motif analysis: $TF_motifs" >> "$log_file"
 echo "GO Analysis: $GO_analysis" >> "$log_file"
 echo "KEGG Pathways: $KEGG_pathways" >> "$log_file"
+echo "Analyze delta-H scripts: $dH_scripts" >> "$log_file"
 echo "Gene-body metaPlots: $Genes_mp" >> "$log_file"
 echo "TEs metaPlots: $TEs_mp" >> "$log_file"
 echo "Gene features metaPlots: $Gene_features_mp" >> "$log_file"

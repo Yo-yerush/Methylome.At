@@ -34,6 +34,10 @@ SCRIPT1_DEFAULT_minCytosinesCount="4"
 SCRIPT1_DEFAULT_minReadsPerCytosine="4"
 SCRIPT1_DEFAULT_pValueThreshold="0.05"
 SCRIPT1_DEFAULT_n_cores="8"
+SCRIPT1_DEFAULT_pca="FALSE"
+SCRIPT1_DEFAULT_total_methylation="FALSE"
+SCRIPT1_DEFAULT_CX_ChrPlot="FALSE"
+SCRIPT1_DEFAULT_TF_motifs="FALSE"
 SCRIPT1_DEFAULT_GO_analysis="FALSE"
 SCRIPT1_DEFAULT_KEGG_pathways="FALSE"
 SCRIPT1_DEFAULT_file_type="CX_report"
@@ -48,23 +52,9 @@ SCRIPT1_DEFAULT_Gene_features_metaplots="FALSE"
 SCRIPT1_DEFAULT_bin_size_features="10"
 SCRIPT1_DEFAULT_metaPlot_random_genes="10000"
 
-
-# Default parameters for Methylome.At_metaPlots.sh:
-SCRIPT2_DEFAULT_Genes_n_TEs="TRUE"
-SCRIPT2_DEFAULT_Gene_features="TRUE"
-SCRIPT2_DEFAULT_minReadsPerCytosine="4"
-SCRIPT2_DEFAULT_metaPlot_random_genes="10000"
-SCRIPT2_DEFAULT_n_cores="8"
-SCRIPT2_DEFAULT_bin_size_features="10"
-SCRIPT2_DEFAULT_file_type="CX_report"
-SCRIPT2_DEFAULT_img_type="pdf"
-SCRIPT2_DEFAULT_annotation_file="annotation_files/Methylome.At_annotations.csv.gz"
-SCRIPT2_DEFAULT_TEs_file="annotation_files/TAIR10_Transposable_Elements.txt"
-
 # Paths to the scripts we want to run (adjust if needed)
 SCRIPT_BIS_PATH="./scripts/run_bismark.sh"
 SCRIPT1_PATH="./scripts/Methylome.At.sh"
-SCRIPT2_PATH="./scripts/Methylome.At_metaPlots.sh"
 
 ##################
 # WHIPTAIL DIALOGS
@@ -73,10 +63,9 @@ SCRIPT2_PATH="./scripts/Methylome.At_metaPlots.sh"
 # Prompt user: which scripts do you want to run?
 CHOICE=$(whiptail --title "Choose scripts to run" \
   --checklist "Select which pipeline(s) to run. Use SPACE to toggle selection, ENTER to confirm, ESC to cancle." \
-  18 70 4 \
+  18 70 3 \
   "Bismark" "Run genome alignment with Bismark" OFF \
   "Methylome.At" "Run main methylome pipeline'" ON \
-  "MetaPlots" "Run 'metaPlots' without the main pipeline" OFF \
   3>&1 1>&2 2>&3)
 
 # If user hits Cancel or ESC, exit
@@ -141,31 +130,35 @@ edit_script1_parameters() {
 
   # Parameters are expected to be set before calling this function
   while true; do
-    OPTION=$(whiptail --title "'Methylome.At' Parameters" \
-      --menu "Select a parameter to change or proceed with current settings." 30 90 22 \
-      "Proceed."                "$(fmt '' 'Use current parameters')" \
-      "Min diff (CG)"           "$(fmt "$SCRIPT1_minProportionDiff_CG" 'Min methylation proportion difference to call CG DMRs')" \
-      "Min diff (CHG)"          "$(fmt "$SCRIPT1_minProportionDiff_CHG" 'Min methylation proportion difference to call CHG DMRs')" \
-      "Min diff (CHH)"          "$(fmt "$SCRIPT1_minProportionDiff_CHH" 'Min methylation proportion difference to call CHH DMRs')" \
-      "DMR bin size (bp)"       "$(fmt "$SCRIPT1_binSize" 'Bin-size window used for DMR calling')" \
-      "Min cytosines / bin"     "$(fmt "$SCRIPT1_minCytosinesCount" 'Minimum cytosine count required in a bin to test it')" \
-      "Min reads / cytosine"    "$(fmt "$SCRIPT1_minReadsPerCytosine" 'Minimum read coverage per cytosine to include it')" \
-      "Adj. p-value cutoff"     "$(fmt "$SCRIPT1_pValueThreshold" 'Adjusted p-value threshold for calling significant DMRs')" \
-      "CPU cores"               "$(fmt "$SCRIPT1_n_cores" 'Number of cores for parallel steps')" \
-      "Input file format"       "$(fmt "$SCRIPT1_file_type" 'Methylation input format (CX_report/bedMethyl/CGmap)')" \
-      "Figure format"           "$(fmt "$SCRIPT1_img_type" 'Output image format for plots (pdf/svg/png/tiff/...)')" \
-      "GO enrichment"           "$(fmt "$SCRIPT1_GO_analysis" 'GO enrichment on DMR-associated gene-bodies/promoters')" \
-      "KEGG enrichment"         "$(fmt "$SCRIPT1_KEGG_pathways" 'KEGG pathway enrichment on DMR-associated gene-bodies/promoters')" \
-      "TE meta-plots"           "$(fmt "$SCRIPT1_TEs_metaplots" 'Metaplots over transposable elements (TE bodies/flanks)')" \
-      "Gene-body meta-plots"    "$(fmt "$SCRIPT1_Genes_metaplots" 'Metaplots across gene bodies (TSS→TES/flank)')" \
-      "Gene-feature meta-plots" "$(fmt "$SCRIPT1_Gene_features_metaplots" 'Metaplots over gene features (promoter/CDS/intron/UTR)')" \
-      "Feature bin size"        "$(fmt "$SCRIPT1_bin_size_features" 'Bins-size for each gene feature region in feature meta-plots')" \
-      "Random genes"            "$(fmt "$SCRIPT1_metaPlot_random_genes" 'Number of genes to sample for meta-plots (or all)')" \
-      "dH analysis"                    "$(fmt "$SCRIPT1_delta_H" '')" \
-      "Annotation file (gtf/gff/csv)"  "$(fmt "$SCRIPT1_annotation_file" '')" \
-      "Gene descriptions (txt/csv)"    "$(fmt "$SCRIPT1_description_file" '')" \
-      "TE annotation file (txt)"       "$(fmt "$SCRIPT1_TEs_file" '')" \
-      3>&1 1>&2 2>&3)
+        OPTION=$(whiptail --title "'Methylome.At' Parameters" \
+            --menu "Select a parameter to change or proceed with current settings." 34 90 26 \
+            "Proceed."                "$(fmt '' 'Use current parameters')" \
+            "Min diff (CG)"           "$(fmt "$SCRIPT1_minProportionDiff_CG" 'Min methylation proportion difference to call CG DMRs')" \
+            "Min diff (CHG)"          "$(fmt "$SCRIPT1_minProportionDiff_CHG" 'Min methylation proportion difference to call CHG DMRs')" \
+            "Min diff (CHH)"          "$(fmt "$SCRIPT1_minProportionDiff_CHH" 'Min methylation proportion difference to call CHH DMRs')" \
+            "DMR bin size (bp)"       "$(fmt "$SCRIPT1_binSize" 'Bin-size window used for DMR calling')" \
+            "Min cytosines / bin"     "$(fmt "$SCRIPT1_minCytosinesCount" 'Minimum cytosine count required in a bin to test it')" \
+            "Min reads / cytosine"    "$(fmt "$SCRIPT1_minReadsPerCytosine" 'Minimum read coverage per cytosine to include it')" \
+            "Adj. p-value cutoff"     "$(fmt "$SCRIPT1_pValueThreshold" 'Adjusted p-value threshold for calling significant DMRs')" \
+            "CPU cores"               "$(fmt "$SCRIPT1_n_cores" 'Number of cores for parallel steps')" \
+            "Input file format"       "$(fmt "$SCRIPT1_file_type" 'Methylation input format (CX_report/bedMethyl/CGmap)')" \
+            "Figure format"           "$(fmt "$SCRIPT1_img_type" 'Output image format for plots (pdf/svg/png/tiff/...)')" \
+            "PCA"                    "$(fmt "$SCRIPT1_pca" 'Perform PCA analysis')" \
+            "Total methylation"      "$(fmt "$SCRIPT1_total_methylation" 'Calculate total methylation')" \
+            "CX Chromosome Plot"     "$(fmt "$SCRIPT1_CX_ChrPlot" 'Generate chromosome-wide CX plots')" \
+            "TF motifs"              "$(fmt "$SCRIPT1_TF_motifs" 'Analyze transcription factor motifs')" \
+            "GO enrichment"           "$(fmt "$SCRIPT1_GO_analysis" 'GO enrichment on DMR-associated gene-bodies/promoters')" \
+            "KEGG enrichment"         "$(fmt "$SCRIPT1_KEGG_pathways" 'KEGG pathway enrichment on DMR-associated gene-bodies/promoters')" \
+            "TE meta-plots"           "$(fmt "$SCRIPT1_TEs_metaplots" 'Metaplots over transposable elements (TE bodies/flanks)')" \
+            "Gene-body meta-plots"    "$(fmt "$SCRIPT1_Genes_metaplots" 'Metaplots across gene bodies (TSS→TES/flank)')" \
+            "Gene-feature meta-plots" "$(fmt "$SCRIPT1_Gene_features_metaplots" 'Metaplots over gene features (promoter/CDS/intron/UTR)')" \
+            "Feature bin size"        "$(fmt "$SCRIPT1_bin_size_features" 'Bins-size for each gene feature region in feature meta-plots')" \
+            "Random genes"            "$(fmt "$SCRIPT1_metaPlot_random_genes" 'Number of genes to sample for meta-plots (or all)')" \
+            "dH analysis"            "$(fmt "$SCRIPT1_delta_H" '')" \
+            "Annotation file (gtf/gff/csv)"  "$(fmt "$SCRIPT1_annotation_file" '')" \
+            "Gene descriptions (txt/csv)"    "$(fmt "$SCRIPT1_description_file" '')" \
+            "TE annotation file (txt)"       "$(fmt "$SCRIPT1_TEs_file" '')" \
+            3>&1 1>&2 2>&3)
 
     # Check if user cancelled
     # Check if user cancelled
@@ -314,34 +307,40 @@ edit_script1_parameters() {
         ) || SCRIPT1_metaPlot_random_genes="$SCRIPT1_metaPlot_random_genes"
         ;;
 
-      "dH analysis")
-        SCRIPT1_delta_H=$(
-          whiptail --radiolist "Enable dH analysis?" 12 80 2 \
-            "TRUE"  "Yes"  $([ "$SCRIPT1_delta_H" = "TRUE"  ] && echo ON || echo OFF) \
-            "FALSE" "No"   $([ "$SCRIPT1_delta_H" = "FALSE" ] && echo ON || echo OFF) \
+      "PCA")
+        SCRIPT1_pca=$(
+          whiptail --radiolist "Perform PCA analysis?" 12 80 2 \
+            "TRUE" "Yes" $([ "$SCRIPT1_pca" = "TRUE" ] && echo ON || echo OFF) \
+            "FALSE" "No"  $([ "$SCRIPT1_pca" = "FALSE" ] && echo ON || echo OFF) \
             3>&1 1>&2 2>&3
-        ) || SCRIPT1_delta_H="$SCRIPT1_delta_H"
+        ) || SCRIPT1_pca="$SCRIPT1_pca"
         ;;
 
-      "Annotation file (gtf/gff/csv)")
-        SCRIPT1_annotation_file=$(
-          whiptail --inputbox "Path to annotation file (GFF/GTF/CSV as required)" 10 90 \
-            "$SCRIPT1_annotation_file" 3>&1 1>&2 2>&3
-        ) || SCRIPT1_annotation_file="$SCRIPT1_annotation_file"
+      "Total methylation")
+        SCRIPT1_total_methylation=$(
+          whiptail --radiolist "Calculate total methylation?" 12 80 2 \
+            "TRUE" "Yes" $([ "$SCRIPT1_total_methylation" = "TRUE" ] && echo ON || echo OFF) \
+            "FALSE" "No"  $([ "$SCRIPT1_total_methylation" = "FALSE" ] && echo ON || echo OFF) \
+            3>&1 1>&2 2>&3
+        ) || SCRIPT1_total_methylation="$SCRIPT1_total_methylation"
         ;;
 
-      "Gene descriptions (txt/csv)")
-        SCRIPT1_description_file=$(
-          whiptail --inputbox "Path to gene description file" 10 90 \
-            "$SCRIPT1_description_file" 3>&1 1>&2 2>&3
-        ) || SCRIPT1_description_file="$SCRIPT1_description_file"
+      "CX Chromosome Plot")
+        SCRIPT1_CX_ChrPlot=$(
+          whiptail --radiolist "Generate chromosome-wide CX plots?" 12 80 2 \
+            "TRUE" "Yes" $([ "$SCRIPT1_CX_ChrPlot" = "TRUE" ] && echo ON || echo OFF) \
+            "FALSE" "No"  $([ "$SCRIPT1_CX_ChrPlot" = "FALSE" ] && echo ON || echo OFF) \
+            3>&1 1>&2 2>&3
+        ) || SCRIPT1_CX_ChrPlot="$SCRIPT1_CX_ChrPlot"
         ;;
 
-      "TE annotation file (txt)")
-        SCRIPT1_TEs_file=$(
-          whiptail --inputbox "Path to TE annotation file" 10 90 \
-            "$SCRIPT1_TEs_file" 3>&1 1>&2 2>&3
-        ) || SCRIPT1_TEs_file="$SCRIPT1_TEs_file"
+      "TF motifs")
+        SCRIPT1_TF_motifs=$(
+          whiptail --radiolist "Analyze transcription factor motifs?" 12 80 2 \
+            "TRUE" "Yes" $([ "$SCRIPT1_TF_motifs" = "TRUE" ] && echo ON || echo OFF) \
+            "FALSE" "No"  $([ "$SCRIPT1_TF_motifs" = "FALSE" ] && echo ON || echo OFF) \
+            3>&1 1>&2 2>&3
+        ) || SCRIPT1_TF_motifs="$SCRIPT1_TF_motifs"
         ;;
 
       *)
@@ -378,6 +377,10 @@ if [[ " ${SELECTED_SCRIPTS[*]} " =~ "Methylome.At" ]]; then
     SCRIPT1_minReadsPerCytosine="$SCRIPT1_DEFAULT_minReadsPerCytosine"
     SCRIPT1_pValueThreshold="$SCRIPT1_DEFAULT_pValueThreshold"
     SCRIPT1_n_cores="$SCRIPT1_DEFAULT_n_cores"
+    SCRIPT1_pca="$SCRIPT1_DEFAULT_pca"
+    SCRIPT1_total_methylation="$SCRIPT1_DEFAULT_total_methylation"
+    SCRIPT1_CX_ChrPlot="$SCRIPT1_DEFAULT_CX_ChrPlot"
+    SCRIPT1_TF_motifs="$SCRIPT1_DEFAULT_TF_motifs"
     SCRIPT1_GO_analysis="$SCRIPT1_DEFAULT_GO_analysis"
     SCRIPT1_KEGG_pathways="$SCRIPT1_DEFAULT_KEGG_pathways"
     SCRIPT1_file_type="$SCRIPT1_DEFAULT_file_type"
@@ -396,26 +399,6 @@ if [[ " ${SELECTED_SCRIPTS[*]} " =~ "Methylome.At" ]]; then
     edit_script1_parameters || exit 1
 fi
 
-###################
-# Gather Methylome.At_metaPlots.sh
-###################
-if [[ " ${SELECTED_SCRIPTS[*]} " =~ "MetaPlots" ]]; then
-    # Initialize parameters with defaults
-    SCRIPT2_Genes_n_TEs="$SCRIPT2_DEFAULT_Genes_n_TEs"
-    SCRIPT2_Gene_features="$SCRIPT2_DEFAULT_Gene_features"
-    SCRIPT2_minReadsPerCytosine="$SCRIPT2_DEFAULT_minReadsPerCytosine"
-    SCRIPT2_metaPlot_random_genes="$SCRIPT2_DEFAULT_metaPlot_random_genes"
-    SCRIPT2_n_cores="$SCRIPT2_DEFAULT_n_cores"
-    SCRIPT2_bin_size_features="$SCRIPT2_DEFAULT_bin_size_features"
-    SCRIPT2_file_type="$SCRIPT2_DEFAULT_file_type"
-    SCRIPT2_img_type="$SCRIPT2_DEFAULT_img_type"
-    SCRIPT2_annotation_file="$SCRIPT2_DEFAULT_annotation_file"
-    SCRIPT2_TEs_file="$SCRIPT2_DEFAULT_TEs_file"
-    
-    # Directly go to the parameters selection menu
-    edit_script2_parameters || exit 1
-fi
-
 ###########
 # RUN SCRIPTS
 ###########
@@ -427,12 +410,6 @@ if [[ " ${SELECTED_SCRIPTS[*]} " =~ "Bismark" ]]; then
 fi
 if [[ " ${SELECTED_SCRIPTS[*]} " =~ "Methylome.At" ]]; then
     chosen_message+="'Methylome.At' "
-fi
-if [[ " ${SELECTED_SCRIPTS[*]} " =~ "MetaPlots" ]]; then
-    if [ -n "$chosen_message" ]; then
-        chosen_message+="and "
-    fi
-    chosen_message+="'MetaPlots' "
 fi
 
 # Trim trailing space
@@ -471,6 +448,10 @@ if (whiptail --title "All done!" --yesno "You have chosen to run: $chosen_messag
       --minReadsPerCytosine "$SCRIPT1_minReadsPerCytosine" \
       --pValueThreshold "$SCRIPT1_pValueThreshold" \
       --n_cores "$SCRIPT1_n_cores" \
+      --pca "$SCRIPT1_pca" \
+      --total_methylation "$SCRIPT1_total_methylation" \
+      --CX_ChrPlot "$SCRIPT1_CX_ChrPlot" \
+      --TF_motifs "$SCRIPT1_TF_motifs" \
       --GO_analysis "$SCRIPT1_GO_analysis" \
       --KEGG_pathways "$SCRIPT1_KEGG_pathways" \
       --file_type "$SCRIPT1_file_type" \
@@ -484,25 +465,6 @@ if (whiptail --title "All done!" --yesno "You have chosen to run: $chosen_messag
       --MP_features_bin_size "$SCRIPT1_bin_size_features" \
       --metaPlot_random "$SCRIPT1_metaPlot_random_genes" \
       --dH "$SCRIPT1_delta_H"
-  fi
-
-  cd "$Methylome_At_path"
-
-  # MetaPlots pipeline
-  if [[ " ${SELECTED_SCRIPTS[*]} " =~ "MetaPlots" ]]; then
-    echo "Running Methylome.At_metaPlots.sh..."
-    bash "$SCRIPT2_PATH" \
-      --samples_file "$SAMPLES_FILE_CX" \
-      --Genes_n_TEs "$SCRIPT2_Genes_n_TEs" \
-      --Gene_features "$SCRIPT2_Gene_features" \
-      --minReadsPerCytosine "$SCRIPT2_minReadsPerCytosine" \
-      --metaPlot_random_genes "$SCRIPT2_metaPlot_random_genes" \
-      --n_cores "$SCRIPT2_n_cores" \
-      --bin_size_features "$SCRIPT2_bin_size_features" \
-      --file_type "$SCRIPT2_file_type" \
-      --image_type "$SCRIPT2_img_type" \
-      --annotation_file "$SCRIPT2_annotation_file" \
-      --TEs_file "$SCRIPT2_TEs_file"
   fi
 else
 

@@ -14,20 +14,18 @@ Methylome.At_main <- function(var1, # control
                               methyl_files_type = "CX_report",
                               img_type = "pdf",
                               n.cores = 8,
-                              GO_analysis = FALSE,
-                              KEGG_pathways = FALSE,
+                              run_PCA_plot = TRUE,
+                              run_total_meth_plot = TRUE,
+                              run_CX_Chrplot = TRUE,
+                              run_TF_motifs = TRUE,
+                              run_GO_analysis = FALSE,
+                              run_KEGG_pathways = FALSE,
                               analyze_dH = FALSE,
-                              TE_metaPlots = FALSE,
-                              GeneBody_metaPlots = FALSE,
-                              GeneFeatures_metaPlots = FALSE,
+                              run_TE_metaPlots = FALSE,
+                              run_GeneBody_metaPlots = FALSE,
+                              run_GeneFeatures_metaPlots = FALSE,
                               gene_features_binSize = 10,
                               metaPlot.random.genes = 10000) {
-  ###########################################################################
-
-  run_PCA_plot <- F
-  run_total_meth_plot <- F
-  run_CX_Chrplot <- F
-  run_TF_motifs <- F
 
   ###########################################################################
 
@@ -45,26 +43,10 @@ Methylome.At_main <- function(var1, # control
   script_files <- script_files[!grepl("mean_deltaH_CX\\.R", script_files)] # have match functions with 'ChrPlots' functions
   script_files <- script_files[!grepl("ChrPlots_", script_files)]
   if (!analyze_dH) {
-    script_files <- script_files[!grepl("delta_H_option\\.r$", script_files)]
+    script_files <- script_files[!grepl("delta_H_option\\.R$", script_files)]
   }
 
   invisible(lapply(script_files, source))
-  ###########################################################################
-
-  # image device function
-  img_device <<- function(filename, w, h) {
-    dev_call <- ifelse(img_type == "pdf", "cairo_pdf", img_type)
-    img_env <- get(dev_call, envir = asNamespace("grDevices"))
-    full_file_name <- paste0(filename, ".", img_type)
-
-    if (img_type == "svg" | img_type == "pdf") {
-      img_env(full_file_name, width = w, height = h, family = "serif")
-    } else if (img_type == "tiff") {
-      img_env(full_file_name, width = w, height = h, units = "in", res = 900, family = "serif", compression = "lzw")
-    } else {
-      img_env(full_file_name, width = w, height = h, units = "in", res = 900, family = "serif")
-    }
-  }
 
   ###########################################################################
 
@@ -368,7 +350,7 @@ Methylome.At_main <- function(var1, # control
 
         # quatiles cutoff for dH analysis
         if (analyze_dH) {
-          DMRs_call <- proportions_cutoff(DMRs_call, meth_var1_replicates, q = 0.99)
+          DMRs_call <- proportions_cutoff(DMRs_call, meth_var1_replicates, context, q = 0.99)
         }
 
         cat(paste0(time_msg(" "), "statistically significant DMRs (", context, "): ", length(DMRs_call), "\n"))
@@ -674,7 +656,7 @@ Methylome.At_main <- function(var1, # control
 
 
   ##### GO analysis for annotated DMRs
-  if (GO_analysis) {
+  if (run_GO_analysis) {
     cat(sep_cat("GO analysis"))
     tryCatch(
       {
@@ -693,7 +675,7 @@ Methylome.At_main <- function(var1, # control
   }
 
   ##### KEGG pathways for annotated DMRs
-  if (KEGG_pathways) {
+  if (run_KEGG_pathways) {
     cat(sep_cat("KEGG pathways"))
     tryCatch(
       {
@@ -802,14 +784,14 @@ Methylome.At_main <- function(var1, # control
   ###########################################################################
 
   ##### run metPlot function for coding-Genes and TEs
-  if (TE_metaPlots | GeneBody_metaPlots | GeneFeatures_metaPlots) {
+  if (run_TE_metaPlots | run_GeneBody_metaPlots | run_GeneFeatures_metaPlots) {
     message(sep_cat("MetaPlots"))
     cat(sep_cat("MetaPlots"))
     # cat(sep_cat, "\nmetaPlots:\n----------")
     dir.create(metaPlot_path, showWarnings = F)
 
     # calculate metaPlot for genes bodies
-    if (TE_metaPlots) {
+    if (run_TE_metaPlots) {
       tryCatch(
         {
           message(paste("generate metaPlot to", metaPlot.random.genes, "protein-coding Genes..."))
@@ -826,7 +808,7 @@ Methylome.At_main <- function(var1, # control
     }
 
     # calculate metaPlot for TEs
-    if (GeneBody_metaPlots) {
+    if (run_GeneBody_metaPlots) {
       tryCatch(
         {
           message(paste("\ngenerate metaPlot to", metaPlot.random.genes, " Transposable Elements..."))
@@ -843,7 +825,7 @@ Methylome.At_main <- function(var1, # control
     }
 
     # calculate metaPlot for coding-Gene features (CDS, introns, etc.)
-    if (GeneFeatures_metaPlots) {
+    if (run_GeneFeatures_metaPlots) {
       tryCatch(
         {
           message(paste("\ngenerate metaPlot to", metaPlot.random.genes, "protein-coding Gene Features..."))

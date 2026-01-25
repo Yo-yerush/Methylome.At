@@ -1,3 +1,6 @@
+cat(paste0("\n** run delta-H analysis script\n\n"))
+message("**\trun delta-H analysis script\n")
+
 #################################################################
 
 # Shannon entropy
@@ -26,6 +29,9 @@ remove_r_col <- function(x, n_sample) {
 }
 
 proportions_cutoff <- function(gr, ctrl_gr_joined, cntx, q = 0.99) {
+    cat(paste0("[", cntx, "] calculate dH cutoff using <ctrl vs. ctrl> differential regions\n"))
+    message(time_msg(), "[", cntx, "] calculate dH cutoff using <ctrl vs. ctrl> differential regions\n")
+
     methData_split <- split(ctrl_gr_joined, seqnames(ctrl_gr_joined))
     methData_split <- methData_split[order(names(methData_split))]
     start_min <- min(start(methData_split))
@@ -35,8 +41,8 @@ proportions_cutoff <- function(gr, ctrl_gr_joined, cntx, q = 0.99) {
     x <- GRanges()
     for (i_chr in 1:length(chromosome_ranges)) {
         x_loop <- computeDMRs(
-            remove_r_col(gr_joined, 1),
-            remove_r_col(gr_joined, 2),
+            remove_r_col(ctrl_gr_joined, 1),
+            remove_r_col(ctrl_gr_joined, 2),
             regions = chromosome_ranges[i_chr],
             context = cntx,
             method = "bins",
@@ -55,6 +61,9 @@ proportions_cutoff <- function(gr, ctrl_gr_joined, cntx, q = 0.99) {
 
     x$diff_tmp <- abs(x$proportion1 - x$proportion2)
     q_diff <- as.numeric(quantile(x$diff_tmp, q, na.rm = TRUE))
+
+    cat(paste0("[", cntx, "] cutoff: ", q_diff, "\n"))
+    message(time_msg(), "[", cntx, "] cutoff: ", q_diff, "\n")
 
     # histogram
     img_device(paste0(cntx, "_min_proportion_cutoff"), w = 2, h = 2)
