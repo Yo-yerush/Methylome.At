@@ -74,7 +74,7 @@ TE_ann_plots <- function(context, TE.gr, sum_dH = F) {
     geom_col(color = "gray25") +
     scale_fill_manual(values = c("Genes" = "#80808020", "TE" = "#86671220")) +
     xlab("") +
-    ylab(paste(region_analysis, "count")) +
+    ylab(paste("# of", region_analysis)) +
     ggtitle(context) +
     theme_classic() +
     theme(axis.text.x = element_text(face = "bold", size = 11),

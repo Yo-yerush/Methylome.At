@@ -5,14 +5,14 @@ DMRs_ann_plots <- function(var1, var2, context, dH_analysis = F) {
 
   for (ann.loop in plot_levels_loop) {
     if (!dH_analysis) {
-      y_title <- "DMRs count"
+      y_title <- "# of DMRs"
       DMRsReplicates_loop_path <- paste0(context, "/DMRs_", ann.loop, "_", context, "_genom_annotations.csv")
       up_col <- "#d97777"
       down_col <- "#7676d6"
       # up_col_leg = "#d96868"
       # down_col_leg = "#6969db"
     } else {
-      y_title <- "SurpMRs count"
+      y_title <- "# of SurpMRs"
       DMRsReplicates_loop_path <- paste0(context, "/SurpMRs_", ann.loop, "_", context, "_genom_annotations.csv")
       up_col <- "#e2b25d"
       down_col <- "#47cf79"

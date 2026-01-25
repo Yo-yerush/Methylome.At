@@ -37,7 +37,10 @@ SCRIPT1_DEFAULT_n_cores="8"
 SCRIPT1_DEFAULT_pca="FALSE"
 SCRIPT1_DEFAULT_total_methylation="FALSE"
 SCRIPT1_DEFAULT_CX_ChrPlot="FALSE"
+SCRIPT1_DEFAULT_TEs_distance_n_size="FALSE"
+SCRIPT1_DEFAULT_total_meth_ann="FALSE"
 SCRIPT1_DEFAULT_TF_motifs="FALSE"
+SCRIPT1_DEFAULT_func_groups="FALSE"
 SCRIPT1_DEFAULT_GO_analysis="FALSE"
 SCRIPT1_DEFAULT_KEGG_pathways="FALSE"
 SCRIPT1_DEFAULT_file_type="CX_report"
@@ -147,7 +150,10 @@ edit_script1_parameters() {
             "PCA"                    "$(fmt "$SCRIPT1_pca" 'Perform PCA analysis')" \
             "Total methylation"      "$(fmt "$SCRIPT1_total_methylation" 'Calculate total methylation')" \
             "CX Chromosome Plot"     "$(fmt "$SCRIPT1_CX_ChrPlot" 'Generate chromosome-wide CX plots')" \
+            "TEs distance and size"  "$(fmt "$SCRIPT1_TEs_distance_n_size" 'Analyze TEs total methylation by size and distance from centromere')" \
+            "Total methylation annotations" "$(fmt "$SCRIPT1_total_meth_ann" 'Total methylation per genic annotations')" \
             "TF motifs"              "$(fmt "$SCRIPT1_TF_motifs" 'Analyze transcription factor motifs')" \
+            "Functional groups"      "$(fmt "$SCRIPT1_func_groups" 'Functional groups genes overlap DMRs')" \
             "GO enrichment"           "$(fmt "$SCRIPT1_GO_analysis" 'GO enrichment on DMR-associated gene-bodies/promoters')" \
             "KEGG enrichment"         "$(fmt "$SCRIPT1_KEGG_pathways" 'KEGG pathway enrichment on DMR-associated gene-bodies/promoters')" \
             "TE meta-plots"           "$(fmt "$SCRIPT1_TEs_metaplots" 'Metaplots over transposable elements (TE bodies/flanks)')" \
@@ -336,6 +342,24 @@ edit_script1_parameters() {
         ) || SCRIPT1_CX_ChrPlot="$SCRIPT1_CX_ChrPlot"
         ;;
 
+      "TEs distance and size")
+        SCRIPT1_TEs_distance_n_size=$(
+          whiptail --radiolist "Analyze TEs total methylation by size and distance from centromere?" 12 80 2 \
+            "TRUE" "Yes" $([ "$SCRIPT1_TEs_distance_n_size" = "TRUE" ] && echo ON || echo OFF) \
+            "FALSE" "No"  $([ "$SCRIPT1_TEs_distance_n_size" = "FALSE" ] && echo ON || echo OFF) \
+            3>&1 1>&2 2>&3
+        ) || SCRIPT1_TEs_distance_n_size="$SCRIPT1_TEs_distance_n_size"
+        ;;
+
+      "Total methylation annotations")
+        SCRIPT1_total_meth_ann=$(
+          whiptail --radiolist "Analyze total methylation per genic annotations?" 12 80 2 \
+            "TRUE" "Yes" $([ "$SCRIPT1_total_meth_ann" = "TRUE" ] && echo ON || echo OFF) \
+            "FALSE" "No"  $([ "$SCRIPT1_total_meth_ann" = "FALSE" ] && echo ON || echo OFF) \
+            3>&1 1>&2 2>&3
+        ) || SCRIPT1_total_meth_ann="$SCRIPT1_total_meth_ann"
+        ;;
+
       "TF motifs")
         SCRIPT1_TF_motifs=$(
           whiptail --radiolist "Analyze transcription factor motifs?" 12 80 2 \
@@ -343,6 +367,15 @@ edit_script1_parameters() {
             "FALSE" "No"  $([ "$SCRIPT1_TF_motifs" = "FALSE" ] && echo ON || echo OFF) \
             3>&1 1>&2 2>&3
         ) || SCRIPT1_TF_motifs="$SCRIPT1_TF_motifs"
+        ;;
+
+      "Functional groups")
+        SCRIPT1_func_groups=$(
+          whiptail --radiolist "Analyze functional groups genes overlap DMRs?" 12 80 2 \
+            "TRUE" "Yes" $([ "$SCRIPT1_func_groups" = "TRUE" ] && echo ON || echo OFF) \
+            "FALSE" "No"  $([ "$SCRIPT1_func_groups" = "FALSE" ] && echo ON || echo OFF) \
+            3>&1 1>&2 2>&3
+        ) || SCRIPT1_func_groups="$SCRIPT1_func_groups"
         ;;
 
       *)
@@ -382,7 +415,10 @@ if [[ " ${SELECTED_SCRIPTS[*]} " =~ "Methylome.At" ]]; then
     SCRIPT1_pca="$SCRIPT1_DEFAULT_pca"
     SCRIPT1_total_methylation="$SCRIPT1_DEFAULT_total_methylation"
     SCRIPT1_CX_ChrPlot="$SCRIPT1_DEFAULT_CX_ChrPlot"
+    SCRIPT1_TEs_distance_n_size="$SCRIPT1_DEFAULT_TEs_distance_n_size"
+    SCRIPT1_total_meth_ann="$SCRIPT1_DEFAULT_total_meth_ann"
     SCRIPT1_TF_motifs="$SCRIPT1_DEFAULT_TF_motifs"
+    SCRIPT1_func_groups="$SCRIPT1_DEFAULT_func_groups"
     SCRIPT1_GO_analysis="$SCRIPT1_DEFAULT_GO_analysis"
     SCRIPT1_KEGG_pathways="$SCRIPT1_DEFAULT_KEGG_pathways"
     SCRIPT1_file_type="$SCRIPT1_DEFAULT_file_type"
@@ -454,7 +490,10 @@ if (whiptail --title "All done!" --yesno "You have chosen to run: $chosen_messag
       --pca "$SCRIPT1_pca" \
       --total_methylation "$SCRIPT1_total_methylation" \
       --CX_ChrPlot "$SCRIPT1_CX_ChrPlot" \
+      --TEs_distance_n_size "$SCRIPT1_TEs_distance_n_size" \
+      --total_meth_ann "$SCRIPT1_total_meth_ann" \
       --TF_motifs "$SCRIPT1_TF_motifs" \
+      --func_groups "$SCRIPT1_func_groups" \
       --GO_analysis "$SCRIPT1_GO_analysis" \
       --KEGG_pathways "$SCRIPT1_KEGG_pathways" \
       --file_type "$SCRIPT1_file_type" \

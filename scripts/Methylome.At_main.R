@@ -17,7 +17,10 @@ Methylome.At_main <- function(var1, # control
                               run_PCA_plot = TRUE,
                               run_total_meth_plot = TRUE,
                               run_CX_Chrplot = TRUE,
+                              run_TEs_distance_n_size = TRUE,
+                              total_meth_annotation = TRUE,
                               run_TF_motifs = TRUE,
+                              run_functional_groups = TRUE,
                               run_GO_analysis = FALSE,
                               run_KEGG_pathways = FALSE,
                               analyze_dH = FALSE,
@@ -172,11 +175,14 @@ Methylome.At_main <- function(var1, # control
   # new folders path names
   comparison_name <- paste0(var2, "_vs_", var1)
   exp_path <- paste0(Methylome.At_path, "/results/", comparison_name)
-  PCA_plots_path <- paste0(exp_path, "/PCA_plots")
-  meth_levels_path <- paste0(exp_path, "/methylation_levels")
-  ChrPlot_CX_path <- paste0(exp_path, "/ChrPlot_CX")
-  ChrPlot_subCX_path <- paste0(exp_path, "/ChrPlot_CX/subCX")
-  TF_motifs_path <- paste0(exp_path, "/TF_motifs")
+  total_meth_path <- paste0(exp_path, "/total_methylation")
+  PCA_plots_path <- paste0(total_meth_path, "/PCA_plots")
+  meth_levels_path <- paste0(total_meth_path, "/methylation_levels")
+  ChrPlot_CX_path <- paste0(total_meth_path, "/ChrPlot_CX")
+  ChrPlot_subCX_path <- paste0(total_meth_path, "/ChrPlot_CX/subCX")
+  TEs_distance_n_size_path <- paste0(total_meth_path, "/TE_size_n_distance")
+  total_meth_annotation_path <- paste0(total_meth_path, "/total_methylation_annotations")
+  TF_motifs_path <- paste0(total_meth_path, "/TF_motifs")
   gainORloss_path <- paste0(exp_path, "/gain_OR_loss")
   genome_ann_path <- paste0(exp_path, "/genome_annotation")
   DMRs_bigWig_path <- paste0(exp_path, "/DMRs_bigWig")
@@ -219,9 +225,10 @@ Methylome.At_main <- function(var1, # control
 
   ###########################################################################
 
-  if (run_PCA_plot | run_total_meth_plot | run_CX_Chrplot | run_TF_motifs) {
+  if (run_PCA_plot | run_total_meth_plot | run_CX_Chrplot | run_TEs_distance_n_size | total_meth_annotation | run_TF_motifs) {
     message(sep_cat("Total methylation"))
     cat(sep_cat("Total methylation"))
+    dir.create(total_meth_path, showWarnings = F)
   }
 
   ##### PCA plot to total methlyation in all contexts
@@ -301,6 +308,74 @@ Methylome.At_main <- function(var1, # control
 
   ###########################################################################
 
+  ##### TEs - size and distance plots
+  if (run_TEs_distance_n_size) {
+    tryCatch(
+      {
+        TE_context_list <- TE_delta_meth(list(meth_var1, meth_var2), TE_file)
+
+        dir.create(TEs_distance_n_size_path, showWarnings = FALSE)
+
+        ## TE methylation levels (delta) and size
+        cat("\nTE delta-methylation vs. TE-size\n")
+        for (te_sz_cntx in c("CG", "CHG", "CHH")) {
+          ggsave(
+            filename = paste0(TEs_distance_n_size_path, "/", te_sz_cntx, "_TE_size_delta_scatter.png"),
+            plot = te_size_plot(TE_context_list, te_sz_cntx),
+            width = 3750,
+            height = 2500,
+            units = "px",
+            dpi = 1200
+          )
+        }
+        message(time_msg(), "TE delta-methylation vs. TE-size: done")
+
+        ## TE methylation levels (delta) and distance from centromer
+        cat("TE delta-methylation vs. distance from centromere\n")
+        TE_distance <- distance_from_centromer(TE_context_list, TE_file, window_size = 1e6)
+
+        ggsave(
+          filename = paste0(TEs_distance_n_size_path, "/TE_centromere_distance_delta.png"),
+          plot = TE_distance$plot,
+          width = 3750,
+          height = 2500,
+          units = "px",
+          dpi = 1200
+        )
+        message(time_msg(), "TE delta-methylation vs. distance from centromer: done\n")
+      },
+      error = function(cond) {
+        cat("\n*\n TEs size and distance plots:\n", as.character(cond), "*\n")
+      }
+    )
+  }
+
+  ###########################################################################
+
+  ##### Annotations over total methylation levels #####
+  if (total_meth_annotation) {
+    dir.create(total_meth_annotation_path, showWarnings = F)
+    setwd(total_meth_annotation_path)
+
+    cat("\nAnnotations over total methylation levels:\n")
+    message(time_msg(), "annotations over total methylation levels")
+    tryCatch(
+      {
+        ann_list <- genome_ann(annotation.gr, TE_file)
+        total_methylation_ann(ann_list, var1, var2, meth_var1, meth_var2, context) # save tables of annotate CX
+        # message("done")
+      },
+      error = function(cond) {
+        cat("\n*\n Annotations over total methylation levels:\n", as.character(cond), "*\n")
+        message("fail")
+      }
+    )
+  }
+
+  setwd(exp_path)
+
+  ###########################################################################
+
   ##### Transcription facrots motif analysis (UniBind - TFBS) #####
   if (run_TF_motifs) {
     dir.create(TF_motifs_path, showWarnings = F)
@@ -314,7 +389,7 @@ Methylome.At_main <- function(var1, # control
         # message("done")
       },
       error = function(cond) {
-        cat("\n*\n nTranscription factors motifs plot:\n", as.character(cond), "*\n")
+        cat("\n*\n Transcription factors motifs plot:\n", as.character(cond), "*\n")
         message("fail")
       }
     )
@@ -454,7 +529,6 @@ Methylome.At_main <- function(var1, # control
       {
         ann_list <- genome_ann(annotation.gr, TE_file) # create annotations from annotation file as a list
         DMRs_ann(ann_list, DMRs_bins, context, description_df) # save tables of annotate DMRs. have to run after 'genome_ann'
-        CX_ann(ann_list, var1, var2, meth_var1, meth_var2, context) # save tables of annotate CX
         DMRs_ann_plots_list[[context]] <- DMRs_ann_plots(var1, var2, context)
         message(time_msg(paste0("\t", context, ":")), "\tgenome annotations for DMRs: done")
       },
@@ -585,81 +659,41 @@ Methylome.At_main <- function(var1, # control
   ###########################################################################
 
   ##### DMRs within Genes-groups #####
-  func_groups_path <- paste0(genome_ann_path, "/functional_groups")
-  setwd(exp_path)
-  dir.create(func_groups_path, showWarnings = FALSE)
-  cat("Annotate DMRs into functional groups: ")
-  for (ann.l in c("Genes", "Promoters")) {
-    groups_results <- mclapply(c("CG", "CHG", "CHH", "all"), function(cntx.l) {
+  if (run_functional_groups) {
+    func_groups_path <- paste0(genome_ann_path, "/functional_groups")
+    setwd(exp_path)
+    dir.create(func_groups_path, showWarnings = FALSE)
+    cat("Annotate DMRs into functional groups: ")
+    for (ann.l in c("Genes", "Promoters")) {
+      groups_results <- mclapply(c("CG", "CHG", "CHH", "all"), function(cntx.l) {
+        tryCatch(
+          {
+            DMRs_into_groups(treatment = comparison_name, ann = ann.l, context = cntx.l)
+          },
+          error = function(cond) {
+            cat("\n*\n Annotate *", cntx.l, "* - *", ann.l, "* DMRs into functional groups:\n", as.character(cond), "*\n")
+            message(paste("Annotate", cntx.l, "-", ann.l, "DMRs into functional groups: fail\n"))
+            return(NULL)
+          }
+        )
+      }, mc.cores = ifelse(n.cores >= 4, 4, n.cores)) %>%
+        do.call(rbind, .) %>%
+        arrange(context)
+
       tryCatch(
         {
-          DMRs_into_groups(treatment = comparison_name, ann = ann.l, context = cntx.l)
+          img_device(paste0(func_groups_path, "/", ann.l, "_groups_barPlots_", comparison_name), w = 14, h = 4.5)
+          print(groups_barPlots(groups_results))
+          dev.off()
         },
         error = function(cond) {
-          cat("\n*\n Annotate *", cntx.l, "* - *", ann.l, "* DMRs into functional groups:\n", as.character(cond), "*\n")
-          message(paste("Annotate", cntx.l, "-", ann.l, "DMRs into functional groups: fail\n"))
-          return(NULL)
+          cat("\n*\n Bar-plot of *", cntx.l, "* - *", ann.l, "* annotated DMRs into functional groups:\n", as.character(cond), "*\n")
         }
       )
-    }, mc.cores = ifelse(n.cores >= 4, 4, n.cores)) %>%
-      do.call(rbind, .) %>%
-      arrange(context)
-
-    tryCatch(
-      {
-        img_device(paste0(func_groups_path, "/", ann.l, "_groups_barPlots_", comparison_name), w = 14, h = 4.5)
-        print(groups_barPlots(groups_results))
-        dev.off()
-      },
-      error = function(cond) {
-        cat("\n*\n Bar-plot of *", cntx.l, "* - *", ann.l, "* annotated DMRs into functional groups:\n", as.character(cond), "*\n")
-      }
-    )
-  }
-  cat("done\n")
-  message(time_msg(), "Annotate DMRs into functional groups: done")
-
-  ###########################################################################
-
-  ##### TEs - size and distance plots
-  tryCatch(
-    {
-      TE_context_list <- TE_delta_meth(list(meth_var1, meth_var2), TE_file)
-
-      dir.create(paste0(genome_ann_path, "/TEs_addiotionnal_results/TE_size_n_distance/"), showWarnings = FALSE)
-
-      ## TE methylation levels (delta) and size
-      cat("\nTE delta-methylation vs. TE-size\n")
-      for (te_sz_cntx in c("CG", "CHG", "CHH")) {
-        ggsave(
-          filename = paste0(genome_ann_path, "/TEs_addiotionnal_results/TE_size_n_distance/", te_sz_cntx, "_TE_size_delta_scatter.png"),
-          plot = te_size_plot(TE_context_list, te_sz_cntx),
-          width = 3750,
-          height = 2500,
-          units = "px",
-          dpi = 1200
-        )
-      }
-      message(time_msg(), "TE delta-methylation vs. TE-size: done")
-
-      ## TE methylation levels (delta) and distance from centromer
-      cat("TE delta-methylation vs. distance from centromere\n")
-      TE_distance <- distance_from_centromer(TE_context_list, TE_file, window_size = 1e6)
-
-      ggsave(
-        filename = paste0(genome_ann_path, "/TEs_addiotionnal_results/TE_size_n_distance/TE_centromere_distance_delta.png"),
-        plot = TE_distance$plot,
-        width = 3750,
-        height = 2500,
-        units = "px",
-        dpi = 1200
-      )
-      message(time_msg(), "TE delta-methylation vs. distance from centromer: done\n")
-    },
-    error = function(cond) {
-      cat("\n*\n TEs size and distance plots:\n", as.character(cond), "*\n")
     }
-  )
+    cat("done\n")
+    message(time_msg(), "Annotate DMRs into functional groups: done")
+  }
 
   ###########################################################################
 
@@ -857,7 +891,7 @@ Methylome.At_main <- function(var1, # control
 
   setwd(Methylome.At_path)
   message(paste0("**\t", var2, " vs ", var1, ": done\n"))
-  cat("\n", rep("-", 56))
+  cat("\n", rep("-", 56), sep = "")
 
   ###########################################################################
 
