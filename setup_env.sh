@@ -12,7 +12,7 @@ PERMISSION=false
 # Function to display help text
 usage() {
     echo ""
-    echo "Usage: $0 [check] [permission]"
+    echo "Usage: $0 [options]"
     echo ""
     echo "Optional arguments:"
     echo "  --check         Check which R and Anaconda packages are installed"

@@ -247,6 +247,10 @@ Rscript ./scripts/Methylome.At_run.R \
 "$methyl_files_type" \
 "$img_type" \
 "$n_cores" \
+"$pca" \
+"$total_methylation" \
+"$CX_ChrPlot" \
+"$TF_motifs" \
 "$GO_analysis" \
 "$KEGG_pathways" \
 "$dH_scripts" \
@@ -255,10 +259,6 @@ Rscript ./scripts/Methylome.At_run.R \
 "$Gene_features_mp" \
 "$bin_size_features" \
 "$metaPlot_random_genes" \
-"$pca" \
-"$total_methylation" \
-"$CX_ChrPlot" \
-"$TF_motifs" \
     2>> "$log_file"
 
 # Output a markdown report as '.html' file
