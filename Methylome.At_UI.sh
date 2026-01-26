@@ -31,28 +31,28 @@ SCRIPT1_DEFAULT_minProportionDiff_CHG="0.2"
 SCRIPT1_DEFAULT_minProportionDiff_CHH="0.1"
 SCRIPT1_DEFAULT_binSize="100"
 SCRIPT1_DEFAULT_minCytosinesCount="4"
-SCRIPT1_DEFAULT_minReadsPerCytosine="4"
+SCRIPT1_DEFAULT_minReadsPerCytosine="6"
 SCRIPT1_DEFAULT_pValueThreshold="0.05"
 SCRIPT1_DEFAULT_n_cores="8"
-SCRIPT1_DEFAULT_pca="FALSE"
-SCRIPT1_DEFAULT_total_methylation="FALSE"
-SCRIPT1_DEFAULT_CX_ChrPlot="FALSE"
-SCRIPT1_DEFAULT_TEs_distance_n_size="FALSE"
-SCRIPT1_DEFAULT_total_meth_ann="FALSE"
-SCRIPT1_DEFAULT_TF_motifs="FALSE"
-SCRIPT1_DEFAULT_func_groups="FALSE"
-SCRIPT1_DEFAULT_GO_analysis="FALSE"
-SCRIPT1_DEFAULT_KEGG_pathways="FALSE"
+SCRIPT1_DEFAULT_pca="no"
+SCRIPT1_DEFAULT_total_methylation="no"
+SCRIPT1_DEFAULT_CX_ChrPlot="no"
+SCRIPT1_DEFAULT_TEs_distance_n_size="no"
+SCRIPT1_DEFAULT_total_meth_ann="no"
+SCRIPT1_DEFAULT_TF_motifs="no"
+SCRIPT1_DEFAULT_func_groups="no"
+SCRIPT1_DEFAULT_GO_analysis="no"
+SCRIPT1_DEFAULT_KEGG_pathways="no"
 SCRIPT1_DEFAULT_file_type="CX_report"
 SCRIPT1_DEFAULT_img_type="pdf"
 SCRIPT1_DEFAULT_annotation_file="annotation_files/Methylome.At_annotations.csv.gz"
 SCRIPT1_DEFAULT_description_file="annotation_files/Methylome.At_description_file.csv.gz"
 SCRIPT1_DEFAULT_TEs_file="annotation_files/TAIR10_Transposable_Elements.txt"
-SCRIPT1_DEFAULT_DMVs="FALSE"
-SCRIPT1_DEFAULT_delta_H="FALSE"
-SCRIPT1_DEFAULT_TEs_metaplots="FALSE"
-SCRIPT1_DEFAULT_Genes_metaplots="FALSE"
-SCRIPT1_DEFAULT_Gene_features_metaplots="FALSE"
+SCRIPT1_DEFAULT_DMVs="no"
+SCRIPT1_DEFAULT_delta_H="no"
+SCRIPT1_DEFAULT_TEs_metaplots="no"
+SCRIPT1_DEFAULT_Genes_metaplots="no"
+SCRIPT1_DEFAULT_Gene_features_metaplots="no"
 SCRIPT1_DEFAULT_bin_size_features="10"
 SCRIPT1_DEFAULT_metaPlot_random_genes="10000"
 
@@ -148,7 +148,7 @@ edit_script1_parameters() {
             "Input file format"       "$(fmt "$SCRIPT1_file_type" 'Methylation input format (CX_report/bedMethyl/CGmap)')" \
             "Figure format"           "$(fmt "$SCRIPT1_img_type" 'Output image format for plots (pdf/svg/png/tiff/...)')" \
             "PCA"                    "$(fmt "$SCRIPT1_pca" 'Perform PCA analysis')" \
-            "Total methylation"      "$(fmt "$SCRIPT1_total_methylation" 'Calculate total methylation')" \
+            "Total methylation bar-plots"  "$(fmt "$SCRIPT1_total_methylation" 'Produce total methylation bar-plots')" \
             "CX Chromosome Plot"     "$(fmt "$SCRIPT1_CX_ChrPlot" 'Generate chromosome-wide CX plots')" \
             "TEs distance and size"  "$(fmt "$SCRIPT1_TEs_distance_n_size" 'Analyze TEs total methylation by size and distance from centromere')" \
             "Total methylation annotations" "$(fmt "$SCRIPT1_total_meth_ann" 'Total methylation per genic annotations')" \
@@ -257,48 +257,43 @@ edit_script1_parameters() {
         ;;
 
       "GO enrichment")
-        SCRIPT1_GO_analysis=$(
-          whiptail --radiolist "Perform GO enrichment analysis?" 12 80 2 \
-            "TRUE"  "Yes"  $([ "$SCRIPT1_GO_analysis" = "TRUE"  ] && echo ON || echo OFF) \
-            "FALSE" "No"   $([ "$SCRIPT1_GO_analysis" = "FALSE" ] && echo ON || echo OFF) \
-            3>&1 1>&2 2>&3
-        ) || SCRIPT1_GO_analysis="$SCRIPT1_GO_analysis"
+        if whiptail --yesno "Perform GO enrichment analysis?" 10 60; then
+          SCRIPT1_GO_analysis="yes"
+        else
+          SCRIPT1_GO_analysis="no"
+        fi
         ;;
 
       "KEGG enrichment")
-        SCRIPT1_KEGG_pathways=$(
-          whiptail --radiolist "Perform KEGG pathway enrichment analysis?" 12 80 2 \
-            "TRUE"  "Yes"  $([ "$SCRIPT1_KEGG_pathways" = "TRUE"  ] && echo ON || echo OFF) \
-            "FALSE" "No"   $([ "$SCRIPT1_KEGG_pathways" = "FALSE" ] && echo ON || echo OFF) \
-            3>&1 1>&2 2>&3
-        ) || SCRIPT1_KEGG_pathways="$SCRIPT1_KEGG_pathways"
+        if whiptail --yesno "Perform KEGG pathway enrichment analysis?" 10 60; then
+          SCRIPT1_KEGG_pathways="yes"
+        else
+          SCRIPT1_KEGG_pathways="no"
+        fi
         ;;
 
       "TE meta-plots")
-        SCRIPT1_TEs_metaplots=$(
-          whiptail --radiolist "Generate metaplots for Transposable Elements (TEs)?" 12 80 2 \
-            "TRUE"  "Yes"  $([ "$SCRIPT1_TEs_metaplots" = "TRUE"  ] && echo ON || echo OFF) \
-            "FALSE" "No"   $([ "$SCRIPT1_TEs_metaplots" = "FALSE" ] && echo ON || echo OFF) \
-            3>&1 1>&2 2>&3
-        ) || SCRIPT1_TEs_metaplots="$SCRIPT1_TEs_metaplots"
+        if whiptail --yesno "Generate metaplots for Transposable Elements (TEs)?" 10 60; then
+          SCRIPT1_TEs_metaplots="yes"
+        else
+          SCRIPT1_TEs_metaplots="no"
+        fi
         ;;
 
       "Gene-body meta-plots")
-        SCRIPT1_Genes_metaplots=$(
-          whiptail --radiolist "Generate metaplots across gene bodies?" 12 80 2 \
-            "TRUE"  "Yes"  $([ "$SCRIPT1_Genes_metaplots" = "TRUE"  ] && echo ON || echo OFF) \
-            "FALSE" "No"   $([ "$SCRIPT1_Genes_metaplots" = "FALSE" ] && echo ON || echo OFF) \
-            3>&1 1>&2 2>&3
-        ) || SCRIPT1_Genes_metaplots="$SCRIPT1_Genes_metaplots"
+        if whiptail --yesno "Generate metaplots across gene bodies?" 10 60; then
+          SCRIPT1_Genes_metaplots="yes"
+        else
+          SCRIPT1_Genes_metaplots="no"
+        fi
         ;;
 
       "Gene-feature meta-plots")
-        SCRIPT1_Gene_features_metaplots=$(
-          whiptail --radiolist "Generate metaplots over gene features (promoter/CDS/UTRs/introns)?" 12 90 2 \
-            "TRUE"  "Yes"  $([ "$SCRIPT1_Gene_features_metaplots" = "TRUE"  ] && echo ON || echo OFF) \
-            "FALSE" "No"   $([ "$SCRIPT1_Gene_features_metaplots" = "FALSE" ] && echo ON || echo OFF) \
-            3>&1 1>&2 2>&3
-        ) || SCRIPT1_Gene_features_metaplots="$SCRIPT1_Gene_features_metaplots"
+        if whiptail --yesno "Generate metaplots over gene features (promoter/CDS/UTRs/introns)?" 10 60; then
+          SCRIPT1_Gene_features_metaplots="yes"
+        else
+          SCRIPT1_Gene_features_metaplots="no"
+        fi
         ;;
 
       "Feature bin size")
@@ -316,66 +311,59 @@ edit_script1_parameters() {
         ;;
 
       "PCA")
-        SCRIPT1_pca=$(
-          whiptail --radiolist "Perform PCA analysis?" 12 80 2 \
-            "TRUE" "Yes" $([ "$SCRIPT1_pca" = "TRUE" ] && echo ON || echo OFF) \
-            "FALSE" "No"  $([ "$SCRIPT1_pca" = "FALSE" ] && echo ON || echo OFF) \
-            3>&1 1>&2 2>&3
-        ) || SCRIPT1_pca="$SCRIPT1_pca"
+        if whiptail --yesno "Perform PCA analysis?" 10 60; then
+          SCRIPT1_pca="yes"
+        else
+          SCRIPT1_pca="no"
+        fi
         ;;
 
-      "Total methylation")
-        SCRIPT1_total_methylation=$(
-          whiptail --radiolist "Calculate total methylation?" 12 80 2 \
-            "TRUE" "Yes" $([ "$SCRIPT1_total_methylation" = "TRUE" ] && echo ON || echo OFF) \
-            "FALSE" "No"  $([ "$SCRIPT1_total_methylation" = "FALSE" ] && echo ON || echo OFF) \
-            3>&1 1>&2 2>&3
-        ) || SCRIPT1_total_methylation="$SCRIPT1_total_methylation"
+      "Total methylation bar-plots")
+        if whiptail --yesno "Produce total methylation bar-plots?" 10 60; then
+          SCRIPT1_total_methylation="yes"
+        else
+          SCRIPT1_total_methylation="no"
+        fi
         ;;
 
       "CX Chromosome Plot")
-        SCRIPT1_CX_ChrPlot=$(
-          whiptail --radiolist "Generate chromosome-wide CX plots?" 12 80 2 \
-            "TRUE" "Yes" $([ "$SCRIPT1_CX_ChrPlot" = "TRUE" ] && echo ON || echo OFF) \
-            "FALSE" "No"  $([ "$SCRIPT1_CX_ChrPlot" = "FALSE" ] && echo ON || echo OFF) \
-            3>&1 1>&2 2>&3
-        ) || SCRIPT1_CX_ChrPlot="$SCRIPT1_CX_ChrPlot"
+        if whiptail --yesno "Generate chromosome-wide CX plots?" 10 60; then
+          SCRIPT1_CX_ChrPlot="yes"
+        else
+          SCRIPT1_CX_ChrPlot="no"
+        fi
         ;;
 
       "TEs distance and size")
-        SCRIPT1_TEs_distance_n_size=$(
-          whiptail --radiolist "Analyze TEs total methylation by size and distance from centromere?" 12 80 2 \
-            "TRUE" "Yes" $([ "$SCRIPT1_TEs_distance_n_size" = "TRUE" ] && echo ON || echo OFF) \
-            "FALSE" "No"  $([ "$SCRIPT1_TEs_distance_n_size" = "FALSE" ] && echo ON || echo OFF) \
-            3>&1 1>&2 2>&3
-        ) || SCRIPT1_TEs_distance_n_size="$SCRIPT1_TEs_distance_n_size"
+        if whiptail --yesno "Analyze TEs total methylation by size and distance from centromere?" 10 60; then
+          SCRIPT1_TEs_distance_n_size="yes"
+        else
+          SCRIPT1_TEs_distance_n_size="no"
+        fi
         ;;
 
       "Total methylation annotations")
-        SCRIPT1_total_meth_ann=$(
-          whiptail --radiolist "Analyze total methylation per genic annotations?" 12 80 2 \
-            "TRUE" "Yes" $([ "$SCRIPT1_total_meth_ann" = "TRUE" ] && echo ON || echo OFF) \
-            "FALSE" "No"  $([ "$SCRIPT1_total_meth_ann" = "FALSE" ] && echo ON || echo OFF) \
-            3>&1 1>&2 2>&3
-        ) || SCRIPT1_total_meth_ann="$SCRIPT1_total_meth_ann"
+        if whiptail --yesno "Analyze total methylation per genic annotations?" 10 60; then
+          SCRIPT1_total_meth_ann="yes"
+        else
+          SCRIPT1_total_meth_ann="no"
+        fi
         ;;
 
       "TF motifs")
-        SCRIPT1_TF_motifs=$(
-          whiptail --radiolist "Analyze transcription factor motifs?" 12 80 2 \
-            "TRUE" "Yes" $([ "$SCRIPT1_TF_motifs" = "TRUE" ] && echo ON || echo OFF) \
-            "FALSE" "No"  $([ "$SCRIPT1_TF_motifs" = "FALSE" ] && echo ON || echo OFF) \
-            3>&1 1>&2 2>&3
-        ) || SCRIPT1_TF_motifs="$SCRIPT1_TF_motifs"
+        if whiptail --yesno "Analyze transcription factor motifs?" 10 60; then
+          SCRIPT1_TF_motifs="yes"
+        else
+          SCRIPT1_TF_motifs="no"
+        fi
         ;;
 
       "Functional groups")
-        SCRIPT1_func_groups=$(
-          whiptail --radiolist "Analyze functional groups genes overlap DMRs?" 12 80 2 \
-            "TRUE" "Yes" $([ "$SCRIPT1_func_groups" = "TRUE" ] && echo ON || echo OFF) \
-            "FALSE" "No"  $([ "$SCRIPT1_func_groups" = "FALSE" ] && echo ON || echo OFF) \
-            3>&1 1>&2 2>&3
-        ) || SCRIPT1_func_groups="$SCRIPT1_func_groups"
+        if whiptail --yesno "Analyze functional groups genes overlap DMRs?" 10 60; then
+          SCRIPT1_func_groups="yes"
+        else
+          SCRIPT1_func_groups="no"
+        fi
         ;;
 
       *)
@@ -487,27 +475,27 @@ if (whiptail --title "All done!" --yesno "You have chosen to run: $chosen_messag
       --minReadsPerCytosine "$SCRIPT1_minReadsPerCytosine" \
       --pValueThreshold "$SCRIPT1_pValueThreshold" \
       --n_cores "$SCRIPT1_n_cores" \
-      --pca "$SCRIPT1_pca" \
-      --total_methylation "$SCRIPT1_total_methylation" \
-      --CX_ChrPlot "$SCRIPT1_CX_ChrPlot" \
-      --TEs_distance_n_size "$SCRIPT1_TEs_distance_n_size" \
-      --total_meth_ann "$SCRIPT1_total_meth_ann" \
-      --TF_motifs "$SCRIPT1_TF_motifs" \
-      --func_groups "$SCRIPT1_func_groups" \
-      --GO_analysis "$SCRIPT1_GO_analysis" \
-      --KEGG_pathways "$SCRIPT1_KEGG_pathways" \
+      $( [ "$SCRIPT1_pca" = "yes" ] && echo "--pca" ) \
+      $( [ "$SCRIPT1_total_methylation" = "yes" ] && echo "--total_methylation" ) \
+      $( [ "$SCRIPT1_CX_ChrPlot" = "yes" ] && echo "--CX_ChrPlot" ) \
+      $( [ "$SCRIPT1_TEs_distance_n_size" = "yes" ] && echo "--TEs_distance_n_size" ) \
+      $( [ "$SCRIPT1_total_meth_ann" = "yes" ] && echo "--total_meth_ann" ) \
+      $( [ "$SCRIPT1_TF_motifs" = "yes" ] && echo "--TF_motifs" ) \
+      $( [ "$SCRIPT1_func_groups" = "yes" ] && echo "--func_groups" ) \
+      $( [ "$SCRIPT1_GO_analysis" = "yes" ] && echo "--GO_analysis" ) \
+      $( [ "$SCRIPT1_KEGG_pathways" = "yes" ] && echo "--KEGG_pathways" ) \
       --file_type "$SCRIPT1_file_type" \
       --image_type "$SCRIPT1_img_type" \
       --annotation_file "$SCRIPT1_annotation_file" \
       --description_file "$SCRIPT1_description_file" \
       --TEs_file "$SCRIPT1_TEs_file" \
-      --MP_TEs "$SCRIPT1_TEs_metaplots" \
-      --MP_Genes "$SCRIPT1_Genes_metaplots" \
-      --MP_Gene_features "$SCRIPT1_Gene_features_metaplots" \
+      $( [ "$SCRIPT1_TEs_metaplots" = "yes" ] && echo "--MP_TEs" ) \
+      $( [ "$SCRIPT1_Genes_metaplots" = "yes" ] && echo "--MP_Genes" ) \
+      $( [ "$SCRIPT1_Gene_features_metaplots" = "yes" ] && echo "--MP_Gene_features" ) \
       --MP_features_bin_size "$SCRIPT1_bin_size_features" \
       --metaPlot_random "$SCRIPT1_metaPlot_random_genes" \
-      --DMVs "$SCRIPT1_DMVs" \
-      --dH "$SCRIPT1_delta_H"
+      $( [ "$SCRIPT1_DMVs" = "yes" ] && echo "--DMVs" ) \
+      $( [ "$SCRIPT1_delta_H" = "yes" ] && echo "--dH" )
   fi
 else
 

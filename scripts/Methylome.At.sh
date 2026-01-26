@@ -18,19 +18,19 @@ minProportionDiff_CHG=0.2
 minProportionDiff_CHH=0.1
 binSize=100
 minCytosinesCount=4
-minReadsPerCytosine=4
+minReadsPerCytosine=6
 pValueThreshold=0.05
 methyl_files_type=CX_report
 img_type=pdf
 n_cores=8
 
-pca=TRUE
-total_methylation=TRUE
-CX_ChrPlot=TRUE
-TEs_dis_n_size=TRUE
-total_meth_ann=TRUE
-TF_motifs=TRUE
-func_groups=TRUE
+pca=FALSE
+total_methylation=FALSE
+CX_ChrPlot=FALSE
+TEs_dis_n_size=FALSE
+total_meth_ann=FALSE
+TF_motifs=FALSE
+func_groups=FALSE
 GO_analysis=FALSE
 KEGG_pathways=FALSE
 DMV_analysis=FALSE
@@ -67,23 +67,23 @@ usage() {
   echo "  --minCytosinesCount           Minimum cytosines count [default: $minCytosinesCount]"
   echo "  --pValueThreshold             P-value (padj) threshold [default: $pValueThreshold]"
   echo ""
-  echo "  --pca                         Perform PCA for total methylation levels [default: $pca]"
-  echo "  --total_methylation           Total methylation bar-plot [default: $total_methylation]"
-  echo "  --CX_ChrPlot                  total methylation chromosome plot [default: $CX_ChrPlot]"
-  echo "  --TEs_distance_n_size         Analyze TEs total methylation by size and distance from centromere [default: $TEs_dis_n_size]"
-  echo "  --total_meth_ann              Total methylation per genic annotations [default: $total_meth_ann]"
-  echo "  --TF_motifs                   Transcription factors motif analysis [default: $TF_motifs]"
-  echo "  --func_groups                 Functional groups genes overlap DMRs [default: $func_groups]"
-  echo "  --GO_analysis                 Perform GO analysis over DMRs [default: $GO_analysis]"
-  echo "  --KEGG_pathways               Perform KEGG pathways analysis over DMRs [default: $KEGG_pathways]"
+  echo "  --pca                         Perform PCA for total methylation levels"
+  echo "  --total_methylation           Total methylation bar-plot"
+  echo "  --CX_ChrPlot                  total methylation chromosome plot"
+  echo "  --TEs_distance_n_size         Analyze TEs total methylation by size and distance from centromere"
+  echo "  --total_meth_ann              Total methylation per genic annotations"
+  echo "  --TF_motifs                   Transcription factors motif analysis"
+  echo "  --func_groups                 Functional groups genes overlap DMRs"
+  echo "  --GO_analysis                 Perform GO analysis over DMRs"
+  echo "  --KEGG_pathways               Perform KEGG pathways analysis over DMRs"
   echo ""
-  echo "  --DMVs                        Analyze differentially methylated vallies (1kbp) [default: $DMV_analysis]"
-  echo "  --dH                          instead of DMRs, analyze delta-H = -(p * log2(p) + (1 - p) * log2(1 - p)) [default: $dH_scripts]"
+  echo "  --DMVs                        Analyze differentially methylated vallies (1kbp)"
+  echo "  --dH                          instead of DMRs, analyze delta-H = -(p * log2(p) + (1 - p) * log2(1 - p))"
   echo ""
   echo "MetaPlots analysis arguments:"
-  echo "  --MP_TEs                      Analyze of TEs metaPlots [logical. default: $TEs_mp]"
-  echo "  --MP_Genes                    Analyze of Genes-body metaPlots [logical. default: $Genes_mp]"
-  echo "  --MP_Gene_features            Analyze Gene Features metaPlots [logical. default: $Gene_features_mp]"
+  echo "  --MP_TEs                      Analyze of TEs metaPlots"
+  echo "  --MP_Genes                    Analyze of Genes-body metaPlots"
+  echo "  --MP_Gene_features            Analyze Gene Features metaPlots"
   echo "  --MP_features_bin_size        Bin-size (set only for 'Gene_features' analysis!) [default: $bin_size_features]"
   echo "  --metaPlot_random             Number of random genes/TEs for metaPlots. 'all' for all the coding-genes and TEs [default: $metaPlot_random_genes]"
   echo ""
@@ -116,24 +116,24 @@ while [[ "$#" -gt 0 ]]; do
     --file_type) methyl_files_type="$2"; shift ;;
     --image_type) img_type="$2"; shift ;;
     --n_cores) n_cores="$2"; shift ;;
-    --GO_analysis) GO_analysis="$2"; shift ;;
-    --KEGG_pathways) KEGG_pathways="$2"; shift ;;
+    --GO_analysis) GO_analysis=TRUE; shift ;;
+    --KEGG_pathways) KEGG_pathways=TRUE; shift ;;
     --annotation_file) annotation_file="$2"; shift ;;
     --description_file) description_file="$2"; shift ;;
     --TEs_file) TEs_file="$2"; shift ;;
     --Methylome_At_path) Methylome_At_path="$2"; shift ;;
-    --DMVs) DMV_analysis="$2"; shift ;;
-    --dH) dH_scripts="$2"; shift ;;
-    --pca) pca="$2"; shift ;;
-    --total_methylation) total_methylation="$2"; shift ;;
-    --CX_ChrPlot) CX_ChrPlot="$2"; shift ;;
-    --TEs_distance_n_size) TEs_dis_n_size="$2"; shift ;;
-    --total_meth_ann) total_meth_ann="$2"; shift ;;
-    --TF_motifs) TF_motifs="$2"; shift ;;
-    --func_groups) func_groups="$2"; shift ;;
-    --MP_TEs) TEs_mp="$2"; shift ;;
-    --MP_Genes) Genes_mp="$2"; shift ;;
-    --MP_Gene_features) Gene_features_mp="$2"; shift ;;
+    --DMVs) DMV_analysis=TRUE; shift ;;
+    --dH) dH_scripts=TRUE; shift ;;
+    --pca) pca=TRUE ;;
+    --total_methylation) total_methylation=TRUE ;;
+    --CX_ChrPlot) CX_ChrPlot=TRUE ;;
+    --TEs_distance_n_size) TEs_dis_n_size=TRUE ;;
+    --total_meth_ann) total_meth_ann=TRUE ;;
+    --TF_motifs) TF_motifs=TRUE ;;
+    --func_groups) func_groups=TRUE ;;
+    --MP_TEs) TEs_mp=TRUE ;;
+    --MP_Genes) Genes_mp=TRUE ;;
+    --MP_Gene_features) Gene_features_mp=TRUE ;;
     --MP_features_bin_size) bin_size_features="$2"; shift ;;
     --metaPlot_random) metaPlot_random_genes="$2"; shift ;;
     -h|--help) usage ;;
