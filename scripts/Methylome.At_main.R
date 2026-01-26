@@ -53,7 +53,7 @@ Methylome.At_main <- function(var1, # control
 
   ###########################################################################
 
-  formals(img_device)$img_type <- img_type
+  formals(img_device)$img_type <<- img_type
 
   ###########################################################################
 
@@ -595,7 +595,7 @@ Methylome.At_main <- function(var1, # control
         rel_widths = c(2.45, 2.45, 2.45, 1.34)
       )
 
-      img_device(paste0("genome_annotation/DMRs_genome_annotation_", comparison_name), w = 8.69, h = 2)
+      img_device(paste0(genome_ann_path, "/DMRs_genome_annotation_", comparison_name), w = 8.69, h = 2)
       print(combined_plot)
       dev.off()
     },
@@ -615,7 +615,7 @@ Methylome.At_main <- function(var1, # control
         nrow = 1
       )
 
-      img_device(paste0("genome_annotation/DMRs_TEs_vs_coding_genes_", comparison_name), w = 4.8, h = 2.1)
+      img_device(paste0(genome_ann_path, "/DMRs_TEs_vs_coding_genes_", comparison_name), w = 4.8, h = 2.1)
       print(combined_te_plot)
       dev.off()
     },
@@ -630,7 +630,7 @@ Methylome.At_main <- function(var1, # control
   ##### DMRs density - curcular plot #####
   tryCatch(
     {
-      setwd(exp_path)
+      setwd(DMRs_analysis_path)
       cat("\ngenerated DMRs density plot for all contexts: ")
       # setwd(ChrPlots_DMRs_path)
       DMRs_circular_plot(annotation.gr, TE_file, comparison_name)
@@ -667,7 +667,7 @@ Methylome.At_main <- function(var1, # control
   ##### DMRs within Genes-groups #####
   if (run_functional_groups) {
     func_groups_path <- paste0(genome_ann_path, "/functional_groups")
-    setwd(exp_path)
+    setwd(DMRs_analysis_path)
     dir.create(func_groups_path, showWarnings = FALSE)
     cat("Annotate DMRs into functional groups: ")
     for (ann.l in c("Genes", "Promoters")) {
