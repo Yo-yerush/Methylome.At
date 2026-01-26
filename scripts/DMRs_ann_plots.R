@@ -88,14 +88,14 @@ DMRs_ann_plots <- function(var1, var2, context, dH_analysis = F) {
 #########################
 ### legend
 gene_ann_legend <- function(up_col = "#d96868", down_col = "#6969db") {
-  legend_df <- data.frame(x = 1, y = 51:100, fill_val = 51:100)
-  labels_left_df <- data.frame(y = c(50, 90), label = c("Loss", "Gain"))
-  labels_right_df <- data.frame(y = c(0, 50, 75, 100), label = c("", "100\n", "50", "\n100"))
+  legend_df <- data.frame(x = 0.85, y = 31:100, fill_val = 31:100)
+  labels_left_df <- data.frame(y = c(30, 80), label = c("Loss", "Gain"))
+  labels_right_df <- data.frame(y = c(0, 33, 65, 99), label = c("", "100", "50", "100"))
 
   legend_plot <- ggplot(legend_df, aes(x = x, y = y, fill = fill_val)) +
-    geom_raster() +
+    geom_tile(width = 0.7, height = 1) +
     scale_fill_gradient2(
-      midpoint = 75,
+      midpoint = 65,
       low = down_col,
       mid = "#FFFFFF",
       high = up_col
@@ -105,18 +105,18 @@ gene_ann_legend <- function(up_col = "#d96868", down_col = "#6969db") {
       hjust = 0, vjust = 0, size = 3, inherit.aes = FALSE, angle = 90, fontface = "bold"
     ) +
     geom_text(
-      data = labels_right_df, aes(x = 1.6, y = y, label = label),
-      hjust = 0, size = 3, inherit.aes = FALSE
+      data = labels_right_df, aes(x = 1.3, y = y, label = label),
+      hjust = 0, size = 2.5, inherit.aes = FALSE
     ) +
-    geom_rect(aes(xmin = 0.5, xmax = 1.5, ymin = 50.5, ymax = 100.5),
-      fill = NA, color = "black", linewidth = 0.25, inherit.aes = FALSE
+    geom_rect(aes(xmin = 0.5, xmax = 1.2, ymin = 30.5, ymax = 100.5),
+      fill = NA, color = "black", linewidth = 0.15, inherit.aes = FALSE
     ) +
     coord_cartesian(xlim = c(0, 4), clip = "off") +
     labs(title = "Regions type\ndistribution (%)") +
     theme_void() +
     theme(
       legend.position = "none",
-      plot.title = element_text(hjust = 0, face = "bold", size = 10),
+      plot.title = element_text(hjust = 0, face = "bold", size = 9.5),
       plot.margin = margin(5, 5, 5, 5)
     )
 
