@@ -76,6 +76,7 @@ usage() {
   echo "  --func_groups                 Functional groups genes overlap DMRs"
   echo "  --GO_analysis                 Perform GO analysis over DMRs"
   echo "  --KEGG_pathways               Perform KEGG pathways analysis over DMRs"
+  echo "  --all_analyses                Enable all analyses (sets all analysis flags above [pca --> KEGG_pathways])"
   echo ""
   echo "  --DMVs                        Analyze differentially methylated vallies (1kbp)"
   echo "  --dH                          instead of DMRs, analyze delta-H = -(p * log2(p) + (1 - p) * log2(1 - p))"
@@ -84,6 +85,7 @@ usage() {
   echo "  --MP_TEs                      Analyze of TEs metaPlots"
   echo "  --MP_Genes                    Analyze of Genes-body metaPlots"
   echo "  --MP_Gene_features            Analyze Gene Features metaPlots"
+  echo "  --all_metaplots               Enable all metaPlots analyses"
   echo "  --MP_features_bin_size        Bin-size (set only for 'Gene_features' analysis!) [default: $bin_size_features]"
   echo "  --metaPlot_random             Number of random genes/TEs for metaPlots. 'all' for all the coding-genes and TEs [default: $metaPlot_random_genes]"
   echo ""
@@ -131,9 +133,25 @@ while [[ "$#" -gt 0 ]]; do
     --total_meth_ann) total_meth_ann=TRUE ;;
     --TF_motifs) TF_motifs=TRUE ;;
     --func_groups) func_groups=TRUE ;;
+    --all_analyses)
+      pca=TRUE
+      total_methylation=TRUE
+      CX_ChrPlot=TRUE
+      TEs_dis_n_size=TRUE
+      total_meth_ann=TRUE
+      TF_motifs=TRUE
+      func_groups=TRUE
+      GO_analysis=TRUE
+      KEGG_pathways=TRUE
+      ;;
     --MP_TEs) TEs_mp=TRUE ;;
     --MP_Genes) Genes_mp=TRUE ;;
     --MP_Gene_features) Gene_features_mp=TRUE ;;
+    --all_metaplots)
+      TEs_mp=TRUE
+      Genes_mp=TRUE
+      Gene_features_mp=TRUE
+      ;;
     --MP_features_bin_size) bin_size_features="$2"; shift ;;
     --metaPlot_random) metaPlot_random_genes="$2"; shift ;;
     -h|--help) usage ;;

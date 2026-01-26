@@ -153,11 +153,13 @@ For each contrast (treatment vs control), the main workflow can generate:
   - Coding genes vs TE overlap summaries
   - **TE Δmethylation vs TE size** (scatter; per context)
   - **TE Δmethylation vs distance from centromere** (scatter; windowed, e.g. 1 Mbp bins)
-- **GO enrichment** (optional)
-- **KEGG enrichment** (optional)
-- **Meta-plots** (optional; Genes / TEs / Gene-features; plus delta meta-plots)
+- **Transcription factors motif analysis**
+- **GO enrichment**
+- **KEGG enrichment**
+- **Meta-plots** (Genes / TEs / Gene-features; plus delta meta-plots)
 - **bigWig export** for genome browsers (DMR/Δ tracks)
-- **dH / surprisal module** (optional; deltaH folder with summary plots + annotations)
+- **Analyze differentially methylated vallies (1kbp)**
+- **dH / surprisal module** (deltaH folder with summary plots + annotations)
 
 ---
 
@@ -237,12 +239,7 @@ conda install -c conda-forge -c bioconda r-base=4.4.2 ${packages[@]}
 Rscript scripts/install_R_packages.R
 
 chmod +x ./Methylome.At_UI.sh
-chmod +x ./Methylome.At_metaPlots.sh
-chmod +x ./Methylome.At.sh
-
-chmod +x ./scripts/cgmap_2_cx.sh
-chmod +x ./scripts/cx_2_cgmap.sh
-chmod +x ./scripts/bedmethyl_2_cx.sh
+chmod +x ./scripts/*.At.sh
 ```
 
 ---
@@ -343,22 +340,22 @@ If you provide custom files, ensure they contain the columns required by the ann
 #### Usage:
 
 ```text
-$ ./Methylome.At.sh --help
+$ ./scripts/Methylome.At.sh --help
 
-Usage: ./Methylome.At.sh [samples_file] [options]
+Usage: ./scripts/Methylome.At.sh [samples_file] [options]
 
 Required argument:
   --samples_file                Path to samples file [required]
 
 Optional arguments:
-  --minReadsPerCytosine         Minimum reads per cytosine [default: 4]
+  --minReadsPerCytosine         Minimum reads per cytosine [default: 6]
   --n_cores                     Number of cores [default: 8]
   --image_type                  Output images format [default: 'pdf']
   --file_type                   Post-alignment file type - 'CX_report', 'bedMethyl' and 'CGmap' [default: 'CX_report' OR determine automatically]
   --annotation_file             Genome Annotation file [default: Methylome.At annotations file (TAIR10 based)]
   --description_file            Description file [default: Methylome.At description file]
   --TEs_file                    Transposable Elements file [default: TAIR10 'Transposable Elements' annotations]
-  --Methylome_At_path           Path to Methylome.At [default: /home/yoyerush/yo]
+  --Methylome_At_path           Path to Methylome.At [default: /home/yoyerush]
 
 DMRs analysis arguments:
   --minProportionDiff_CG        Minimum proportion difference for CG [default: 0.4]
@@ -367,14 +364,24 @@ DMRs analysis arguments:
   --binSize                     DMRs bin size [default: 100]
   --minCytosinesCount           Minimum cytosines count [default: 4]
   --pValueThreshold             P-value (padj) threshold [default: 0.05]
-  --GO_analysis                 Perform GO analysis [default: FALSE]
-  --KEGG_pathways               Perform KEGG pathways analysis [default: FALSE]
-  --dH                          Analyze delta-H = -(p * log2(p) + (1 - p) * log2(1 - p)) [default: FALSE]
+
+  --pca                         Perform PCA for total methylation levels
+  --total_methylation           Total methylation bar-plot
+  --CX_ChrPlot                  total methylation chromosome plot
+  --TEs_distance_n_size         Analyze TEs total methylation by size and distance from centromere
+  --total_meth_ann              Total methylation per genic annotations
+  --TF_motifs                   Transcription factors motif analysis
+  --func_groups                 Functional groups genes overlap DMRs
+  --GO_analysis                 Perform GO analysis over DMRs
+  --KEGG_pathways               Perform KEGG pathways analysis over DMRs
+
+  --DMVs                        Analyze differentially methylated vallies (1kbp)
+  --dH                          instead of DMRs, analyze delta-H = -(p * log2(p) + (1 - p) * log2(1 - p))
 
 MetaPlots analysis arguments:
-  --MP_TEs                      Analyze of TEs metaPlots [logical. default: FALSE]
-  --MP_Genes                    Analyze of Genes-body metaPlots [logical. default: FALSE]
-  --MP_Gene_features            Analyze Gene Features metaPlots [logical. default: FALSE]
+  --MP_TEs                      Analyze of TEs metaPlots
+  --MP_Genes                    Analyze of Genes-body metaPlots
+  --MP_Gene_features            Analyze Gene Features metaPlots
   --MP_features_bin_size        Bin-size (set only for 'Gene_features' analysis!) [default: 10]
   --metaPlot_random             Number of random genes/TEs for metaPlots. 'all' for all the coding-genes and TEs [default: 10000]
 ```
@@ -402,7 +409,7 @@ A typical output tree under `results/<treatment>_vs_<control>/`:
   legends.*                   (circos legend)
   genome_annotation/
     CG/ CHG/ CHH/            (annotation tables + summary figures)
-    TEs_addiotionnal_results/
+    TEs_addiitionnal_results/
       coding_genes_vs_TEs/
       super_family_frequency/
       TE_size_n_distance/
@@ -498,7 +505,6 @@ wt_2    PATH/TO/FILE/wt2_R2.fastq
 ## Troubleshooting / common issues
 
 - **UI issues (whiptail booleans toggling incorrectly):** if multiple menu items flip together, it usually means the *tag/value* fields were reused; ensure each menu item has a unique tag (the left column), and only display the current value in the right column.
-- **TE size/centromere plots not appearing:** ensure the folder `genome_annotation/TEs_addiotionnal_results/TE_size_n_distance/` is created and writable; older revisions had typos in output filenames/paths.
 - **Single-sample runs:** PCA is skipped; DMR testing uses Fisher’s exact test instead of beta regression.
 - **Nanopore bedMethyl:** if you request trinucleotide context, you must provide the genome directory (`-t`).
 
@@ -507,5 +513,3 @@ wt_2    PATH/TO/FILE/wt2_R2.fastq
 ## License
 
 This project is licensed under the [MIT License](https://github.com/Yo-yerush/Methylome.At/blob/main/LICENSE).
-
-
