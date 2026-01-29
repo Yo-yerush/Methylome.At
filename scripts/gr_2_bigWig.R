@@ -12,5 +12,5 @@ gr_2_bigWig <- function(gr, out_file_name = "gr_2_bigWig.bw", out_format = "bigW
 
     # save as BigWig file
     seqlengths(gr_out) <- seqlengths
-    export(gr_out, paste0(out_file_name, ".bw"), format = out_format)
+    export(gr_out, pout_file_name, format = out_format)
 }

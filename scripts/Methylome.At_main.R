@@ -178,6 +178,8 @@ Methylome.At_main <- function(var1, # control
   comparison_name <- paste0(var2, "_vs_", var1)
   exp_path <- paste0(Methylome.At_path, "/results/", comparison_name)
 
+  qc_dir_path <- paste0(exp_path, "/QC")
+  
   total_meth_path <- paste0(exp_path, "/total_methylation_analysis")
   PCA_plots_path <- paste0(total_meth_path, "/PCA_plots")
   meth_levels_path <- paste0(total_meth_path, "/methylation_levels")
@@ -194,8 +196,9 @@ Methylome.At_main <- function(var1, # control
   ChrPlots_DMRs_path <- paste0(DMRs_analysis_path, "/ChrPlot_DMRs")
   dH_CX_path <- paste0(exp_path, "/deltaH")
   dH_CX_ann_path <- paste0(exp_path, "/deltaH/genome_annotation")
+  strand_asymmetry_path <- paste0(exp_path, "/Strand_Asymmetry_DMRs")
   DMV_analysis_path <- paste0(exp_path, "/DMV_analysis")
-  metaPlot_path <- paste0(exp_path, "/metaPlots")
+  metaPlot_path <- paste0(exp_path, "/MetaPlots")
 
   TAIR10_TFBS_file <- paste0(Methylome.At_path, "/annotation_files/TAIR10_compressed_TFBSs.bed.gz")
 
@@ -566,7 +569,7 @@ Methylome.At_main <- function(var1, # control
       for (cntx_g2b in c("CG", "CHG", "CHH")) {
         suppressWarnings(try(
           {
-            gr_2_bigWig(DMRs_results[[cntx_g2b]], paste0(paste("DMRs", cntx_g2b, comparison_name, sep = "_")))
+            gr_2_bigWig(DMRs_results[[cntx_g2b]], paste0(paste("DMRs", cntx_g2b, comparison_name, sep = "_"), ".bw"))
           },
           silent = T
         ))
@@ -836,16 +839,14 @@ Methylome.At_main <- function(var1, # control
     # Hemi-DMRs	          DMR on one strand; no change/no methylation on the other.	  RdDM targeting or early-stage TE silencing.
     # Conflicting DMRs	  Hyper on + strand and Hypo on - strand (or vice versa).	    Potential replication stress or heavy transcription-methylation interference.
 
-    sap_output_path <- paste0(DMRs_analysis_path, "/strand_asymmetry")
-    dir.create(DMRs_analysis_path, showWarnings = F)
-    dir.create(sap_output_path, showWarnings = F)
-    setwd(sap_output_path)
+    dir.create(strand_asymmetry_path, showWarnings = F)
+    setwd(strand_asymmetry_path)
 
     for (context in c("CG", "CHG", "CHH")) {
       tryCatch(
         {
-          dir.create(paste0(sap_output_path, "/", context), showWarnings = F)
-          setwd(paste0(sap_output_path, "/", context))
+          dir.create(paste0(strand_asymmetry_path, "/", context), showWarnings = F)
+          setwd(paste0(strand_asymmetry_path, "/", context))
           cat(paste0("\n", time_msg(" "), "Classifying Asymmetry for ", context, " context"))
 
           pos_gr <- strand_results[["plus"]][[context]]
@@ -882,7 +883,7 @@ Methylome.At_main <- function(var1, # control
           write.csv(Conflicting_DMRs, paste0("DMRs_", context, "_conflicting_strand_", comparison_name, ".csv"), row.names = F)
 
           message(time_msg(), context, " Strand-Asymmetry Profiling Classification: Done")
-          setwd(sap_output_path)
+          setwd(strand_asymmetry_path)
         },
         error = function(cond) {
           cat(paste0("\n*\n Classifying Asymmetry DMRs in ", context, " context:\n"), as.character(cond), "\n\n")
@@ -893,7 +894,7 @@ Methylome.At_main <- function(var1, # control
     ##### DMRs density - circular plot for the specific strand context #####
     tryCatch(
       {
-        setwd(sap_output_path)
+        setwd(strand_asymmetry_path)
         cat(paste0("Generating circular density plot for strands asymmetry focus: "))
 
         # Runs circular plot on the newly classified data
@@ -954,13 +955,13 @@ Methylome.At_main <- function(var1, # control
     for (cntx_g2b in c("CG", "CHG", "CHH")) {
       suppressWarnings(try(
         {
-          gr_2_bigWig(DMVs_results[[cntx_g2b]], paste0(DMV_analysis_path, paste("/DMVs", cntx_g2b, comparison_name, sep = "_")))
+          gr_2_bigWig(DMVs_results[[cntx_g2b]], paste0(DMV_analysis_path, paste("/DMVs", cntx_g2b, comparison_name, sep = "_"), ".bw"))
+          message(time_msg(), "saved all DMRs also as bigWig files\n")
+          cat("saved all DMVs also as bigWig files\n")
         },
         silent = T
       ))
     }
-    message(time_msg(), "saved all DMRs also as bigWig files\n")
-    cat("saved all DMVs also as bigWig files\n")
 
     message("")
   }
@@ -978,7 +979,7 @@ Methylome.At_main <- function(var1, # control
     if (run_TE_metaPlots) {
       tryCatch(
         {
-          message(paste("generate metaPlot to", metaPlot.random.genes, "protein-coding Genes..."))
+          message(time_msg(), "generate metaPlot from ", metaPlot.random.genes, " protein-coding Genes")
           setwd(metaPlot_path)
           Genes_metaPlot(meth_var1, meth_var2, var1, var2, annotation.gr, metaPlot.random.genes, minReadsPerCytosine, n.cores, is_TE = F)
           setwd(metaPlot_path)
@@ -986,7 +987,6 @@ Methylome.At_main <- function(var1, # control
         },
         error = function(cond) {
           cat("\n*\n TEs metaPlots:\n", as.character(cond), "*\n")
-          message(time_msg(), paste0("process average metaPlot to ", metaPlot.random.genes, " Protein Coding Genes: fail"))
         }
       )
     }
@@ -995,7 +995,7 @@ Methylome.At_main <- function(var1, # control
     if (run_GeneBody_metaPlots) {
       tryCatch(
         {
-          message(paste("\ngenerate metaPlot to", metaPlot.random.genes, " Transposable Elements..."))
+          message(time_msg(), "generate metaPlot from ", metaPlot.random.genes, " Transposable Elements")
           setwd(metaPlot_path)
           Genes_metaPlot(meth_var1, meth_var2, var1, var2, TE_file, metaPlot.random.genes, minReadsPerCytosine, n.cores, is_TE = T)
           setwd(metaPlot_path)
@@ -1003,7 +1003,6 @@ Methylome.At_main <- function(var1, # control
         },
         error = function(cond) {
           cat("\n*\n Transposable Elements metaPlots:\n", as.character(cond), "*\n")
-          message(time_msg(), paste0("process average metaPlot to ", metaPlot.random.genes, " Transposable Elements: fail\n"))
         }
       )
     }
@@ -1012,14 +1011,13 @@ Methylome.At_main <- function(var1, # control
     if (run_GeneFeatures_metaPlots) {
       tryCatch(
         {
-          message(paste("\ngenerate metaPlot to", metaPlot.random.genes, "protein-coding Gene Features..."))
+          message(time_msg(), "generate metaPlot from ", metaPlot.random.genes, " protein-coding Gene Features")
           setwd(metaPlot_path)
           Genes_features_metaPlot(meth_var1, meth_var2, var1, var2, annotation.gr, metaPlot.random.genes, minReadsPerCytosine, gene_features_binSize, n.cores)
           # delta_metaplot("Gene_features", var1, var2, is_geneFeature = TRUE)
         },
         error = function(cond) {
           cat("\n*\n Gene features metaPlots:\n", as.character(cond), "*\n")
-          message(time_msg(), paste0("process average metaPlot to ", metaPlot.random.genes, " Protein Coding Gene Features: fail"))
         }
       )
     }

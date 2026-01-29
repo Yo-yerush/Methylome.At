@@ -386,6 +386,22 @@ edit_script1_parameters() {
         fi
         ;;
 
+      "DMVs analysis")
+        if whiptail --yesno "Analyze differentially methylated vallies (1kbp)?" 10 60; then
+          SCRIPT1_DMVs="yes"
+        else
+          SCRIPT1_DMVs="no"
+        fi
+        ;;
+
+      "dH analysis")
+        if whiptail --yesno "Analyze dH (delta H)?" 10 60; then
+          SCRIPT1_delta_H="yes"
+        else
+          SCRIPT1_delta_H="no"
+        fi
+        ;;
+
       *)
         # Unknown / spacer items (if you add headers later)
         ;;

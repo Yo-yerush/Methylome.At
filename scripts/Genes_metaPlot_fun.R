@@ -273,7 +273,7 @@ Genes_metaPlot <- function(methylationPool_var1,methylationPool_var2,var1,var2,a
   binsPlot(v1.CHG.bind,v2.CHG.bind,var1,var2,"CHG")
   binsPlot(v1.CHH.bind,v2.CHH.bind,var1,var2,"CHH")
   
-  message(paste("process average metaPlot to",
-                 length(coding.Genes),
-                 ifelse(!is_TE,"Protein Coding Genes","Transposable Elements\n")))
+  # message(paste("process average metaPlot to",
+  #                length(coding.Genes),
+  #                ifelse(!is_TE,"Protein Coding Genes","Transposable Elements\n")))
 }
