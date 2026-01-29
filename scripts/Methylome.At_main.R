@@ -14,6 +14,7 @@ Methylome.At_main <- function(var1, # control
                               methyl_files_type = "CX_report",
                               img_type = "pdf",
                               n.cores = 8,
+                              analyze_DMRs = TRUE,
                               run_PCA_plot = TRUE,
                               run_total_meth_plot = TRUE,
                               run_CX_Chrplot = TRUE,
@@ -23,6 +24,7 @@ Methylome.At_main <- function(var1, # control
                               run_functional_groups = TRUE,
                               run_GO_analysis = FALSE,
                               run_KEGG_pathways = FALSE,
+                              analyze_strand_asymmetry_DMRs = FALSE,
                               analyze_DMVs = FALSE,
                               analyze_dH = FALSE,
                               run_TE_metaPlots = FALSE,
@@ -464,283 +466,284 @@ Methylome.At_main <- function(var1, # control
   ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ###
   ### ### main loop for plots ### ### ### ### ### ### ### ### ###
 
-  DMRs_ann_plots_list <- list(CG = NULL, CHG = NULL, CHH = NULL)
-  te_vs_gene_bar <- list(CG = NULL, CHG = NULL, CHH = NULL)
+  if (analyze_DMRs) {
+    DMRs_ann_plots_list <- list(CG = NULL, CHG = NULL, CHH = NULL)
+    te_vs_gene_bar <- list(CG = NULL, CHG = NULL, CHH = NULL)
 
-  for (context in c("CG", "CHG", "CHH")) {
-    cat(sep_cat(paste(context, "annotations"), T), "\n")
+    for (context in c("CG", "CHG", "CHH")) {
+      cat(sep_cat(paste(context, "annotations"), T), "\n")
 
-    DMRs_bins <- DMRs_results[[context]]
+      DMRs_bins <- DMRs_results[[context]]
 
-    # skip if DMRs calling failed
-    if (is.null(DMRs_bins)) {
-      message(time_msg(paste0("\t", context, ":")), paste0("\tSkipping ", context, " - no DMRs available"))
-      next
-    }
-
-    ##############################
-    #####  Gain or Loss - DMRs #####
-    dir.create(gainORloss_path, showWarnings = FALSE)
-    setwd(gainORloss_path)
-
-    ##### Pie chart
-    tryCatch(
-      {
-        gainORloss(DMRs_bins, context, add_count = T)
-        message(time_msg(paste0("\t", context, ":")), "\tpie chart (gain or loss): done")
-      },
-      error = function(cond) {
-        cat("\n*\n pie chart (gain or loss):\n", as.character(cond), "*\n")
-        message(time_msg(paste0("\t", context, ":")), "\tpie chart (gain or loss): fail\n")
+      # skip if DMRs calling failed
+      if (is.null(DMRs_bins)) {
+        message(time_msg(paste0("\t", context, ":")), paste0("\tSkipping ", context, " - no DMRs available"))
+        next
       }
-    )
 
-    ##### Ratio distribution
-    tryCatch(
-      {
-        ratio.distribution(DMRs_bins, var1, var2, context, comparison_name)
-        message(time_msg(paste0("\t", context, ":")), "\tratio distribution (gain or loss): done")
-      },
-      error = function(cond) {
-        cat("\n*\n ratio distribution (gain or loss):\n", as.character(cond), "*\n")
-        message(time_msg(paste0("\t", context, ":")), "\tratio distribution (gain or loss): fail\n")
-      }
-    )
-    ##############################
+      ##############################
+      #####  Gain or Loss - DMRs #####
+      dir.create(gainORloss_path, showWarnings = FALSE)
+      setwd(gainORloss_path)
 
-    ##### ChrPlots for DMRs #####
-    tryCatch(
-      {
-        source(paste0(scripts_dir, "/ChrPlots_DMRs.R"))
-        dir.create(ChrPlots_DMRs_path, showWarnings = FALSE)
-        setwd(ChrPlots_DMRs_path)
-        ChrPlots_DMRs(comparison_name, DMRs_bins, var1, var2, context, scripts_dir)
-        message(time_msg(paste0("\t", context, ":")), "\tgenerated ChrPlots for all DMRs: done")
-      },
-      error = function(cond) {
-        cat("\n*\n generated ChrPlots for all DMRs:\n", as.character(cond), "*\n")
-        message(time_msg(paste0("\t", context, ":")), "\tgenerated ChrPlots for all DMRs: fail\n")
-      }
-    )
-    setwd(exp_path)
-
-    ##### Annotate DMRs and total-methylations #####
-    cat("genome annotations for", context, "DMRs:\n")
-    message(time_msg(paste0("\t", context, ":")), "\tgenome annotations for DMRs...")
-    dir.create(genome_ann_path, showWarnings = FALSE)
-    setwd(genome_ann_path)
-
-    # genome annotations
-    tryCatch(
-      {
-        ann_list <- genome_ann(annotation.gr, TE_file) # create annotations from annotation file as a list
-        DMRs_ann(ann_list, DMRs_bins, context, description_df) # save tables of annotate DMRs. have to run after 'genome_ann'
-        DMRs_ann_plots_list[[context]] <- DMRs_ann_plots(var1, var2, context)
-        message(time_msg(paste0("\t", context, ":")), "\tgenome annotations for DMRs: done")
-      },
-      error = function(cond) {
-        cat("\n*\n genome annotations for DMRs:\n", as.character(cond), "*\n")
-        message(time_msg(paste0("\t", context, ":")), "\tgenome annotations for DMRs: fail")
-      }
-    )
-
-    # additional TE annotations results
-    tryCatch(
-      {
-        te_vs_gene_bar[[context]] <- TE_ann_plots(context, TE_file)
-        TE_Super_Family_Frequency(context, TE_file)
-      },
-      error = function(cond) {
-        cat("\n*\n TE families plots:\n", as.character(cond), "*\n")
-        message(time_msg(paste0("\t", context, ":")), "\tTE families plots: fail")
-      }
-    )
-    setwd(exp_path)
-
-    ##### save DMRs as bigWig file #####
-    dir.create(DMRs_bigWig_path, showWarnings = FALSE)
-    setwd(DMRs_bigWig_path)
-    for (cntx_g2b in c("CG", "CHG", "CHH")) {
-      suppressWarnings(try(
-        {
-          gr_2_bigWig(DMRs_results[[cntx_g2b]], paste0(paste("DMRs", cntx_g2b, comparison_name, sep = "_"), ".bw"))
-        },
-        silent = T
-      ))
-    }
-    message(time_msg(paste0("\t", context, ":")), "\tsaved all DMRs also as bigWig files\n")
-    cat("saved all DMRs also as bigWig files\n")
-  }
-
-  setwd(exp_path)
-
-  ### ### # finish main loop  ### ### ### ### ### ### ### ### ###
-  ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ###
-  ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ###
-
-  ###########################################################################
-
-  message(sep_cat("Downstream DMRs"))
-  cat(sep_cat("Downstream DMRs"))
-
-  # save gene-body DMRs bar-plot
-  tryCatch(
-    {
-      combined_plot <- plot_grid(
-        DMRs_ann_plots_list$CG,
-        DMRs_ann_plots_list$CHG,
-        DMRs_ann_plots_list$CHH,
-        gene_ann_legend(),
-        nrow = 1,
-        rel_widths = c(2.45, 2.45, 2.45, 1.34)
-      )
-
-      img_device(paste0(genome_ann_path, "/DMRs_genome_annotation_", comparison_name), w = 8.69, h = 2)
-      print(combined_plot)
-      dev.off()
-    },
-    error = function(cond) {
-      cat("\n*\n save gene-body DMRs bar-plot: fail\n", as.character(cond), "*\n")
-      message(time_msg(), "save gene-body DMRs bar-plot: fail")
-    }
-  )
-
-  # save TE vs gene bar-plot
-  tryCatch(
-    {
-      combined_te_plot <- plot_grid(
-        te_vs_gene_bar$CG,
-        te_vs_gene_bar$CHG,
-        te_vs_gene_bar$CHH,
-        nrow = 1
-      )
-
-      img_device(paste0(genome_ann_path, "/DMRs_TEs_vs_coding_genes_", comparison_name), w = 4.8, h = 2.1)
-      print(combined_te_plot)
-      dev.off()
-    },
-    error = function(cond) {
-      cat("\n*\n save TE vs gene bar-plot: fail\n", as.character(cond), "*\n")
-      message(time_msg(), "save TE vs gene bar-plot: fail")
-    }
-  )
-
-  ###########################################################################
-
-  ##### DMRs density - curcular plot #####
-  tryCatch(
-    {
-      setwd(DMRs_analysis_path)
-      cat("\ngenerated DMRs density plot for all contexts: ")
-      # setwd(ChrPlots_DMRs_path)
-      DMRs_circular_plot(annotation.gr, TE_file, comparison_name)
-      cat("done\n")
-      message(time_msg(), "generated DMRs density plot for all contexts: done")
-    },
-    error = function(cond) {
-      cat("\n*\n DMRs density plot:\n", as.character(cond), "*\n")
-      message(time_msg(), "generated DMRs density plot for all contexts: fail")
-    }
-  )
-
-  ###########################################################################
-
-  ##### TEs superfamily - curcular plot #####
-  tryCatch(
-    {
-      setwd(genome_ann_path)
-      cat("generated DMRs density plots over TEs superfamilies: ")
-      TEs_superfamily_circular_plot(annotation.gr)
-      cat("done\n")
-      message(time_msg(), "generated DMRs over TEs superfamilies: done")
-    },
-    error = function(cond) {
-      cat("\n*\n DMRs over TEs superfamilies:\n", as.character(cond), "*\n")
-      message(time_msg(), "generated DMRs over TEs superfamilies: fail")
-    }
-  )
-
-  setwd(exp_path)
-
-  ###########################################################################
-
-  ##### DMRs within Genes-groups #####
-  if (run_functional_groups) {
-    func_groups_path <- paste0(genome_ann_path, "/functional_groups")
-    setwd(DMRs_analysis_path)
-    dir.create(func_groups_path, showWarnings = FALSE)
-    cat("Annotate DMRs into functional groups: ")
-    for (ann.l in c("Genes", "Promoters")) {
-      groups_results <- mclapply(c("CG", "CHG", "CHH", "all"), function(cntx.l) {
-        tryCatch(
-          {
-            DMRs_into_groups(treatment = comparison_name, ann = ann.l, context = cntx.l)
-          },
-          error = function(cond) {
-            cat("\n*\n Annotate *", cntx.l, "* - *", ann.l, "* DMRs into functional groups:\n", as.character(cond), "*\n")
-            message(paste("Annotate", cntx.l, "-", ann.l, "DMRs into functional groups: fail\n"))
-            return(NULL)
-          }
-        )
-      }, mc.cores = ifelse(n.cores >= 4, 4, n.cores)) %>%
-        do.call(rbind, .) %>%
-        arrange(context)
-
+      ##### Pie chart
       tryCatch(
         {
-          img_device(paste0(func_groups_path, "/", ann.l, "_groups_barPlots_", comparison_name), w = 14, h = 4.5)
-          print(groups_barPlots(groups_results))
-          dev.off()
+          gainORloss(DMRs_bins, context, add_count = T)
+          message(time_msg(paste0("\t", context, ":")), "\tpie chart (gain or loss): done")
         },
         error = function(cond) {
-          cat("\n*\n Bar-plot of *", cntx.l, "* - *", ann.l, "* annotated DMRs into functional groups:\n", as.character(cond), "*\n")
+          cat("\n*\n pie chart (gain or loss):\n", as.character(cond), "*\n")
+          message(time_msg(paste0("\t", context, ":")), "\tpie chart (gain or loss): fail\n")
+        }
+      )
+
+      ##### Ratio distribution
+      tryCatch(
+        {
+          ratio.distribution(DMRs_bins, var1, var2, context, comparison_name)
+          message(time_msg(paste0("\t", context, ":")), "\tratio distribution (gain or loss): done")
+        },
+        error = function(cond) {
+          cat("\n*\n ratio distribution (gain or loss):\n", as.character(cond), "*\n")
+          message(time_msg(paste0("\t", context, ":")), "\tratio distribution (gain or loss): fail\n")
+        }
+      )
+      ##############################
+
+      ##### ChrPlots for DMRs #####
+      tryCatch(
+        {
+          source(paste0(scripts_dir, "/ChrPlots_DMRs.R"))
+          dir.create(ChrPlots_DMRs_path, showWarnings = FALSE)
+          setwd(ChrPlots_DMRs_path)
+          ChrPlots_DMRs(comparison_name, DMRs_bins, var1, var2, context, scripts_dir)
+          message(time_msg(paste0("\t", context, ":")), "\tgenerated ChrPlots for all DMRs: done")
+        },
+        error = function(cond) {
+          cat("\n*\n generated ChrPlots for all DMRs:\n", as.character(cond), "*\n")
+          message(time_msg(paste0("\t", context, ":")), "\tgenerated ChrPlots for all DMRs: fail\n")
+        }
+      )
+      setwd(exp_path)
+
+      ##### Annotate DMRs and total-methylations #####
+      cat("genome annotations for", context, "DMRs:\n")
+      message(time_msg(paste0("\t", context, ":")), "\tgenome annotations for DMRs...")
+      dir.create(genome_ann_path, showWarnings = FALSE)
+      setwd(genome_ann_path)
+
+      # genome annotations
+      tryCatch(
+        {
+          ann_list <- genome_ann(annotation.gr, TE_file) # create annotations from annotation file as a list
+          DMRs_ann(ann_list, DMRs_bins, context, description_df) # save tables of annotate DMRs. have to run after 'genome_ann'
+          DMRs_ann_plots_list[[context]] <- DMRs_ann_plots(var1, var2, context)
+          message(time_msg(paste0("\t", context, ":")), "\tgenome annotations for DMRs: done")
+        },
+        error = function(cond) {
+          cat("\n*\n genome annotations for DMRs:\n", as.character(cond), "*\n")
+          message(time_msg(paste0("\t", context, ":")), "\tgenome annotations for DMRs: fail")
+        }
+      )
+
+      # additional TE annotations results
+      tryCatch(
+        {
+          te_vs_gene_bar[[context]] <- TE_ann_plots(context, TE_file)
+          TE_Super_Family_Frequency(context, TE_file)
+        },
+        error = function(cond) {
+          cat("\n*\n TE families plots:\n", as.character(cond), "*\n")
+          message(time_msg(paste0("\t", context, ":")), "\tTE families plots: fail")
+        }
+      )
+      setwd(exp_path)
+
+      ##### save DMRs as bigWig file #####
+      dir.create(DMRs_bigWig_path, showWarnings = FALSE)
+      setwd(DMRs_bigWig_path)
+      for (cntx_g2b in c("CG", "CHG", "CHH")) {
+        suppressWarnings(try(
+          {
+            gr_2_bigWig(DMRs_results[[cntx_g2b]], paste0(paste("DMRs", cntx_g2b, comparison_name, sep = "_")))
+          },
+          silent = T
+        ))
+      }
+      message(time_msg(paste0("\t", context, ":")), "\tsaved all DMRs also as bigWig files\n")
+      cat("saved all DMRs also as bigWig files\n")
+    }
+
+    setwd(exp_path)
+
+    ### ### # finish main loop  ### ### ### ### ### ### ### ### ###
+    ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ###
+    ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ###
+
+    ###########################################################################
+
+    message(sep_cat("Downstream DMRs"))
+    cat(sep_cat("Downstream DMRs"))
+
+    # save gene-body DMRs bar-plot
+    tryCatch(
+      {
+        combined_plot <- plot_grid(
+          DMRs_ann_plots_list$CG,
+          DMRs_ann_plots_list$CHG,
+          DMRs_ann_plots_list$CHH,
+          gene_ann_legend(),
+          nrow = 1,
+          rel_widths = c(2.45, 2.45, 2.45, 1.34)
+        )
+
+        img_device(paste0(genome_ann_path, "/DMRs_genome_annotation_", comparison_name), w = 8.69, h = 2)
+        print(combined_plot)
+        dev.off()
+      },
+      error = function(cond) {
+        cat("\n*\n save gene-body DMRs bar-plot: fail\n", as.character(cond), "*\n")
+        message(time_msg(), "save gene-body DMRs bar-plot: fail")
+      }
+    )
+
+    # save TE vs gene bar-plot
+    tryCatch(
+      {
+        combined_te_plot <- plot_grid(
+          te_vs_gene_bar$CG,
+          te_vs_gene_bar$CHG,
+          te_vs_gene_bar$CHH,
+          nrow = 1
+        )
+
+        img_device(paste0(genome_ann_path, "/DMRs_TEs_vs_coding_genes_", comparison_name), w = 4.8, h = 2.1)
+        print(combined_te_plot)
+        dev.off()
+      },
+      error = function(cond) {
+        cat("\n*\n save TE vs gene bar-plot: fail\n", as.character(cond), "*\n")
+        message(time_msg(), "save TE vs gene bar-plot: fail")
+      }
+    )
+
+    ###########################################################################
+
+    ##### DMRs density - curcular plot #####
+    tryCatch(
+      {
+        setwd(DMRs_analysis_path)
+        cat("\ngenerated DMRs density plot for all contexts: ")
+        # setwd(ChrPlots_DMRs_path)
+        DMRs_circular_plot(annotation.gr, TE_file, comparison_name)
+        cat("done\n")
+        message(time_msg(), "generated DMRs density plot for all contexts: done")
+      },
+      error = function(cond) {
+        cat("\n*\n DMRs density plot:\n", as.character(cond), "*\n")
+        message(time_msg(), "generated DMRs density plot for all contexts: fail")
+      }
+    )
+
+    ###########################################################################
+
+    ##### TEs superfamily - curcular plot #####
+    tryCatch(
+      {
+        setwd(genome_ann_path)
+        cat("generated DMRs density plots over TEs superfamilies: ")
+        TEs_superfamily_circular_plot(annotation.gr)
+        cat("done\n")
+        message(time_msg(), "generated DMRs over TEs superfamilies: done")
+      },
+      error = function(cond) {
+        cat("\n*\n DMRs over TEs superfamilies:\n", as.character(cond), "*\n")
+        message(time_msg(), "generated DMRs over TEs superfamilies: fail")
+      }
+    )
+
+    setwd(exp_path)
+
+    ###########################################################################
+
+    ##### DMRs within Genes-groups #####
+    if (run_functional_groups) {
+      func_groups_path <- paste0(genome_ann_path, "/functional_groups")
+      setwd(DMRs_analysis_path)
+      dir.create(func_groups_path, showWarnings = FALSE)
+      cat("Annotate DMRs into functional groups: ")
+      for (ann.l in c("Genes", "Promoters")) {
+        groups_results <- mclapply(c("CG", "CHG", "CHH", "all"), function(cntx.l) {
+          tryCatch(
+            {
+              DMRs_into_groups(treatment = comparison_name, ann = ann.l, context = cntx.l)
+            },
+            error = function(cond) {
+              cat("\n*\n Annotate *", cntx.l, "* - *", ann.l, "* DMRs into functional groups:\n", as.character(cond), "*\n")
+              message(paste("Annotate", cntx.l, "-", ann.l, "DMRs into functional groups: fail\n"))
+              return(NULL)
+            }
+          )
+        }, mc.cores = ifelse(n.cores >= 4, 4, n.cores)) %>%
+          do.call(rbind, .) %>%
+          arrange(context)
+
+        tryCatch(
+          {
+            img_device(paste0(func_groups_path, "/", ann.l, "_groups_barPlots_", comparison_name), w = 14, h = 4.5)
+            print(groups_barPlots(groups_results))
+            dev.off()
+          },
+          error = function(cond) {
+            cat("\n*\n Bar-plot of *", cntx.l, "* - *", ann.l, "* annotated DMRs into functional groups:\n", as.character(cond), "*\n")
+          }
+        )
+      }
+      cat("done\n")
+      message(time_msg(), "Annotate DMRs into functional groups: done")
+    }
+
+    ###########################################################################
+
+    ##### GO analysis for annotated DMRs
+    if (run_GO_analysis) {
+      cat(sep_cat("GO analysis"))
+      tryCatch(
+        {
+          GO_path <- paste0(exp_path, "/GO_analysis")
+          dir.create(GO_path, showWarnings = FALSE)
+
+          message(time_msg(), "GO analysis for annotated DMRs...")
+          run_GO(comparison_name, genome_ann_path, GO_path, n.cores)
+          message(time_msg(), "GO analysis for annotated DMRs: done\n")
+        },
+        error = function(cond) {
+          cat("\n*\n GO analysis:\n", as.character(cond), "*\n")
+          message(time_msg(), "GO analysis for annotated DMRs: fail\n")
         }
       )
     }
-    cat("done\n")
-    message(time_msg(), "Annotate DMRs into functional groups: done")
+
+    ##### KEGG pathways for annotated DMRs
+    if (run_KEGG_pathways) {
+      cat(sep_cat("KEGG pathways"))
+      tryCatch(
+        {
+          KEGG_path <- paste0(exp_path, "/KEGG_pathway")
+          dir.create(KEGG_path, showWarnings = FALSE)
+
+          message(time_msg(), "KEGG pathways for annotated DMRs...")
+          run_KEGG(comparison_name, genome_ann_path, KEGG_path, n.cores)
+          message(time_msg(), "KEGG pathways for annotated DMRs: done\n")
+        },
+        error = function(cond) {
+          cat("\n*\n KEGG pathways:\n", as.character(cond), "*\n")
+          message(time_msg(), "KEGG pathways for annotated DMRs: fail\n")
+        }
+      )
+    }
   }
-
-  ###########################################################################
-
-  ##### GO analysis for annotated DMRs
-  if (run_GO_analysis) {
-    cat(sep_cat("GO analysis"))
-    tryCatch(
-      {
-        GO_path <- paste0(exp_path, "/GO_analysis")
-        dir.create(GO_path, showWarnings = FALSE)
-
-        message(time_msg(), "GO analysis for annotated DMRs...")
-        run_GO(comparison_name, genome_ann_path, GO_path, n.cores)
-        message(time_msg(), "GO analysis for annotated DMRs: done\n")
-      },
-      error = function(cond) {
-        cat("\n*\n GO analysis:\n", as.character(cond), "*\n")
-        message(time_msg(), "GO analysis for annotated DMRs: fail\n")
-      }
-    )
-  }
-
-  ##### KEGG pathways for annotated DMRs
-  if (run_KEGG_pathways) {
-    cat(sep_cat("KEGG pathways"))
-    tryCatch(
-      {
-        KEGG_path <- paste0(exp_path, "/KEGG_pathway")
-        dir.create(KEGG_path, showWarnings = FALSE)
-
-        message(time_msg(), "KEGG pathways for annotated DMRs...")
-        run_KEGG(comparison_name, genome_ann_path, KEGG_path, n.cores)
-        message(time_msg(), "KEGG pathways for annotated DMRs: done\n")
-      },
-      error = function(cond) {
-        cat("\n*\n KEGG pathways:\n", as.character(cond), "*\n")
-        message(time_msg(), "KEGG pathways for annotated DMRs: fail\n")
-      }
-    )
-  }
-
   ###########################################################################
 
   ##### dH analysis over CX methylation #####
@@ -780,6 +783,131 @@ Methylome.At_main <- function(var1, # control
   setwd(exp_path)
 
   ###########################################################################
+  ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ###
+  ### ### ### Strand-Asymmetry Profiling  ### ### ### ### ### ### ### ###
+  if (analyze_strand_asymmetry_DMRs) {
+    message(sep_cat("Strand-Asymmetry DMRs"))
+    cat(sep_cat("Strand-Asymmetry DMRs\n"))
+
+    sap_output_path <- file.path(DMRs_analysis_path, "Strand_Asymmetry")
+    dir.create(sap_output_path, showWarnings = F)
+    setwd(sap_output_path)
+
+    strand_map <- list("+" = "plus", "-" = "minus")
+    strand_results <- list("plus" = list(), "minus" = list())
+
+    for (st_sym in names(strand_map)) {
+      st_label <- strand_map[[st_sym]]
+
+      message(time_msg(), "Processing Strand: ", st_sym)
+      cat(paste0("\n", time_msg(" "), "Processing Strand: ", st_sym, "\n"))
+
+      # filter +/- symbols
+      strand_joint <- methylationDataReplicates_joints[which(strand(methylationDataReplicates_joints) == st_sym)]
+      strand_var1 <- meth_var1[which(strand(meth_var1) == st_sym)]
+      strand_var2 <- meth_var2[which(strand(meth_var2) == st_sym)]
+
+      strand_results[[st_label]] <- mclapply(c("CG", "CHG", "CHH"), function(context) {
+        tryCatch(
+          {
+            DMRs_call <- calling_DMRs(
+              strand_joint, strand_var1, strand_var2,
+              var1, var2, var1_path, var2_path, paste0(comparison_name, "_strand_asymmetry"),
+              context, minProportionDiff, binSize, pValueThreshold,
+              minCytosinesCount, minReadsPerCytosine, ifelse(n.cores > 3, n.cores / 3, 1), is_Replicates,
+              analysis_name = "DMRs", save_csv = FALSE
+            )
+
+            gainORloss(DMRs_call, context, add_count = T)
+            ratio.distribution(DMRs_call, var1, var2, context, paste0(comparison_name, "_", st_sym, "_strand"))
+
+            return(DMRs_call)
+          },
+          error = function(cond) {
+            cat("\n*\n Strand-Asymmetry Profiling DMRs fail:\n", as.character(cond), "*\n")
+            return(NULL)
+          }
+        )
+      }, mc.cores = ifelse(n.cores >= 3, 3, 1))
+
+      names(strand_results[[st_label]]) <- c("CG", "CHG", "CHH")
+    }
+
+    ###########################################################################
+    ### ### Classification into Symmetric, Hemi, and Conflicting ### ### ###
+    setwd(sap_output_path)
+
+    for (context in c("CG", "CHG", "CHH")) {
+      tryCatch(
+        {
+          cat(paste0("\n", time_msg(" "), "Classifying Asymmetry for: ", context, "\n"))
+
+          pos_gr <- strand_results[["plus"]][[context]]
+          neg_gr <- strand_results[["minus"]][[context]]
+
+          if (is.null(pos_gr) | is.null(neg_gr)) {
+            message(time_msg(), "No DMRs on one or both strands for ", context, " (skipping)")
+            cat("No DMRs on one or both strands for ", context, " (skipping)\n")
+            next
+          }
+
+          strand(pos_gr) <- "+"
+          strand(neg_gr) <- "-"
+
+          hits <- findOverlaps(pos_gr, neg_gr)
+          quer_hits <- queryHits(hits)
+          subj_hits <- subjectHits(hits)
+
+          # symmetric & conflicting (where they overlap)
+          match_direction <- sign(pos_gr[quer_hits]$direction) == sign(neg_gr[subj_hits]$direction)
+
+          Symmetric_DMRs <- pos_gr[quer_hits][match_direction]
+          Conflicting_DMRs <- pos_gr[quer_hits][!match_direction]
+
+          # hemi-DMRs (orphans on either strand)
+          Hemi_Plus <- pos_gr[-quer_hits]
+          Hemi_Minus <- neg_gr[-subj_hits]
+          Hemi_DMRs <- c(Hemi_Plus, Hemi_Minus)
+
+          # Save Classification Tables with 'plus' and 'minus' naming convention
+          write.csv(as.data.frame(pos_gr), file.path(sap_output_path, paste0("DMRs_", context, "_plus_strand_", comparison_name, ".csv")))
+          write.csv(as.data.frame(neg_gr), file.path(sap_output_path, paste0("DMRs_", context, "_minus_strand_", comparison_name, ".csv")))
+          write.csv(as.data.frame(Symmetric_DMRs), file.path(sap_output_path, paste0("DMRs_", context, "_symmetric_strand_", comparison_name, ".csv")))
+          write.csv(as.data.frame(Hemi_DMRs), file.path(sap_output_path, paste0("DMRs_", context, "_hemi_strand_", comparison_name, ".csv")))
+          write.csv(as.data.frame(Conflicting_DMRs), file.path(sap_output_path, paste0("DMRs_", context, "_conflicting_strand_", comparison_name, ".csv")))
+
+          message(time_msg(), context, " Strand-Asymmetry Profiling Classification: Done")
+        },
+        error = function(cond) {
+          cat(paste0("\n*\n Classifying Asymmetry DMRs in ", context, " context:\n"), as.character(cond), "\n\n")
+        }
+      )
+    }
+
+    ##### DMRs density - circular plot for the specific strand context #####
+    tryCatch(
+      {
+        setwd(sap_output_path)
+        cat(paste0("Generating circular density plot for strands asymmetry focus: "))
+
+        # Runs circular plot on the newly classified data
+        try(DMRs_circular_plot(annotation.gr, TE_file, paste0("plus_strand_", comparison_name)))
+        try(DMRs_circular_plot(annotation.gr, TE_file, paste0("minus_strand_", comparison_name)))
+        try(DMRs_circular_plot(annotation.gr, TE_file, paste0("symmetric_strand_", comparison_name)))
+        try(DMRs_circular_plot(annotation.gr, TE_file, paste0("hemi_strand_", comparison_name)))
+        try(DMRs_circular_plot(annotation.gr, TE_file, paste0("conflicting_strand_", comparison_name)))
+
+        cat("done\n")
+        message(time_msg(), "Circular plot for Strand-Asymmetry Profiling: done")
+      },
+      error = function(cond) {
+        cat("\n*\n Strand-Asymmetry Profiling DMRs circular plot fail:\n", as.character(cond), "*\n")
+      }
+    )
+  }
+  setwd(exp_path)
+
+  ###########################################################################
 
   if (analyze_DMVs) {
     message(sep_cat("DMV analysis"))
@@ -815,12 +943,12 @@ Methylome.At_main <- function(var1, # control
     names(DMVs_results) <- c("CG", "CHG", "CHH")
     cat(paste0(time_msg(" "), "done!\n"))
 
-    ##### save DMRs as bigWig file #####
+    ##### save DMVs as bigWig file #####
     setwd(DMV_analysis_path)
     for (cntx_g2b in c("CG", "CHG", "CHH")) {
       suppressWarnings(try(
         {
-          gr_2_bigWig(DMVs_results[[cntx_g2b]], paste0(DMV_analysis_path, paste("/DMVs", cntx_g2b, comparison_name, sep = "_"), ".bw"))
+          gr_2_bigWig(DMVs_results[[cntx_g2b]], paste0(DMV_analysis_path, paste("/DMVs", cntx_g2b, comparison_name, sep = "_")))
         },
         silent = T
       ))

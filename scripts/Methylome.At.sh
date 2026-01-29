@@ -24,6 +24,7 @@ methyl_files_type=CX_report
 img_type=pdf
 n_cores=8
 
+DMR_analysis=TRUE
 pca=FALSE
 total_methylation=FALSE
 CX_ChrPlot=FALSE
@@ -33,6 +34,7 @@ TF_motifs=FALSE
 func_groups=FALSE
 GO_analysis=FALSE
 KEGG_pathways=FALSE
+strand_DMRs=FALSE
 DMV_analysis=FALSE
 dH_scripts=FALSE
 TEs_mp=FALSE
@@ -78,8 +80,11 @@ usage() {
   echo "  --KEGG_pathways               Perform KEGG pathways analysis over DMRs"
   echo "  --all_analyses                Enable all analyses (sets all analysis flags above [pca --> KEGG_pathways])"
   echo ""
+  echo "  --DMRs_off                    Disable the main DMRs analysis workflow"
+  echo "  --strand_DMRs                 Analyze strand-specific (+/-) DMRs"
   echo "  --DMVs                        Analyze differentially methylated vallies (1kbp)"
-  echo "  --dH                          instead of DMRs, analyze delta-H = -(p * log2(p) + (1 - p) * log2(1 - p))"
+  echo "  --dH                          instead of DMRs worflow (calculated by ratios [p]), analyze SurpDMRs:"
+  echo "                                delta-H = -(p * log2(p) + (1 - p) * log2(1 - p))"
   echo ""
   echo "MetaPlots analysis arguments:"
   echo "  --MP_TEs                      Analyze of TEs metaPlots"
@@ -118,14 +123,14 @@ while [[ "$#" -gt 0 ]]; do
     --file_type) methyl_files_type="$2"; shift ;;
     --image_type) img_type="$2"; shift ;;
     --n_cores) n_cores="$2"; shift ;;
-    --GO_analysis) GO_analysis=TRUE; shift ;;
-    --KEGG_pathways) KEGG_pathways=TRUE; shift ;;
     --annotation_file) annotation_file="$2"; shift ;;
     --description_file) description_file="$2"; shift ;;
     --TEs_file) TEs_file="$2"; shift ;;
     --Methylome_At_path) Methylome_At_path="$2"; shift ;;
-    --DMVs) DMV_analysis=TRUE; shift ;;
-    --dH) dH_scripts=TRUE; shift ;;
+    --DMRs_off) DMR_analysis=FALSE ;;
+    --strand_DMRs) strand_DMRs=TRUE ;;
+    --DMVs) DMV_analysis=TRUE ;;
+    --dH) dH_scripts=TRUE ;;
     --pca) pca=TRUE ;;
     --total_methylation) total_methylation=TRUE ;;
     --CX_ChrPlot) CX_ChrPlot=TRUE ;;
@@ -133,6 +138,8 @@ while [[ "$#" -gt 0 ]]; do
     --total_meth_ann) total_meth_ann=TRUE ;;
     --TF_motifs) TF_motifs=TRUE ;;
     --func_groups) func_groups=TRUE ;;
+    --GO_analysis) GO_analysis=TRUE ;;
+    --KEGG_pathways) KEGG_pathways=TRUE ;;
     --all_analyses)
       pca=TRUE
       total_methylation=TRUE
@@ -249,6 +256,8 @@ echo "Description file: $description_file"
 echo "Transposable Elements file: $TEs_file"
 echo "Methylome.At directory path: $Methylome_At_path"
 echo ""
+echo "Analyze DMRs workflow: $DMR_analysis"
+echo "Analyze strand-specific DMRs: $strand_DMRs"
 echo "Analyze differentially methylated vallies (1kbp): $DMV_analysis"
 echo "Analyze delta-H scripts: $dH_scripts"
 echo ""
@@ -281,6 +290,7 @@ Rscript ./scripts/Methylome.At_run.R \
 "$methyl_files_type" \
 "$img_type" \
 "$n_cores" \
+"$DMR_analysis" \
 "$pca" \
 "$total_methylation" \
 "$CX_ChrPlot" \
@@ -290,6 +300,7 @@ Rscript ./scripts/Methylome.At_run.R \
 "$func_groups" \
 "$GO_analysis" \
 "$KEGG_pathways" \
+"$strand_DMRs" \
 "$DMV_analysis" \
 "$dH_scripts" \
 "$TEs_mp" \
@@ -330,6 +341,8 @@ echo "Transcription factors motif analysis: $TF_motifs" >> "$log_file"
 echo "Functional groups genes overlap DMRs: $func_groups" >> "$log_file"
 echo "GO Analysis: $GO_analysis" >> "$log_file"
 echo "KEGG Pathways: $KEGG_pathways" >> "$log_file"
+echo "Analyze DMRs workflow: $DMR_analysis" >> "$log_file"
+echo "Analyze strand-specific DMRs: $strand_DMRs" >> "$log_file"
 echo "Analyze differentially methylated vallies (1kbp): $DMV_analysis" >> "$log_file"
 echo "Analyze delta-H scripts: $dH_scripts" >> "$log_file"
 echo "Gene-body metaPlots: $Genes_mp" >> "$log_file"

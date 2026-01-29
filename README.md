@@ -374,14 +374,19 @@ DMRs analysis arguments:
   --func_groups                 Functional groups genes overlap DMRs
   --GO_analysis                 Perform GO analysis over DMRs
   --KEGG_pathways               Perform KEGG pathways analysis over DMRs
+  --all_analyses                Enable all analyses (sets all analysis flags above [pca --> KEGG_pathways])
 
+  --DMRs_off                    Disable the main DMRs analysis workflow
+  --strand_DMRs                 Analyze strand-specific (+/-) DMRs
   --DMVs                        Analyze differentially methylated vallies (1kbp)
-  --dH                          instead of DMRs, analyze delta-H = -(p * log2(p) + (1 - p) * log2(1 - p))
+  --dH                          instead of DMRs worflow (calculated by ratios [p]), analyze SurpDMRs:
+                                delta-H = -(p * log2(p) + (1 - p) * log2(1 - p))
 
 MetaPlots analysis arguments:
   --MP_TEs                      Analyze of TEs metaPlots
   --MP_Genes                    Analyze of Genes-body metaPlots
   --MP_Gene_features            Analyze Gene Features metaPlots
+  --all_metaplots               Enable all metaPlots analyses
   --MP_features_bin_size        Bin-size (set only for 'Gene_features' analysis!) [default: 10]
   --metaPlot_random             Number of random genes/TEs for metaPlots. 'all' for all the coding-genes and TEs [default: 10000]
 ```

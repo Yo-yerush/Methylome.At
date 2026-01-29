@@ -48,6 +48,8 @@ SCRIPT1_DEFAULT_img_type="pdf"
 SCRIPT1_DEFAULT_annotation_file="annotation_files/Methylome.At_annotations.csv.gz"
 SCRIPT1_DEFAULT_description_file="annotation_files/Methylome.At_description_file.csv.gz"
 SCRIPT1_DEFAULT_TEs_file="annotation_files/TAIR10_Transposable_Elements.txt"
+SCRIPT1_DEFAULT_disable_DMRs="no"
+SCRIPT1_DEFAULT_strand_DMRs="no"
 SCRIPT1_DEFAULT_DMVs="no"
 SCRIPT1_DEFAULT_delta_H="no"
 SCRIPT1_DEFAULT_TEs_metaplots="no"
@@ -135,7 +137,7 @@ edit_script1_parameters() {
   # Parameters are expected to be set before calling this function
   while true; do
         OPTION=$(whiptail --title "'Methylome.At' Parameters" \
-            --menu "Select a parameter to change or proceed with current settings." 38 50 30 \
+            --menu "Select a parameter to change or proceed with current settings." 40 50 32 \
             "Proceed."                "$(fmt '' 'Use current parameters')" \
             "Min diff (CG)"           "$(fmt "$SCRIPT1_minProportionDiff_CG" 'Min methylation proportion difference to call CG DMRs')" \
             "Min diff (CHG)"          "$(fmt "$SCRIPT1_minProportionDiff_CHG" 'Min methylation proportion difference to call CHG DMRs')" \
@@ -147,13 +149,13 @@ edit_script1_parameters() {
             "CPU cores"               "$(fmt "$SCRIPT1_n_cores" 'Number of cores for parallel steps')" \
             "Input file format"       "$(fmt "$SCRIPT1_file_type" 'Methylation input format (CX_report/bedMethyl/CGmap)')" \
             "Figure format"           "$(fmt "$SCRIPT1_img_type" 'Output image format for plots (pdf/svg/png/tiff/...)')" \
-            "PCA"                    "$(fmt "$SCRIPT1_pca" 'Perform PCA analysis')" \
+            "PCA"                     "$(fmt "$SCRIPT1_pca" 'Perform PCA analysis')" \
             "Total methylation bar-plots"  "$(fmt "$SCRIPT1_total_methylation" 'Produce total methylation bar-plots')" \
-            "CX Chromosome Plot"     "$(fmt "$SCRIPT1_CX_ChrPlot" 'Generate chromosome-wide CX plots')" \
-            "TEs distance and size"  "$(fmt "$SCRIPT1_TEs_distance_n_size" 'Analyze TEs total methylation by size and distance from centromere')" \
+            "CX Chromosome Plot"      "$(fmt "$SCRIPT1_CX_ChrPlot" 'Generate chromosome-wide CX plots')" \
+            "TEs distance and size"   "$(fmt "$SCRIPT1_TEs_distance_n_size" 'Analyze TEs total methylation by size and distance from centromere')" \
             "Total methylation annotations" "$(fmt "$SCRIPT1_total_meth_ann" 'Total methylation per genic annotations')" \
-            "TF motifs"              "$(fmt "$SCRIPT1_TF_motifs" 'Analyze transcription factor motifs')" \
-            "Functional groups"      "$(fmt "$SCRIPT1_func_groups" 'Functional groups genes overlap DMRs')" \
+            "TF motifs"               "$(fmt "$SCRIPT1_TF_motifs" 'Analyze transcription factor motifs')" \
+            "Functional groups"       "$(fmt "$SCRIPT1_func_groups" 'Functional groups genes overlap DMRs')" \
             "GO enrichment"           "$(fmt "$SCRIPT1_GO_analysis" 'GO enrichment on DMR-associated gene-bodies/promoters')" \
             "KEGG enrichment"         "$(fmt "$SCRIPT1_KEGG_pathways" 'KEGG pathway enrichment on DMR-associated gene-bodies/promoters')" \
             "TE meta-plots"           "$(fmt "$SCRIPT1_TEs_metaplots" 'Metaplots over transposable elements (TE bodies/flanks)')" \
@@ -161,8 +163,10 @@ edit_script1_parameters() {
             "Gene-feature meta-plots" "$(fmt "$SCRIPT1_Gene_features_metaplots" 'Metaplots over gene features (promoter/CDS/intron/UTR)')" \
             "Feature bin size"        "$(fmt "$SCRIPT1_bin_size_features" 'Bins-size for each gene feature region in feature meta-plots')" \
             "Random genes"            "$(fmt "$SCRIPT1_metaPlot_random_genes" 'Number of genes to sample for meta-plots (or all)')" \
-            "DMVs analysis"            "$(fmt "$SCRIPT1_DMVs" '')" \
-            "dH analysis"            "$(fmt "$SCRIPT1_delta_H" '')" \
+            "Disable DMRs analysis"   "$(fmt "$SCRIPT1_disable_DMRs" 'Disable the main DMRs analysis workflow')" \
+            "Strand-specific DMRs"    "$(fmt "$SCRIPT1_strand_DMRs" 'Analyze strand-specific (+/-) DMRs')" \
+            "DMVs analysis"           "$(fmt "$SCRIPT1_DMVs" 'Analyze differentially methylated vallies (1kbp)')" \
+            "dH analysis"             "$(fmt "$SCRIPT1_delta_H" 'instead of DMRs worflow (calculated by ratios [p]), analyze SurpDMRs')" \
             "Annotation file (gtf/gff/csv)"  "$(fmt "$SCRIPT1_annotation_file" '')" \
             "Gene descriptions (txt/csv)"    "$(fmt "$SCRIPT1_description_file" '')" \
             "TE annotation file (txt)"       "$(fmt "$SCRIPT1_TEs_file" '')" \
@@ -366,13 +370,28 @@ edit_script1_parameters() {
         fi
         ;;
 
+      "Disable DMRs analysis")
+        if whiptail --yesno "Disable DMRs analysis?" 10 60; then
+          SCRIPT1_disable_DMRs="yes"
+        else
+          SCRIPT1_disable_DMRs="no"
+        fi
+        ;;
+
+      "Strand-specific DMRs")
+        if whiptail --yesno "Analyze strand-specific DMRs?" 10 60; then
+          SCRIPT1_strand_DMRs="yes"
+        else
+          SCRIPT1_strand_DMRs="no"
+        fi
+        ;;
+
       *)
         # Unknown / spacer items (if you add headers later)
         ;;
     esac
   done
 }
-
 
 
 ###################
@@ -414,13 +433,15 @@ if [[ " ${SELECTED_SCRIPTS[*]} " =~ "Methylome.At" ]]; then
     SCRIPT1_annotation_file="$SCRIPT1_DEFAULT_annotation_file"
     SCRIPT1_description_file="$SCRIPT1_DEFAULT_description_file"
     SCRIPT1_TEs_file="$SCRIPT1_DEFAULT_TEs_file"
+    SCRIPT1_disable_DMRs="$SCRIPT1_DEFAULT_disable_DMRs"
+    SCRIPT1_strand_DMRs="$SCRIPT1_DEFAULT_strand_DMRs"
+    SCRIPT1_DMVs="$SCRIPT1_DEFAULT_DMVs"
+    SCRIPT1_delta_H="$SCRIPT1_DEFAULT_delta_H"
     SCRIPT1_TEs_metaplots="$SCRIPT1_DEFAULT_TEs_metaplots"
     SCRIPT1_Genes_metaplots="$SCRIPT1_DEFAULT_Genes_metaplots"
     SCRIPT1_Gene_features_metaplots="$SCRIPT1_DEFAULT_Gene_features_metaplots"
     SCRIPT1_bin_size_features="$SCRIPT1_DEFAULT_bin_size_features"
     SCRIPT1_metaPlot_random_genes="$SCRIPT1_DEFAULT_metaPlot_random_genes"
-    SCRIPT1_DMVs="$SCRIPT1_DEFAULT_DMVs"
-    SCRIPT1_delta_H="$SCRIPT1_DEFAULT_delta_H"
 
     # Directly go to the parameters selection menu
     edit_script1_parameters || exit 1
@@ -494,6 +515,8 @@ if (whiptail --title "All done!" --yesno "You have chosen to run: $chosen_messag
       $( [ "$SCRIPT1_Gene_features_metaplots" = "yes" ] && echo "--MP_Gene_features" ) \
       --MP_features_bin_size "$SCRIPT1_bin_size_features" \
       --metaPlot_random "$SCRIPT1_metaPlot_random_genes" \
+      $( [ "$SCRIPT1_disable_DMRs" = "yes" ] && echo "--DMRs_off" ) \
+      $( [ "$SCRIPT1_strand_DMRs" = "yes" ] && echo "--strand_DMRs" ) \
       $( [ "$SCRIPT1_DMVs" = "yes" ] && echo "--DMVs" ) \
       $( [ "$SCRIPT1_delta_H" = "yes" ] && echo "--dH" )
   fi

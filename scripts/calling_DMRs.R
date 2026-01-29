@@ -1,7 +1,7 @@
 calling_DMRs <- function(methylationDataReplicates_joints, meth_var1, meth_var2,
                          var1, var2, var1_path, var2_path, comparison_name,
                          context, minProportionDiff, binSize, pValueThreshold,
-                         minCytosinesCount, minReadsPerCytosine, call_ncores, is_Replicates, analysis_name = "DMRs") {
+                         minCytosinesCount, minReadsPerCytosine, call_ncores, is_Replicates, analysis_name = "DMRs", save_csv = TRUE) {
   condition <- c(
     rep(var1, length(var1_path)),
     rep(var2, length(var2_path))
@@ -161,10 +161,12 @@ calling_DMRs <- function(methylationDataReplicates_joints, meth_var1, meth_var2,
       sort()
   }
 
-  write.csv(DMRs_gr,
-    paste0(analysis_name, "_", context, "_", comparison_name, ".csv"),
-    row.names = F
-  )
+  if (save_csv) {
+    write.csv(DMRs_gr,
+      paste0(analysis_name, "_", context, "_", comparison_name, ".csv"),
+      row.names = F
+    )
+  }
 
   return(DMRs_gr)
 }
