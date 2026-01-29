@@ -411,62 +411,62 @@ Methylome.At_main <- function(var1, # control
   ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ###
   ### ### DMRs and its downstream results ### ### ### ### ### ###
 
-  message(sep_cat("DMRs analysis"))
-  cat(sep_cat("DMRs analysis"))
-
-  ##### call DMRs for replicates/single data
-  message(time_msg(), "call DMRs for replicates data: ", is_Replicates)
-  cat(paste0("\n", time_msg(" "), "call DMRs for replicates data: ", is_Replicates, "\n"))
-
-  if (is_Replicates) {
-    cat(paste0(time_msg(" "), "compute ", binSize, "bp DMRs using: beta regression\n"))
-    message(time_msg(), "compute ", binSize, "bp DMRs using: beta regression\n")
-  } else {
-    cat(paste0(time_msg(" "), "compute ", binSize, "bp DMRs using: fisher’s exact test\n"))
-    message(time_msg(), "compute ", binSize, "bp DMRs using: fisher’s exact test\n")
-  }
-
-  ##############################
-  ##### Calling DMRs in Replicates #####
-  dir.create(DMRs_analysis_path, showWarnings = F)
-  setwd(DMRs_analysis_path)
-  DMRs_results <- mclapply(c("CG", "CHG", "CHH"), function(context) {
-    tryCatch(
-      {
-        DMRs_call <- calling_DMRs(
-          methylationDataReplicates_joints, meth_var1, meth_var2,
-          var1, var2, var1_path, var2_path, comparison_name,
-          context, minProportionDiff, binSize, pValueThreshold,
-          minCytosinesCount, minReadsPerCytosine, ifelse(n.cores > 3, n.cores / 3, 1), is_Replicates
-        )
-
-        # quatiles cutoff for dH analysis
-        if (analyze_dH) {
-          DMRs_call <- proportions_cutoff(DMRs_call, meth_var1_replicates, context, q = 0.99)
-        }
-
-        cat(paste0(time_msg(" "), "statistically significant DMRs (", context, "): ", length(DMRs_call), "\n"))
-        message(time_msg(), paste0("statistically significant DMRs (", context, "): ", length(DMRs_call)))
-        # message(time_msg(), paste0("\tDMRs caller in ", context, " context: done"))
-        return(DMRs_call)
-      },
-      error = function(cond) {
-        cat(paste0("\n*\n Calling DMRs in ", context, " context:\n"), as.character(cond), "*\ncontinue without calling DMRs!\n\n")
-        message(time_msg(), "\tCalling DMRs: fail\n")
-        return(NULL)
-      }
-    )
-  }, mc.cores = ifelse(n.cores >= 3, 3, 1))
-
-  names(DMRs_results) <- c("CG", "CHG", "CHH")
-  cat(paste0(time_msg(" "), "done!\n"))
-  message("")
-
-  ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ###
-  ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ###
-  ### ### main loop for plots ### ### ### ### ### ### ### ### ###
-
   if (analyze_DMRs) {
+    message(sep_cat("DMRs analysis"))
+    cat(sep_cat("DMRs analysis"))
+
+    ##### call DMRs for replicates/single data
+    message(time_msg(), "call DMRs for replicates data: ", is_Replicates)
+    cat(paste0("\n", time_msg(" "), "call DMRs for replicates data: ", is_Replicates, "\n"))
+
+    if (is_Replicates) {
+      cat(paste0(time_msg(" "), "compute ", binSize, "bp DMRs using: beta regression\n"))
+      message(time_msg(), "compute ", binSize, "bp DMRs using: beta regression\n")
+    } else {
+      cat(paste0(time_msg(" "), "compute ", binSize, "bp DMRs using: fisher’s exact test\n"))
+      message(time_msg(), "compute ", binSize, "bp DMRs using: fisher’s exact test\n")
+    }
+
+    ##############################
+    ##### Calling DMRs in Replicates #####
+    dir.create(DMRs_analysis_path, showWarnings = F)
+    setwd(DMRs_analysis_path)
+    DMRs_results <- mclapply(c("CG", "CHG", "CHH"), function(context) {
+      tryCatch(
+        {
+          DMRs_call <- calling_DMRs(
+            methylationDataReplicates_joints, meth_var1, meth_var2,
+            var1, var2, var1_path, var2_path, comparison_name,
+            context, minProportionDiff, binSize, pValueThreshold,
+            minCytosinesCount, minReadsPerCytosine, ifelse(n.cores > 3, n.cores / 3, 1), is_Replicates
+          )
+
+          # quatiles cutoff for dH analysis
+          if (analyze_dH) {
+            DMRs_call <- proportions_cutoff(DMRs_call, meth_var1_replicates, context, q = 0.99)
+          }
+
+          cat(paste0(time_msg(" "), "statistically significant DMRs (", context, "): ", length(DMRs_call), "\n"))
+          message(time_msg(), paste0("statistically significant DMRs (", context, "): ", length(DMRs_call)))
+          # message(time_msg(), paste0("\tDMRs caller in ", context, " context: done"))
+          return(DMRs_call)
+        },
+        error = function(cond) {
+          cat(paste0("\n*\n Calling DMRs in ", context, " context:\n"), as.character(cond), "*\ncontinue without calling DMRs!\n\n")
+          message(time_msg(), "\tCalling DMRs: fail\n")
+          return(NULL)
+        }
+      )
+    }, mc.cores = ifelse(n.cores >= 3, 3, 1))
+
+    names(DMRs_results) <- c("CG", "CHG", "CHH")
+    cat(paste0(time_msg(" "), "done!\n"))
+    message("")
+
+    ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ###
+    ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ###
+    ### ### main loop for plots ### ### ### ### ### ### ### ### ###
+
     DMRs_ann_plots_list <- list(CG = NULL, CHG = NULL, CHH = NULL)
     te_vs_gene_bar <- list(CG = NULL, CHG = NULL, CHH = NULL)
 
@@ -489,7 +489,7 @@ Methylome.At_main <- function(var1, # control
       ##### Pie chart
       tryCatch(
         {
-          gainORloss(DMRs_bins, context, add_count = T)
+          gainORloss(DMRs_bins, context, comparison_name, add_count = T)
           message(time_msg(paste0("\t", context, ":")), "\tpie chart (gain or loss): done")
         },
         error = function(cond) {
@@ -501,7 +501,7 @@ Methylome.At_main <- function(var1, # control
       ##### Ratio distribution
       tryCatch(
         {
-          ratio.distribution(DMRs_bins, var1, var2, context, comparison_name)
+          ratio.distribution(DMRs_bins, context, comparison_name)
           message(time_msg(paste0("\t", context, ":")), "\tratio distribution (gain or loss): done")
         },
         error = function(cond) {
@@ -787,11 +787,7 @@ Methylome.At_main <- function(var1, # control
   ### ### ### Strand-Asymmetry Profiling  ### ### ### ### ### ### ### ###
   if (analyze_strand_asymmetry_DMRs) {
     message(sep_cat("Strand-Asymmetry DMRs"))
-    cat(sep_cat("Strand-Asymmetry DMRs\n"))
-
-    sap_output_path <- file.path(DMRs_analysis_path, "Strand_Asymmetry")
-    dir.create(sap_output_path, showWarnings = F)
-    setwd(sap_output_path)
+    cat(sep_cat("Strand-Asymmetry DMRs"))
 
     strand_map <- list("+" = "plus", "-" = "minus")
     strand_results <- list("plus" = list(), "minus" = list())
@@ -799,8 +795,8 @@ Methylome.At_main <- function(var1, # control
     for (st_sym in names(strand_map)) {
       st_label <- strand_map[[st_sym]]
 
-      message(time_msg(), "Processing Strand: ", st_sym)
-      cat(paste0("\n", time_msg(" "), "Processing Strand: ", st_sym, "\n"))
+      message(time_msg(), "Processing ", strand_map[[st_sym]], " strand")
+      cat(paste0("\n", time_msg(" "), "Processing ", strand_map[[st_sym]], " strand", "\n"))
 
       # filter +/- symbols
       strand_joint <- methylationDataReplicates_joints[which(strand(methylationDataReplicates_joints) == st_sym)]
@@ -815,12 +811,12 @@ Methylome.At_main <- function(var1, # control
               var1, var2, var1_path, var2_path, paste0(comparison_name, "_strand_asymmetry"),
               context, minProportionDiff, binSize, pValueThreshold,
               minCytosinesCount, minReadsPerCytosine, ifelse(n.cores > 3, n.cores / 3, 1), is_Replicates,
-              analysis_name = "DMRs", save_csv = FALSE
+              analysis_name = "DMRs", save_csv = FALSE, chr_starts = tapply(start(meth_var1), seqnames(meth_var1), min)
             )
+            strand(DMRs_call) <- st_sym
 
-            gainORloss(DMRs_call, context, add_count = T)
-            ratio.distribution(DMRs_call, var1, var2, context, paste0(comparison_name, "_", st_sym, "_strand"))
-
+            cat(paste0(time_msg(" "), "statistically significant DMRs for '", st_sym, "' strand (", context, "): ", length(DMRs_call), "\n"))
+            message(time_msg(), paste0("statistically significant DMRs for '", st_sym, "' strand (", context, "): ", length(DMRs_call)))
             return(DMRs_call)
           },
           error = function(cond) {
@@ -835,12 +831,22 @@ Methylome.At_main <- function(var1, # control
 
     ###########################################################################
     ### ### Classification into Symmetric, Hemi, and Conflicting ### ### ###
+    #
+    # Symmetric DMRs	    Hyper/Hypo on both strands in the same region.	            Standard epigenetic regulation (e.g., developmental changes).
+    # Hemi-DMRs	          DMR on one strand; no change/no methylation on the other.	  RdDM targeting or early-stage TE silencing.
+    # Conflicting DMRs	  Hyper on + strand and Hypo on - strand (or vice versa).	    Potential replication stress or heavy transcription-methylation interference.
+
+    sap_output_path <- paste0(DMRs_analysis_path, "/strand_asymmetry")
+    dir.create(DMRs_analysis_path, showWarnings = F)
+    dir.create(sap_output_path, showWarnings = F)
     setwd(sap_output_path)
 
     for (context in c("CG", "CHG", "CHH")) {
       tryCatch(
         {
-          cat(paste0("\n", time_msg(" "), "Classifying Asymmetry for: ", context, "\n"))
+          dir.create(paste0(sap_output_path, "/", context), showWarnings = F)
+          setwd(paste0(sap_output_path, "/", context))
+          cat(paste0("\n", time_msg(" "), "Classifying Asymmetry for ", context, " context"))
 
           pos_gr <- strand_results[["plus"]][[context]]
           neg_gr <- strand_results[["minus"]][[context]]
@@ -851,15 +857,12 @@ Methylome.At_main <- function(var1, # control
             next
           }
 
-          strand(pos_gr) <- "+"
-          strand(neg_gr) <- "-"
-
-          hits <- findOverlaps(pos_gr, neg_gr)
+          hits <- findOverlaps(pos_gr, neg_gr, ignore.strand = TRUE)
           quer_hits <- queryHits(hits)
           subj_hits <- subjectHits(hits)
 
           # symmetric & conflicting (where they overlap)
-          match_direction <- sign(pos_gr[quer_hits]$direction) == sign(neg_gr[subj_hits]$direction)
+          match_direction <- (pos_gr[quer_hits]$direction == neg_gr[subj_hits]$direction)
 
           Symmetric_DMRs <- pos_gr[quer_hits][match_direction]
           Conflicting_DMRs <- pos_gr[quer_hits][!match_direction]
@@ -870,13 +873,16 @@ Methylome.At_main <- function(var1, # control
           Hemi_DMRs <- c(Hemi_Plus, Hemi_Minus)
 
           # Save Classification Tables with 'plus' and 'minus' naming convention
-          write.csv(as.data.frame(pos_gr), file.path(sap_output_path, paste0("DMRs_", context, "_plus_strand_", comparison_name, ".csv")))
-          write.csv(as.data.frame(neg_gr), file.path(sap_output_path, paste0("DMRs_", context, "_minus_strand_", comparison_name, ".csv")))
-          write.csv(as.data.frame(Symmetric_DMRs), file.path(sap_output_path, paste0("DMRs_", context, "_symmetric_strand_", comparison_name, ".csv")))
-          write.csv(as.data.frame(Hemi_DMRs), file.path(sap_output_path, paste0("DMRs_", context, "_hemi_strand_", comparison_name, ".csv")))
-          write.csv(as.data.frame(Conflicting_DMRs), file.path(sap_output_path, paste0("DMRs_", context, "_conflicting_strand_", comparison_name, ".csv")))
+          gainORloss(pos_gr, context, paste0(comparison_name, "_plus_strand"), add_count = T)
+          ratio.distribution(neg_gr, context, paste0(comparison_name, "_minus_strand"))
+          write.csv(pos_gr, paste0("DMRs_", context, "_plus_strand_", comparison_name, ".csv"), row.names = F)
+          write.csv(neg_gr, paste0("DMRs_", context, "_minus_strand_", comparison_name, ".csv"), row.names = F)
+          write.csv(Symmetric_DMRs, paste0("DMRs_", context, "_symmetric_strand_", comparison_name, ".csv"), row.names = F)
+          write.csv(Hemi_DMRs, paste0("DMRs_", context, "_hemi_strand_", comparison_name, ".csv"), row.names = F)
+          write.csv(Conflicting_DMRs, paste0("DMRs_", context, "_conflicting_strand_", comparison_name, ".csv"), row.names = F)
 
           message(time_msg(), context, " Strand-Asymmetry Profiling Classification: Done")
+          setwd(sap_output_path)
         },
         error = function(cond) {
           cat(paste0("\n*\n Classifying Asymmetry DMRs in ", context, " context:\n"), as.character(cond), "\n\n")

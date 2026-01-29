@@ -1,4 +1,4 @@
-gainORloss <- function(DMRsReplicates, context, up_col = "#d96c6c", down_col = "#6c96d9", add_count = FALSE) {
+gainORloss <- function(DMRsReplicates, context, comparison_name, up_col = "#d96c6c", down_col = "#6c96d9", add_count = FALSE) {
   gainORloss_vec <- DMRsReplicates$regionType
 
   gain_DMRs <- length(grep("gain", gainORloss_vec))
@@ -66,7 +66,7 @@ gainORloss <- function(DMRsReplicates, context, up_col = "#d96c6c", down_col = "
       size = 0.25
     )
 
-  img_device(paste0("pie_", context, "_gainORloss"), w = ifelse(add_count, 2.5, 2), h = 1)
+  img_device(paste0("pie_", context, "_gainORloss_", comparison_name), w = ifelse(add_count, 2.5, 2), h = 1)
   par(mar = rep(0, 4)) # bottom, left, top, right
   print(final_plot)
   dev.off()
@@ -74,7 +74,7 @@ gainORloss <- function(DMRsReplicates, context, up_col = "#d96c6c", down_col = "
 
 ########################################################
 
-ratio.distribution <- function(DMRsReplicates, var1, var2, context, comparison_name, up_col = "#b36b74", down_col = "#9396c2") {
+ratio.distribution <- function(DMRsReplicates, context, comparison_name, up_col = "#b36b74", down_col = "#9396c2") {
   dmrs_ratio <- DMRsReplicates$proportion2 / DMRsReplicates$proportion1
   n_breaks <- ifelse(length(dmrs_ratio) > 1e4, 1e3, length(dmrs_ratio) / 10)
 

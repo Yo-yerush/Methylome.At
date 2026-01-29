@@ -1,7 +1,8 @@
-calling_DMRs <- function(methylationDataReplicates_joints, meth_var1, meth_var2,
+calling_DMRs <- function(GRreplicates_joints, meth_var1, meth_var2,
                          var1, var2, var1_path, var2_path, comparison_name,
                          context, minProportionDiff, binSize, pValueThreshold,
-                         minCytosinesCount, minReadsPerCytosine, call_ncores, is_Replicates, analysis_name = "DMRs", save_csv = TRUE) {
+                         minCytosinesCount, minReadsPerCytosine, call_ncores, is_Replicates,
+                         analysis_name = "DMRs", save_csv = TRUE, chr_starts = NULL) {
   condition <- c(
     rep(var1, length(var1_path)),
     rep(var2, length(var2_path))
@@ -21,9 +22,9 @@ calling_DMRs <- function(methylationDataReplicates_joints, meth_var1, meth_var2,
 
 
   # get the range for each chromosome (needed to run in parallel)
-  methData_split <- split(methylationDataReplicates_joints, seqnames(methylationDataReplicates_joints))
+  methData_split <- split(GRreplicates_joints, seqnames(GRreplicates_joints))
   methData_split <- methData_split[order(names(methData_split))]
-  start_min <- min(start(methData_split))
+  start_min <- if(is.null(chr_starts)) min(start(methData_split)) else chr_starts
   end_max <- max(end(methData_split))
 
   if (analysis_name == "DMRs") {
@@ -56,7 +57,7 @@ calling_DMRs <- function(methylationDataReplicates_joints, meth_var1, meth_var2,
               invisible(
                 capture.output(
                   x <- computeDMRsReplicates(
-                    methylationDataReplicates_joints,
+                    GRreplicates_joints,
                     condition = condition,
                     regions = chromosome_ranges[i_chr],
                     context = context,

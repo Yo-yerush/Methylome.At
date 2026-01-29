@@ -1,20 +1,74 @@
-library(DMRcaller)
-library(rtracklayer)
-library(dplyr)
-library(parallel)
-library(RColorBrewer)
-library(data.table)
+### load libreries
+lib_packages <- c(
+  "dplyr", "tidyr", "ggplot2", "DMRcaller", "rtracklayer", "lattice",
+  "PeakSegDisk", "topGO", "KEGGREST", "Rgraphviz", "org.At.tair.db",
+  "GenomicFeatures", "geomtextpath", "plyranges", "parallel",
+  "RColorBrewer", "circlize", "cowplot", "knitr", "data.table"
+)
+for (n.pkg in seq(lib_packages)) {
+  tryCatch(
+    {
+      suppressWarnings(suppressMessages(library(lib_packages[n.pkg], character.only = TRUE)))
+      perc_val <- (n.pkg / length(lib_packages)) * 100
+      cat(paste0("\rloading libraries [", round(perc_val, 1), "%] "))
+    },
+    error = function(e) {
+      cat(paste0("\nError loading ", lib_packages[n.pkg], ": ", e$message, "\n"))
+      message(paste0("\n* Error loading ", lib_packages[n.pkg], "package\n"))
+    }
+  )
+}
 
+Methylome.At_path <- "/home/yoyerush/yo/methylome_pipeline/Methylome.At_020126/Methylome.At/"
+CX_files_dir_path <- "/home/yoyerush/yo/methylome_pipeline/other_mutants/stroud_et_al_2013/bismark_results/"
 
-time_msg <- function() "test"
+# configurations
+var1 <- "wt"
+var2 <- "suvh8"
+var1_path <- c(
+  paste0(CX_files_dir_path, "wt_2_bismark_se.CX_report.txt.gz"),
+  paste0(CX_files_dir_path, "wt_3_bismark_se.CX_report.txt.gz")
+)
+var2_path <- paste0(CX_files_dir_path, "suvh8_bismark_se.CX_report.txt.gz")
+annotation_file <- paste0(Methylome.At_path, "annotation_files/Methylome.At_annotations.csv.gz")
+description_file <- paste0(Methylome.At_path, "annotation_files/Methylome.At_description_file.csv.gz")
+# TEs_file <- paste0(Methylome.At_path, "annotation_files/TAIR10_Transposable_Elements.txt")
+minProportionDiff = c(0.4, 0.2, 0.1), # CG, CHG, CHH
+binSize = 100,
+minCytosinesCount = 4,
+minReadsPerCytosine = 4,
+pValueThreshold = 0.05,
+methyl_files_type = "CX_report",
+img_type = "pdf",
+n.cores = 8,
+analyze_DMRs = TRUE,
+run_PCA_plot = TRUE,
+run_total_meth_plot = TRUE,
+run_CX_Chrplot = TRUE,
+run_TEs_distance_n_size = TRUE,
+total_meth_annotation = TRUE,
+run_TF_motifs = TRUE,
+run_functional_groups = TRUE,
+run_GO_analysis = FALSE,
+run_KEGG_pathways = FALSE,
+analyze_strand_asymmetry_DMRs = FALSE,
+analyze_DMVs = FALSE,
+analyze_dH = FALSE,
+run_TE_metaPlots = FALSE,
+run_GeneBody_metaPlots = FALSE,
+run_GeneFeatures_metaPlots = FALSE,
+gene_features_binSize = 10,
+metaPlot.random.genes = 10000
 
-source("https://raw.githubusercontent.com/Yo-yerush/Methylome.At/main/scripts/trimm_and_rename_seq.R")
 ###########################################################################
 
+time_msg <<- function(suffix = " test:\t") paste0(format(Sys.time(), "[%H:%M]"), suffix)
+
+source("https://raw.githubusercontent.com/Yo-yerush/Methylome.At/main/scripts/trimm_and_rename_seq.R")
 
 ##### Read annotation and description files #####
 
-annotation.gr <- read.csv("C:/Users/YonatanY/Migal/Rachel Amir Team - General/Arabidopsis_db/RA_costume_annotations_files/Methylome.At_annotations.csv.gz") %>%
+annotation.gr <- read.csv(annotation_file) %>%
   makeGRangesFromDataFrame(., keep.extra.columns = T) %>%
   trimm_and_rename()
 
@@ -27,19 +81,11 @@ TE_file <- edit_TE_file(TE_file.df)
 
 # upload description file
 
-description_df <- read.csv("/home/yoyerush/yo/methylome_pipeline/leaf_senescence_vatov_22/Methylome.At/annotation_files/Methylome.At_description_file.csv.gz")
+description_df <- read.csv(description_file)
 names(description_df)[1] <- "gene_id"
 
 
 ###########################################################################
-var1 <- "wt"
-var2 <- "suvh8"
-var1_path <- c(
-  "/home/yoyerush/yo/methylome_pipeline/other_mutants/stroud_et_al_2013/bismark_results/wt_2_bismark_se.CX_report.txt.gz",
-  "/home/yoyerush/yo/methylome_pipeline/other_mutants/stroud_et_al_2013/bismark_results/wt_3_bismark_se.CX_report.txt.gz"
-)
-var2_path <- "/home/yoyerush/yo/methylome_pipeline/other_mutants/stroud_et_al_2013/bismark_results/suvh8_bismark_se.CX_report.txt.gz"
-
 
 is_single <- (length(var1_path) == 1 & length(var2_path) == 1) # both genotypes includes 1 sample
 is_Replicates <- (length(var1_path) > 1 & length(var2_path) > 1) # both genotypes includes >1 samples
@@ -65,8 +111,7 @@ meth_var2 <- trimm_and_rename(load_vars[[2]]$methylationData_pool)
 meth_var1_replicates <- trimm_and_rename(load_vars[[1]]$methylationDataReplicates)
 meth_var2_replicates <- trimm_and_rename(load_vars[[2]]$methylationDataReplicates)
 
-cat("\nPooled ", var1, " object for example:\n\n", sep = "")
-capture.output(print(meth_var1), file = NULL)[-c(1, 16)] %>% cat(sep = "\n")
-cat(paste("seq-levels:", paste(seqlevels(meth_var1), collapse = " ")), "  -------", sep = "\n")
-
-print(meth_var1)
+methylationDataReplicates_joints <- joinReplicates(
+  meth_var1,
+  meth_var2
+)
