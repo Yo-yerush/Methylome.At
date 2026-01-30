@@ -3,8 +3,8 @@ title: "[Methylome.At](https://github.com/Yo-yerush/Methylome.At) report"
 date: "`r format(Sys.Date(), '%d, %B, %Y')`"
 output:
   html_document:
-    toc: true
-    toc_float: true
+    toc: false
+    toc_float: false
     number_sections: false
     df_print: paged
     self_contained: true
@@ -54,13 +54,21 @@ params:
   # Report layout (images only)
   # ---------------------------
   plot_max_width_px: 1100      # max width for each plot
-  plot_gap_px: 14              # gap between plots in grids
+  plot_max_height_px: 500      # cap plot height (prevents huge SVG/PNG)
+  plot_gap_px: 5              # gap between plots in grids
   default_plot_cols: 1         # default columns for multi-plot sections
-  pie_plot_cols: 3             # columns for Gain/Loss pies (CG/CHG/CHH)
 
   # If TRUE: copy plots next to the HTML (robust links even when HTML is saved inside results/<comparison>)
   copy_images_next_to_report: true
 ---
+
+<style type="text/css">
+.main-container {
+  max-width: 1800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+</style>
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
@@ -187,30 +195,48 @@ order_files <- function(files) {
   files[order(vapply(files, context_rank, integer(1)), tolower(basename(files)))]
 }
 
-emit_grid <- function(files, cols = params$default_plot_cols) {
+emit_grid <- function(files, cols = params$default_plot_cols, max_height_px = NULL) {
   files <- files[file.exists(files)]
   files <- order_files(files)
   if (length(files) == 0) {
-    cat("_No plot files found._\n\n")
+    cat("_No plot files found._
+
+")
     return(invisible(NULL))
   }
 
   cols <- as.integer(cols)
   if (is.na(cols) || cols < 1L) cols <- 1L
 
-  cat(sprintf('<div class="plot-grid" style="--cols:%d;">\n', cols))
+  mh <- max_height_px
+  if (!is.null(mh)) {
+    mh <- as.integer(mh)
+    if (is.na(mh) || mh < 50L) mh <- NULL
+  }
+
+  if (is.null(mh)) {
+    cat(sprintf('<div class="plot-grid" style="--cols:%d;">
+', cols))
+  } else {
+    cat(sprintf('<div class="plot-grid" style="--cols:%d; --img-max-height:%dpx;">
+', cols, mh))
+  }
+
   for (f in files) {
     src <- asset_link(f)
     if (is.na(src) || !nzchar(src)) next
-    cat(sprintf('  <div class="plot-cell"><img src="%s" loading="lazy"></div>\n', src))
+    cat(sprintf('  <div class="plot-cell"><img src="%s" loading="lazy"></div>
+', src))
   }
-  cat('</div>\n\n')
+  cat('</div>
+
+')
   invisible(NULL)
 }
 
-emit_dir <- function(dir_path, recursive = FALSE, cols = params$default_plot_cols, pattern = NULL) {
+emit_dir <- function(dir_path, recursive = FALSE, cols = params$default_plot_cols, pattern = NULL, max_height_px = NULL) {
   files <- list_media_files(dir_path, recursive = recursive, pattern = pattern)
-  emit_grid(files, cols = cols)
+  emit_grid(files, cols = cols, max_height_px = max_height_px)
 }
 
 # Compact printing of params that may be vectors
@@ -224,6 +250,7 @@ val1 <- function(x) {
 cat(sprintf('<style>
 :root{
   --plot-max-width: %dpx;
+  --plot-max-height: %dpx;
   --plot-gap: %dpx;
 }
 .plot-grid{
@@ -233,6 +260,7 @@ cat(sprintf('<style>
   justify-content: center;
   align-items:flex-start;
   margin: 10px 0 18px 0;
+  --img-max-height: var(--plot-max-height);
 }
 .plot-cell{
   flex: 0 0 calc((100%% - (var(--cols) - 1) * var(--plot-gap)) / var(--cols));
@@ -241,36 +269,22 @@ cat(sprintf('<style>
 .plot-cell img{
   width:100%%;
   height:auto;
+  max-height: var(--img-max-height);
+  object-fit: contain;
   display:block;
 }
-</style>', as.integer(params$plot_max_width_px), as.integer(params$plot_gap_px)))
+</style>', as.integer(params$plot_max_width_px), as.integer(params$plot_max_height_px), as.integer(params$plot_gap_px)))
 ```
 
-# Intro {.tabset}
+
+# `r params$var2` vs `r params$var1`: Results Overview {.tabset}
+
+## QC
 
 **Comparison:** `r params$var2` vs `r params$var1`  
-**Results folder:** `r exp_path`
+**Results folder:** `r file.path(root, exp_path)`
 
-## Key settings (quick)
-
-- **CG / CHG / CHH:** cytosine methylation sequence contexts.
-- **Bins (`binSize`):** genome is tiled into fixed windows to reduce per-site noise.
-- **minCytosinesCount:** minimum informative cytosines per bin.
-- **minReadsPerCytosine:** per-site coverage filter before summarizing bins.
-- **minProportionDiff:** minimal ΔmC threshold (CG/CHG/CHH).
-- **pValueThreshold:** statistical cutoff for significance.
-
-```{r settings, results='asis'}
-settings <- data.frame(
-  Setting = c("methyl_files_type","binSize (bp)","minCytosinesCount","minReadsPerCytosine","pValueThreshold","minProportionDiff (CG,CHG,CHH)","img_type","n.cores"),
-  Value = c(val1(params$methyl_files_type), val1(params$binSize), val1(params$minCytosinesCount), val1(params$minReadsPerCytosine),
-            val1(params$pValueThreshold), val1(params$minProportionDiff), val1(params$img_type), val1(params$n.cores)),
-  check.names = FALSE
-)
-kable(settings)
-```
-
-## Conversion rate (ChrC)
+### Conversion rate
 
 Chloroplast DNA is expected to be largely unmethylated. High C→T conversion on ChrC is a practical estimate of bisulfite conversion efficiency.
 
@@ -284,97 +298,168 @@ if (!file.exists(conv_path)) {
 }
 ```
 
-# Total methylation {.tabset}
+## Total methylation {.tabset}
 
-```{r total-meth, results='asis'}
+```{r total-meth-tabs, results='asis'}
+# Each enabled analysis becomes a sub-tab
 if (isTRUE(params$run_PCA_plot)) {
-  cat("## PCA (Principal Component Analysis)\n\n")
+  cat("### PCA (Principal Component Analysis)\n\n")
   cat("PCA compresses genome-wide methylation into a few axes. Replicates should cluster; separation between conditions suggests global methylation shifts.\n\n")
-  emit_dir(PCA_plots_path, recursive = FALSE, cols = 1)
+  emit_dir(PCA_plots_path, recursive = FALSE, cols = 4, max_height_px = params$plot_max_height_px)
 }
 
 if (isTRUE(params$run_total_meth_plot)) {
-  cat("## Total methylation levels\n\n")
+  cat("### Total methylation levels\n\n")
   cat("Global methylation (%) summarized per context and condition.\n\n")
-  emit_dir(meth_levels_path, recursive = FALSE, cols = params$default_plot_cols)
+  emit_dir(meth_levels_path, recursive = FALSE, cols = 3, max_height_px = params$plot_max_height_px/1.5)
 }
 
 if (isTRUE(params$run_CX_Chrplot)) {
-  cat("## Chromosome methylation profiles\n\n")
-  cat("Methylation along chromosomes. Useful for detecting pericentromeric/heterochromatin-linked changes.\n\n")
-  emit_dir(ChrPlot_CX_path, recursive = FALSE, cols = 1)
+  cat("### Chromosome methylation profiles {.tabset}\n\n")
+  cat("Chromosome-scale methylation. Often highlights pericentromeric/heterochromatin-linked changes.\n\n")
+
+  # Split into context subtabs if possible
+  all_files <- list_media_files(ChrPlot_CX_path, recursive = FALSE)
+  if (length(all_files) == 0) {
+    cat("_No chromosome methylation plots found._\n\n")
+  } else {
+    # Try to group by context keywords in filenames
+    grp_all <- all_files[grepl("all_contexts|allcontexts|all", basename(all_files), ignore.case = TRUE)]
+    grp_cg  <- all_files[grepl("\\bcg\\b",  basename(all_files), ignore.case = TRUE)]
+    grp_chg <- all_files[grepl("\\bchg\\b", basename(all_files), ignore.case = TRUE)]
+    grp_chh <- all_files[grepl("\\bchh\\b", basename(all_files), ignore.case = TRUE)]
+    grp_rest <- setdiff(all_files, c(grp_all, grp_cg, grp_chg, grp_chh))
+
+    if (length(grp_all) > 0) { cat("#### All contexts\n\n"); emit_grid(grp_all, cols = 1, max_height_px = params$plot_max_height_px) }
+    if (length(grp_cg)  > 0) { cat("#### CG\n\n");          emit_grid(grp_cg,  cols = 1, max_height_px = params$plot_max_height_px) }
+    if (length(grp_chg) > 0) { cat("#### CHG\n\n");         emit_grid(grp_chg, cols = 1, max_height_px = params$plot_max_height_px) }
+    if (length(grp_chh) > 0) { cat("#### CHH\n\n");         emit_grid(grp_chh, cols = 1, max_height_px = params$plot_max_height_px) }
+
+    # If filenames don't include contexts, show remaining as their own subtabs (one file per tab)
+    if (length(grp_rest) > 0) {
+      for (f in order_files(grp_rest)) {
+        cat("#### ", tools::file_path_sans_ext(basename(f)), "\n\n", sep="")
+        emit_grid(c(f), cols = 1, max_height_px = params$plot_max_height_px)
+      }
+    }
+  }
+
   if (dir.exists(ChrPlot_subCX_path)) {
-    cat("#### subCX\n\n")
-    emit_dir(ChrPlot_subCX_path, recursive = TRUE, cols = 1)
+    sub_files <- list_media_files(ChrPlot_subCX_path, recursive = TRUE)
+    if (length(sub_files) > 0) {
+      cat("#### subCX\n\n")
+      emit_grid(sub_files, cols = 1, max_height_px = params$plot_max_height_px)
+    }
   }
 }
 
 if (isTRUE(params$run_TEs_distance_n_size)) {
-  cat("## TE methylation vs TE size & centromere distance\n\n")
-  emit_dir(TEs_distance_n_size_path, recursive = TRUE, cols = params$default_plot_cols)
+  cat("### TE methylation vs TE size & centromere distance\n\n")
+  emit_dir(TEs_distance_n_size_path, recursive = TRUE, cols = 4, max_height_px = params$plot_max_height_px)
 }
 
 if (isTRUE(params$total_meth_annotation)) {
-  cat("## Total methylation across genome annotations\n\n")
-  emit_dir(total_meth_annotation_path, recursive = TRUE, cols = params$default_plot_cols)
+  cat("### Total methylation across genome annotations\n\n")
+  emit_dir(total_meth_annotation_path, recursive = TRUE, cols = params$default_plot_cols, max_height_px = params$plot_max_height_px)
 }
 
 if (isTRUE(params$run_TF_motifs)) {
-  cat("## TF motif analysis\n\n")
-  emit_dir(TF_motifs_path, recursive = TRUE, cols = params$default_plot_cols)
+  cat("### TF motif analysis {.tabset}\n\n")
+
+  tf_files <- list_media_files(TF_motifs_path, recursive = TRUE)
+  if (length(tf_files) == 0) {
+    cat("_No TF motif plots found._\n\n")
+  } else {
+    # Group by context when possible; otherwise one file per tab
+    tf_all <- tf_files[grepl("all_contexts|allcontexts|all", basename(tf_files), ignore.case = TRUE)]
+    tf_cg  <- tf_files[grepl("\\bcg\\b",  basename(tf_files), ignore.case = TRUE)]
+    tf_chg <- tf_files[grepl("\\bchg\\b", basename(tf_files), ignore.case = TRUE)]
+    tf_chh <- tf_files[grepl("\\bchh\\b", basename(tf_files), ignore.case = TRUE)]
+    tf_rest <- setdiff(tf_files, c(tf_all, tf_cg, tf_chg, tf_chh))
+
+    if (length(tf_all) > 0) { cat("#### All contexts\n\n"); emit_grid(tf_all, cols = params$default_plot_cols, max_height_px = params$plot_max_height_px) }
+    if (length(tf_cg)  > 0) { cat("#### CG\n\n");          emit_grid(tf_cg,  cols = params$default_plot_cols, max_height_px = params$plot_max_height_px) }
+    if (length(tf_chg) > 0) { cat("#### CHG\n\n");         emit_grid(tf_chg, cols = params$default_plot_cols, max_height_px = params$plot_max_height_px) }
+    if (length(tf_chh) > 0) { cat("#### CHH\n\n");         emit_grid(tf_chh, cols = params$default_plot_cols, max_height_px = params$plot_max_height_px) }
+
+    if (length(tf_rest) > 0) {
+      for (f in order_files(tf_rest)) {
+        cat("#### ", tools::file_path_sans_ext(basename(f)), "\n\n", sep="")
+        emit_grid(c(f), cols = 1, max_height_px = params$plot_max_height_px)
+      }
+    }
+  }
 }
 ```
+## DMRs {.tabset}
 
-# DMRs {.tabset}
+### Settings
 
-```{r dmrs, results='asis'}
+```{r dmrs-settings-table, results='asis'}
+settings <- data.frame(
+  Setting = c("methyl_files_type","binSize (bp)","minCytosinesCount","minReadsPerCytosine","pValueThreshold","minProportionDiff (CG,CHG,CHH)","img_type","n.cores"),
+  Value = c(val1(params$methyl_files_type), val1(params$binSize), val1(params$minCytosinesCount), val1(params$minReadsPerCytosine),
+            val1(params$pValueThreshold), val1(params$minProportionDiff), val1(params$img_type), val1(params$n.cores)),
+  Description = c(
+    "Type of input methylation files (e.g., CX_report).",
+    "Genome tiling window size used to reduce per-site noise.",
+    "Minimum informative cytosines required per bin.",
+    "Per-site coverage filter applied before summarizing bins.",
+    "Statistical cutoff for significance (p-value).",
+    "Minimal ΔmC thresholds for CG, CHG and CHH contexts.",
+    "Image output format for plots (svg/png/jpeg/gif).",
+    "Number of CPU cores used for parallel steps."
+  ),
+  check.names = FALSE,
+  stringsAsFactors = FALSE
+)
+knitr::kable(settings)
+```
+
+```{r dmrs-tabs, results='asis'}
 if (isTRUE(params$analyze_DMRs)) {
-  cat("## What is a DMR in this pipeline?\n\n")
-  cat("DMRs are called on fixed genomic **bins** (`binSize`) to stabilize estimates across multiple cytosines.\n\n")
-  cat("- binSize = ", params$binSize, " bp\n", sep="")
-  cat("- minCytosinesCount = ", params$minCytosinesCount, "\n", sep="")
-  cat("- minReadsPerCytosine = ", params$minReadsPerCytosine, "\n", sep="")
-  cat("- minProportionDiff (CG,CHG,CHH) = ", paste(params$minProportionDiff, collapse=", "), "\n", sep="")
-  cat("- pValueThreshold = ", params$pValueThreshold, "\n\n", sep="")
-
-  # DMR density (if present)
+  # Density
   dens <- list.files(DMRs_analysis_path, pattern = "DMRs_Density.*\\.(png|svg|jpg|jpeg|gif)$", full.names = TRUE, ignore.case = TRUE)
   if (length(dens) > 0) {
-    cat("## DMR density\n\n")
-    emit_grid(dens, cols = 1)
+    cat("### Density\n\n")
+    emit_grid(dens, cols = 1, max_height_px = params$plot_max_height_px)
   }
 
-  # Gain/Loss pies side-by-side + other gain/loss plots
-  cat("## Gain/Loss summaries\n\n")
+  # Gain/Loss
+  cat("### Gain/Loss\n\n")
   gl_files <- list_media_files(gainORloss_path, recursive = TRUE)
   pie_files <- gl_files[grepl("pie", basename(gl_files), ignore.case = TRUE)]
   other_files <- setdiff(gl_files, pie_files)
 
-  if (length(pie_files) > 0) emit_grid(pie_files, cols = params$pie_plot_cols)
-  if (length(other_files) > 0) emit_grid(other_files, cols = params$default_plot_cols)
+  if (length(other_files) > 0) {
+    emit_grid(other_files, cols = 3, max_height_px = params$plot_max_height_px/2)
+  }
+  if (length(pie_files) > 0) {
+    emit_grid(pie_files, cols = 3, max_height_px = params$plot_max_height_px/5)
+  }
 
   # Chromosome distribution
-  cat("## Chromosome distribution of DMRs\n\n")
-  emit_dir(ChrPlots_DMRs_path, recursive = TRUE, cols = 1)
+  cat("### Chromosome plots\n\n")
+  emit_dir(ChrPlots_DMRs_path, recursive = TRUE, cols = 1, max_height_px = params$plot_max_height_px/3)
 
   # Genome annotation
-  cat("## Genome annotation summaries\n\n")
-  emit_dir(genome_ann_path, recursive = TRUE, cols = params$default_plot_cols)
+  cat("### Genome annotation\n\n")
+  emit_dir(genome_ann_path, recursive = TRUE, cols = params$default_plot_cols, max_height_px = params$plot_max_height_px)
 
   # Functional groups
   if (isTRUE(params$run_functional_groups)) {
     fg_dir <- file.path(genome_ann_path, "functional_groups")
     if (dir.exists(fg_dir)) {
-      cat("## Functional groups overlap\n\n")
-      emit_dir(fg_dir, recursive = TRUE, cols = params$default_plot_cols)
+      cat("### Functional groups\n\n")
+      emit_dir(fg_dir, recursive = TRUE, cols = params$default_plot_cols, max_height_px = params$plot_max_height_px)
     }
   }
 
-  # BigWig listing (no heavy loads)
+  # BigWigs
   if (dir.exists(DMRs_bigWig_path)) {
     bw <- list.files(DMRs_bigWig_path, pattern = "\\.(bw|bigWig)$", full.names = FALSE, ignore.case = TRUE)
     if (length(bw) > 0) {
-      cat("## BigWig tracks\n\n")
+      cat("### BigWig tracks\n\n")
       cat("These tracks can be loaded in IGV.\n\n")
       cat(paste0("- ", bw, collapse = "\n"), "\n\n")
     }
@@ -382,26 +467,28 @@ if (isTRUE(params$analyze_DMRs)) {
 
   # GO / KEGG (plots only)
   if (isTRUE(params$run_GO_analysis)) {
-    cat("## GO analysis\n\n")
-    emit_dir(file.path(exp_path, "GO_analysis"), recursive = TRUE, cols = params$default_plot_cols)
+    cat("### GO analysis\n\n")
+    emit_dir(file.path(exp_path, "GO_analysis"), recursive = TRUE, cols = params$default_plot_cols, max_height_px = params$plot_max_height_px)
   }
   if (isTRUE(params$run_KEGG_pathways)) {
-    cat("## KEGG pathways\n\n")
-    emit_dir(file.path(exp_path, "KEGG_pathway"), recursive = TRUE, cols = params$default_plot_cols)
+    cat("### KEGG pathways\n\n")
+    emit_dir(file.path(exp_path, "KEGG_pathway"), recursive = TRUE, cols = params$default_plot_cols, max_height_px = params$plot_max_height_px)
   }
+} else {
+  cat("_DMR analysis is disabled (analyze_DMRs=FALSE)._\\n\\n")
 }
 ```
 
-## Other analyses {.tabset}
+## Other analyses
 
 ```{r other, results='asis'}
 if (isTRUE(params$analyze_strand_asymmetry_DMRs)) {
-  cat("## Strand-asymmetry DMRs\n\n")
+  cat("### Strand-asymmetry DMRs\n\n")
   emit_dir(strand_asymmetry_path, recursive = TRUE, cols = params$default_plot_cols)
 }
 
 if (isTRUE(params$analyze_DMVs)) {
-  cat("## DMVs (1kb)\n\n")
+  cat("### DMVs (1kb)\n\n")
   cat("DMV tables can be large, so this report only lists output file sizes.\n\n")
   if (dir.exists(DMV_analysis_path)) {
     csvs <- list.files(DMV_analysis_path, pattern = "\\.csv$", full.names = TRUE, ignore.case = TRUE)
@@ -416,7 +503,7 @@ if (isTRUE(params$analyze_DMVs)) {
 }
 
 if (isTRUE(params$analyze_dH)) {
-  cat("## ΔH / entropy\n\n")
+  cat("### ΔH / entropy\n\n")
   cat("ΔH captures changes in methylation heterogeneity (stochasticity) rather than only mean methylation.\n\n")
   emit_dir(dH_path, recursive = TRUE, cols = params$default_plot_cols)
   if (dir.exists(dH_ann_path)) {
@@ -426,7 +513,7 @@ if (isTRUE(params$analyze_dH)) {
 }
 
 if (isTRUE(params$run_TE_metaPlots) || isTRUE(params$run_GeneBody_metaPlots) || isTRUE(params$run_GeneFeatures_metaPlots)) {
-  cat("## MetaPlots\n\n")
+  cat("### MetaPlots\n\n")
   if (is.na(meta_dir)) {
     cat("_No MetaPlots/metaPlots folder found._\n\n")
   } else {
@@ -446,8 +533,20 @@ if (isTRUE(params$run_TE_metaPlots) || isTRUE(params$run_GeneBody_metaPlots) || 
 }
 ```
 
-## Session
+## Session {.tabset}
 
-```{r session-info}
-sessionInfo()
+### Configurations
+
+```{r params-table, results='asis'}
+pnames <- names(params)
+vals <- vapply(pnames, function(n) val1(params[[n]]), character(1))
+cfg <- data.frame(Parameter = pnames, Value = vals, check.names = FALSE, stringsAsFactors = FALSE)
+kable(cfg)
+```
+
+### Session info
+
+```{r session-info, results='asis'}
+si <- capture.output(sessionInfo())
+cat("<div style='max-width:900px; margin:0 auto;'><pre style='font-size:90%'>", paste(si, collapse = "\n"), "</pre></div>", sep = "")
 ```

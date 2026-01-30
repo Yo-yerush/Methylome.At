@@ -19,7 +19,7 @@ for (n.pkg in seq(lib_packages)) {
   )
 }
 
-Methylome.At_path <- "/home/yoyerush/yo/methylome_pipeline/Methylome.At_020126/Methylome.At/"
+Methylome.At_path <- "/home/yoyerush/yo/methylome_pipeline/Methylome.At_290126/Methylome.At/"
 CX_files_dir_path <- "/home/yoyerush/yo/methylome_pipeline/other_mutants/stroud_et_al_2013/bismark_results/"
 
 # configurations
@@ -59,6 +59,8 @@ run_GeneBody_metaPlots = FALSE
 run_GeneFeatures_metaPlots = FALSE
 gene_features_binSize = 10
 metaPlot.random.genes = 10000
+comparison_name <- paste0(var2, "_vs_", var1)
+exp_path <- paste0(Methylome.At_path, "results/", comparison_name)
 
 ###########################################################################
 
@@ -75,8 +77,8 @@ annotation.gr <- read.csv(annotation_file) %>%
 # TAIR10 Transposable Elements file
 
 source("https://raw.githubusercontent.com/Yo-yerush/Methylome.At/main/scripts/edit_TE_file.R")
-TEs_file <- read.csv("https://raw.githubusercontent.com/Yo-yerush/Methylome.At/main/annotation_files/TAIR10_Transposable_Elements.txt", sep = "\t")
-TE_gr <- edit_TE_file(TEs_file)
+TEs_file.df <- read.csv(TEs_file, sep = "\t")
+TE_gr <- edit_TE_file(TEs_file.df)
 
 
 # upload description file
