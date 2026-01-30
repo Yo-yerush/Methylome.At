@@ -89,7 +89,7 @@ ratio.distribution <- function(DMRsReplicates, context, comparison_name, up_col 
     # col = c(rep("blue",length(h$counts)/2),rep("red",length(h$counts)/2)),
     # border = c(rep("blue",length(h$counts)/2),rep("red",length(h$counts)/2)),
     border = ifelse((h$mids > 0), up_col, down_col),
-    breaks = 250
+    breaks = 150
   )
   # if((length(h$breaks) %% 2) != 0) {bar_colors = append(bar_colors,"red",after = T)}
 

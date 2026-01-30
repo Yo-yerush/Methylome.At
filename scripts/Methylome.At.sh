@@ -311,12 +311,6 @@ Rscript ./scripts/Methylome.At_run.R \
 "$metaPlot_random_genes" \
     2>> "$log_file"
 
-# Output a markdown report as '.html' file
-report_file_name="${condition_s}_report_$(date +"%d-%m-%y").html"
-report_file_path="${Methylome_At_path}/results/${condition_s}"
-cd "$Methylome_At_path"
-Rscript -e "rmarkdown::render('./scripts/Methylome.At_report.Rmd',output_file = '$report_file_name', output_dir = '$report_file_path', params = list(cond1 = '$control_s', cond2 = '$treatment_s'), quiet = TRUE)"
-
 # Output again the configurations, now to the 'log' file
 echo "" >> "$log_file"
 echo "" >> "$log_file"

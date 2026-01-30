@@ -32,32 +32,32 @@ var1_path <- c(
 var2_path <- paste0(CX_files_dir_path, "suvh8_bismark_se.CX_report.txt.gz")
 annotation_file <- paste0(Methylome.At_path, "annotation_files/Methylome.At_annotations.csv.gz")
 description_file <- paste0(Methylome.At_path, "annotation_files/Methylome.At_description_file.csv.gz")
-# TEs_file <- paste0(Methylome.At_path, "annotation_files/TAIR10_Transposable_Elements.txt")
-minProportionDiff = c(0.4, 0.2, 0.1), # CG, CHG, CHH
-binSize = 100,
-minCytosinesCount = 4,
-minReadsPerCytosine = 4,
-pValueThreshold = 0.05,
-methyl_files_type = "CX_report",
-img_type = "pdf",
-n.cores = 8,
-analyze_DMRs = TRUE,
-run_PCA_plot = TRUE,
-run_total_meth_plot = TRUE,
-run_CX_Chrplot = TRUE,
-run_TEs_distance_n_size = TRUE,
-total_meth_annotation = TRUE,
-run_TF_motifs = TRUE,
-run_functional_groups = TRUE,
-run_GO_analysis = FALSE,
-run_KEGG_pathways = FALSE,
-analyze_strand_asymmetry_DMRs = FALSE,
-analyze_DMVs = FALSE,
-analyze_dH = FALSE,
-run_TE_metaPlots = FALSE,
-run_GeneBody_metaPlots = FALSE,
-run_GeneFeatures_metaPlots = FALSE,
-gene_features_binSize = 10,
+TEs_file <- "https://raw.githubusercontent.com/Yo-yerush/Methylome.At/main/scripts/edit_TE_file.R"
+minProportionDiff = c(0.4, 0.2, 0.1) # CG, CHG, CHH
+binSize = 100
+minCytosinesCount = 4
+minReadsPerCytosine = 4
+pValueThreshold = 0.05
+methyl_files_type = "CX_report"
+img_type = "pdf"
+n.cores = 8
+analyze_DMRs = TRUE
+run_PCA_plot = TRUE
+run_total_meth_plot = TRUE
+run_CX_Chrplot = TRUE
+run_TEs_distance_n_size = TRUE
+total_meth_annotation = TRUE
+run_TF_motifs = TRUE
+run_functional_groups = TRUE
+run_GO_analysis = FALSE
+run_KEGG_pathways = FALSE
+analyze_strand_asymmetry_DMRs = FALSE
+analyze_DMVs = FALSE
+analyze_dH = FALSE
+run_TE_metaPlots = FALSE
+run_GeneBody_metaPlots = FALSE
+run_GeneFeatures_metaPlots = FALSE
+gene_features_binSize = 10
 metaPlot.random.genes = 10000
 
 ###########################################################################
@@ -75,8 +75,8 @@ annotation.gr <- read.csv(annotation_file) %>%
 # TAIR10 Transposable Elements file
 
 source("https://raw.githubusercontent.com/Yo-yerush/Methylome.At/main/scripts/edit_TE_file.R")
-TE_file.df <- read.csv("https://raw.githubusercontent.com/Yo-yerush/Methylome.At/main/annotation_files/TAIR10_Transposable_Elements.txt", sep = "\t")
-TE_file <- edit_TE_file(TE_file.df)
+TEs_file <- read.csv("https://raw.githubusercontent.com/Yo-yerush/Methylome.At/main/annotation_files/TAIR10_Transposable_Elements.txt", sep = "\t")
+TE_gr <- edit_TE_file(TEs_file)
 
 
 # upload description file

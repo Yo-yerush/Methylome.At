@@ -90,7 +90,7 @@ Methylome.At_main <- function(var1, # control
   tryCatch(
     {
       TE_file.df <- read.csv(TEs_file, sep = "\t")
-      TE_file <- edit_TE_file(TE_file.df)
+      TE_gr <- edit_TE_file(TE_file.df)
       message(time_msg(), "load Transposable Elements file")
     },
     error = function(cond) {
@@ -179,7 +179,7 @@ Methylome.At_main <- function(var1, # control
   exp_path <- paste0(Methylome.At_path, "/results/", comparison_name)
 
   qc_dir_path <- paste0(exp_path, "/QC")
-  
+
   total_meth_path <- paste0(exp_path, "/total_methylation_analysis")
   PCA_plots_path <- paste0(total_meth_path, "/PCA_plots")
   meth_levels_path <- paste0(total_meth_path, "/methylation_levels")
@@ -302,7 +302,7 @@ Methylome.At_main <- function(var1, # control
     tryCatch(
       {
         source(paste0(scripts_dir, "/ChrPlots_CX.R"))
-        suppressWarnings(run_ChrPlots_CX(var1, var2, meth_var1, meth_var2, TE_file, n.cores))
+        suppressWarnings(run_ChrPlots_CX(var1, var2, meth_var1, meth_var2, TE_gr, n.cores))
         message("done")
       },
       error = function(cond) {
@@ -320,7 +320,7 @@ Methylome.At_main <- function(var1, # control
   if (run_TEs_distance_n_size) {
     tryCatch(
       {
-        TE_context_list <- TE_delta_meth(list(meth_var1, meth_var2), TE_file)
+        TE_context_list <- TE_delta_meth(list(meth_var1, meth_var2), TE_gr)
 
         dir.create(TEs_distance_n_size_path, showWarnings = FALSE)
 
@@ -340,7 +340,7 @@ Methylome.At_main <- function(var1, # control
 
         ## TE methylation levels (delta) and distance from centromer
         cat("TE delta-methylation vs. distance from centromere\n")
-        TE_distance <- distance_from_centromer(TE_context_list, TE_file, window_size = 1e6)
+        TE_distance <- distance_from_centromer(TE_context_list, TE_gr, window_size = 1e6)
 
         ggsave(
           filename = paste0(TEs_distance_n_size_path, "/TE_centromere_distance_delta.png"),
@@ -370,7 +370,7 @@ Methylome.At_main <- function(var1, # control
     for (cntx_ann in c("CG", "CHG", "CHH")) {
       tryCatch(
         {
-          ann_list <- genome_ann(annotation.gr, TE_file)
+          ann_list <- genome_ann(annotation.gr, TE_gr)
           total_methylation_ann(ann_list, var1, var2, meth_var1, meth_var2, cntx_ann)
           # message("done")
         },
@@ -539,7 +539,7 @@ Methylome.At_main <- function(var1, # control
       # genome annotations
       tryCatch(
         {
-          ann_list <- genome_ann(annotation.gr, TE_file) # create annotations from annotation file as a list
+          ann_list <- genome_ann(annotation.gr, TE_gr) # create annotations from annotation file as a list
           DMRs_ann(ann_list, DMRs_bins, context, description_df) # save tables of annotate DMRs. have to run after 'genome_ann'
           DMRs_ann_plots_list[[context]] <- DMRs_ann_plots(var1, var2, context)
           message(time_msg(paste0("\t", context, ":")), "\tgenome annotations for DMRs: done")
@@ -553,8 +553,8 @@ Methylome.At_main <- function(var1, # control
       # additional TE annotations results
       tryCatch(
         {
-          te_vs_gene_bar[[context]] <- TE_ann_plots(context, TE_file)
-          TE_Super_Family_Frequency(context, TE_file)
+          te_vs_gene_bar[[context]] <- TE_ann_plots(context, TE_gr)
+          TE_Super_Family_Frequency(context, TE_gr)
         },
         error = function(cond) {
           cat("\n*\n TE families plots:\n", as.character(cond), "*\n")
@@ -639,7 +639,7 @@ Methylome.At_main <- function(var1, # control
         setwd(DMRs_analysis_path)
         cat("\ngenerated DMRs density plot for all contexts: ")
         # setwd(ChrPlots_DMRs_path)
-        DMRs_circular_plot(annotation.gr, TE_file, comparison_name)
+        DMRs_circular_plot(annotation.gr, TE_gr, comparison_name)
         cat("done\n")
         message(time_msg(), "generated DMRs density plot for all contexts: done")
       },
@@ -762,7 +762,7 @@ Methylome.At_main <- function(var1, # control
     tryCatch(
       {
         source(paste0(scripts_dir, "/mean_deltaH_CX.R"))
-        suppressWarnings(run_mean_deltaH_CX(var1, var2, meth_var1, meth_var2, TE_file, n.cores))
+        suppressWarnings(run_mean_deltaH_CX(var1, var2, meth_var1, meth_var2, TE_gr, n.cores))
         message("done")
       },
       error = function(cond) {
@@ -774,7 +774,7 @@ Methylome.At_main <- function(var1, # control
     # message(time_msg(), "generating sum dH analysis:\n", appendLF = F) # , rep("-", 29)
     # tryCatch(
     #   {
-    #     suppressWarnings(run_sum_deltaH_CX(var1, var2, meth_var1, meth_var2, annotation.gr, TE_file, description_df, n.cores, fdr = 0.95))
+    #     suppressWarnings(run_sum_deltaH_CX(var1, var2, meth_var1, meth_var2, annotation.gr, TE_gr, description_df, n.cores, fdr = 0.95))
     #   },
     #   error = function(cond) {
     #     cat("\n*\n sum dH:\n", as.character(cond), "*\n")
@@ -898,11 +898,11 @@ Methylome.At_main <- function(var1, # control
         cat(paste0("Generating circular density plot for strands asymmetry focus: "))
 
         # Runs circular plot on the newly classified data
-        try(DMRs_circular_plot(annotation.gr, TE_file, paste0("plus_strand_", comparison_name)))
-        try(DMRs_circular_plot(annotation.gr, TE_file, paste0("minus_strand_", comparison_name)))
-        try(DMRs_circular_plot(annotation.gr, TE_file, paste0("symmetric_strand_", comparison_name)))
-        try(DMRs_circular_plot(annotation.gr, TE_file, paste0("hemi_strand_", comparison_name)))
-        try(DMRs_circular_plot(annotation.gr, TE_file, paste0("conflicting_strand_", comparison_name)))
+        try(DMRs_circular_plot(annotation.gr, TE_gr, paste0("plus_strand_", comparison_name)))
+        try(DMRs_circular_plot(annotation.gr, TE_gr, paste0("minus_strand_", comparison_name)))
+        try(DMRs_circular_plot(annotation.gr, TE_gr, paste0("symmetric_strand_", comparison_name)))
+        try(DMRs_circular_plot(annotation.gr, TE_gr, paste0("hemi_strand_", comparison_name)))
+        try(DMRs_circular_plot(annotation.gr, TE_gr, paste0("conflicting_strand_", comparison_name)))
 
         cat("done\n")
         message(time_msg(), "Circular plot for Strand-Asymmetry Profiling: done")
@@ -997,7 +997,7 @@ Methylome.At_main <- function(var1, # control
         {
           message(time_msg(), "generate metaPlot from ", metaPlot.random.genes, " Transposable Elements")
           setwd(metaPlot_path)
-          Genes_metaPlot(meth_var1, meth_var2, var1, var2, TE_file, metaPlot.random.genes, minReadsPerCytosine, n.cores, is_TE = T)
+          Genes_metaPlot(meth_var1, meth_var2, var1, var2, TE_gr, metaPlot.random.genes, minReadsPerCytosine, n.cores, is_TE = T)
           setwd(metaPlot_path)
           delta_metaplot("TEs", var1, var2)
         },
@@ -1024,6 +1024,54 @@ Methylome.At_main <- function(var1, # control
   }
 
   setwd(exp_path)
+
+  ###########################################################################
+  message(time_msg(), "generate results overview report")
+  cat(time_msg(), "generate results overview report", sep = "")
+  try({
+    rmarkdown::render(
+      file.path(Methylome.At_path, "/scripts/Methylome.At_report.Rmd"),
+      params = list(
+        var1 = var1,
+        var2 = var2,
+        var1_path = var1_path,
+        var2_path = var2_path,
+        Methylome.At_path = Methylome.At_path,
+        annotation_file = annotation_file,
+        description_file = description_file,
+        TEs_file = TEs_file,
+        minProportionDiff = minProportionDiff,
+        binSize = binSize,
+        minCytosinesCount = minCytosinesCount,
+        minReadsPerCytosine = minReadsPerCytosine,
+        pValueThreshold = pValueThreshold,
+        methyl_files_type = methyl_files_type,
+        img_type = img_type,
+        n.cores = n.cores,
+        analyze_DMRs = analyze_DMRs,
+        run_PCA_plot = run_PCA_plot,
+        run_total_meth_plot = run_total_meth_plot,
+        run_CX_Chrplot = run_CX_Chrplot,
+        run_TEs_distance_n_size = run_TEs_distance_n_size,
+        total_meth_annotation = total_meth_annotation,
+        run_TF_motifs = run_TF_motifs,
+        run_functional_groups = run_functional_groups,
+        run_GO_analysis = run_GO_analysis,
+        run_KEGG_pathways = run_KEGG_pathways,
+        analyze_strand_asymmetry_DMRs = analyze_strand_asymmetry_DMRs,
+        analyze_DMVs = analyze_DMVs,
+        analyze_dH = analyze_dH,
+        run_TE_metaPlots = run_TE_metaPlots,
+        run_GeneBody_metaPlots = run_GeneBody_metaPlots,
+        run_GeneFeatures_metaPlots = run_GeneFeatures_metaPlots,
+        gene_features_binSize = gene_features_binSize,
+        metaPlot.random.genes = metaPlot.random.genes
+      ),
+      output_dir = exp_path,
+      output_file = paste0(comparison_name, "_report.html"),
+      quiet = T
+    )
+  })
 
   ###########################################################################
 
