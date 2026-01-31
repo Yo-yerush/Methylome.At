@@ -1029,48 +1029,52 @@ Methylome.At_main <- function(var1, # control
   message(time_msg(), "generate results overview report")
   cat(time_msg(), "generate results overview report", sep = "")
   try({
-    rmarkdown::render(
-      file.path(Methylome.At_path, "/scripts/Methylome.At_report.Rmd"),
-      params = list(
-        var1 = var1,
-        var2 = var2,
-        var1_path = var1_path,
-        var2_path = var2_path,
-        Methylome.At_path = Methylome.At_path,
-        annotation_file = annotation_file,
-        description_file = description_file,
-        TEs_file = TEs_file,
-        minProportionDiff = minProportionDiff,
-        binSize = binSize,
-        minCytosinesCount = minCytosinesCount,
-        minReadsPerCytosine = minReadsPerCytosine,
-        pValueThreshold = pValueThreshold,
-        methyl_files_type = methyl_files_type,
-        img_type = img_type,
-        n.cores = n.cores,
-        analyze_DMRs = analyze_DMRs,
-        run_PCA_plot = run_PCA_plot,
-        run_total_meth_plot = run_total_meth_plot,
-        run_CX_Chrplot = run_CX_Chrplot,
-        run_TEs_distance_n_size = run_TEs_distance_n_size,
-        total_meth_annotation = total_meth_annotation,
-        run_TF_motifs = run_TF_motifs,
-        run_functional_groups = run_functional_groups,
-        run_GO_analysis = run_GO_analysis,
-        run_KEGG_pathways = run_KEGG_pathways,
-        analyze_strand_asymmetry_DMRs = analyze_strand_asymmetry_DMRs,
-        analyze_DMVs = analyze_DMVs,
-        analyze_dH = analyze_dH,
-        run_TE_metaPlots = run_TE_metaPlots,
-        run_GeneBody_metaPlots = run_GeneBody_metaPlots,
-        run_GeneFeatures_metaPlots = run_GeneFeatures_metaPlots,
-        gene_features_binSize = gene_features_binSize,
-        metaPlot.random.genes = metaPlot.random.genes
-      ),
-      output_dir = exp_path,
-      output_file = paste0(comparison_name, "_report.html"),
-      quiet = T
-    )
+    suppressWarnings({
+      rmarkdown::render(
+        file.path(scripts_dir, "/Methylome.At_report.Rmd"),
+        params = list(
+          var1 = var1,
+          var2 = var2,
+          var1_path = var1_path,
+          var2_path = var2_path,
+          Methylome.At_path = Methylome.At_path,
+          annotation_file = annotation_file,
+          description_file = description_file,
+          TEs_file = TEs_file,
+          minProportionDiff = minProportionDiff,
+          binSize = binSize,
+          minCytosinesCount = minCytosinesCount,
+          minReadsPerCytosine = minReadsPerCytosine,
+          pValueThreshold = pValueThreshold,
+          methyl_files_type = methyl_files_type,
+          img_type = img_type,
+          n.cores = n.cores,
+          analyze_DMRs = analyze_DMRs,
+          run_PCA_plot = run_PCA_plot,
+          run_total_meth_plot = run_total_meth_plot,
+          run_CX_Chrplot = run_CX_Chrplot,
+          run_TEs_distance_n_size = run_TEs_distance_n_size,
+          total_meth_annotation = total_meth_annotation,
+          run_TF_motifs = run_TF_motifs,
+          run_functional_groups = run_functional_groups,
+          run_GO_analysis = run_GO_analysis,
+          run_KEGG_pathways = run_KEGG_pathways,
+          analyze_strand_asymmetry_DMRs = analyze_strand_asymmetry_DMRs,
+          analyze_DMVs = analyze_DMVs,
+          analyze_dH = analyze_dH,
+          run_TE_metaPlots = run_TE_metaPlots,
+          run_GeneBody_metaPlots = run_GeneBody_metaPlots,
+          run_GeneFeatures_metaPlots = run_GeneFeatures_metaPlots,
+          gene_features_binSize = gene_features_binSize,
+          metaPlot.random.genes = metaPlot.random.genes
+        ),
+        output_dir = exp_path,
+        output_file = paste0(comparison_name, "_report.html"),
+        quiet = T
+      )
+
+      unlink(paste0(scripts_dir, "/", comparison_name, "_plots"), recursive = T)
+    })
   })
 
   ###########################################################################
