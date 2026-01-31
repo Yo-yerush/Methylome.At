@@ -1,4 +1,6 @@
 pca_plot <- function(replicates_joints, var1, var2, var1_path, var2_path, cntx = "all_contexts") {
+    cntx_title <- ifelse(cntx == "all_contexts", "Total", cntx)
+    
     condition <- c(
         rep(var1, length(var1_path)),
         rep(var2, length(var2_path))
@@ -42,6 +44,7 @@ pca_plot <- function(replicates_joints, var1, var2, var1_path, var2_path, cntx =
         geom_point(aes(color = Genotype), size = 3.5, alpha = 0.85) +
         xlab(paste0("PC1 (", round(summary(pca)$importance[2, 1], 3) * 100, "%)")) +
         ylab(paste0("PC2 (", round(summary(pca)$importance[2, 2], 3) * 100, "%)")) +
+        ggtitle(cntx_title) +
         theme_classic() +
         theme(
             axis.title.x = element_text(size = 12),
@@ -54,7 +57,7 @@ pca_plot <- function(replicates_joints, var1, var2, var1_path, var2_path, cntx =
         geom_vline(xintercept = 0, colour = "grey60", linetype = "dashed") +
         scale_color_manual(values = pca_df$col, breaks = pca_df$Genotype)
 
-    img_device(paste0(cntx, "_PCA_plot_", var2, "_vs_", var1), w = 3.25, h = 2)
+    img_device(paste0(cntx, "_PCA_plot_", var2, "_vs_", var1), w = 3.25, h = 2.25)
     print(pca_p)
     dev.off()
 

@@ -37,7 +37,6 @@ TE_ann_plots <- function(context, TE.gr, sum_dH = F) {
     # pie plot
     pie(TE_Freq$Freq,
       labels = labels,
-      # main = paste0("Transposon Super Family:\nDMRs in ",context," context"),
       main = "",
       border = "white",
       col = TE_Freq$col
@@ -49,7 +48,7 @@ TE_ann_plots <- function(context, TE.gr, sum_dH = F) {
     )
     # title
     title(
-      main = paste0("Transposon Super Family:\n", region_analysis, " in ", context, " context"),
+      main = paste0(context, " context"),
       line = -3, cex.main = 1.25
     )
 
