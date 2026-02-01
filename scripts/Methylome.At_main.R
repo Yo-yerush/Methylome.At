@@ -1072,10 +1072,10 @@ Methylome.At_main <- function(var1, # control
         output_file = paste0(comparison_name, "_report.html"),
         quiet = T
       )
-
-      unlink(paste0(scripts_dir, "/", comparison_name, "_plots"), recursive = T)
     })
   })
+  
+  try({unlink(paste0(scripts_dir, "/", comparison_name, "_plots"), recursive = T)})
 
   ###########################################################################
 
