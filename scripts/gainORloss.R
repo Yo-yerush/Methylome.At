@@ -76,11 +76,17 @@ gainORloss <- function(DMRsReplicates, context, comparison_name, up_col = "#d96c
 
 ratio.distribution <- function(DMRsReplicates, context, comparison_name, up_col = "#b36b74", down_col = "#9396c2") {
   dmrs_ratio <- DMRsReplicates$proportion2 / DMRsReplicates$proportion1
-  n_breaks <- ifelse(length(dmrs_ratio) > 1e4, 1e3, length(dmrs_ratio) / 10)
+  n_breaks <- if (length(dmrs_ratio) >= 1800) {
+     150
+  } else if (length(dmrs_ratio) <= 100) {
+     length(dmrs_ratio) / 3
+  } else {
+     length(dmrs_ratio) / 12
+  }
 
   img_device(paste0("ratio.distribution_", context, "_gainORloss"), w = 3.58, h = 3.3)
 
-  h <- hist(log2(dmrs_ratio), breaks = 1000, plot = FALSE)
+  h <- hist(log2(dmrs_ratio), breaks = n_breaks, plot = FALSE)
   hist(log2(dmrs_ratio),
     main = paste(context, "-", length(DMRsReplicates$regionType), "DMRs"),
     xlab = "log2(fold-change)",
@@ -89,9 +95,8 @@ ratio.distribution <- function(DMRsReplicates, context, comparison_name, up_col 
     # col = c(rep("blue",length(h$counts)/2),rep("red",length(h$counts)/2)),
     # border = c(rep("blue",length(h$counts)/2),rep("red",length(h$counts)/2)),
     border = ifelse((h$mids > 0), up_col, down_col),
-    breaks = 150
+    breaks = n_breaks
   )
-  # if((length(h$breaks) %% 2) != 0) {bar_colors = append(bar_colors,"red",after = T)}
 
   dev.off()
 }
