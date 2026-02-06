@@ -747,11 +747,9 @@ kable(cfg3)
 #### .log file
 
 ```{r session-log, results='asis'}
-log_path <- list.files(file.path(exp_path), pattern = paste0(".*\\.log$"), full.names = TRUE, ignore.case = TRUE)
-if (file.exists(log_path)) {
-  log_lines <- readLines(log_path, warn = FALSE)
-  cat("<div style='max-width:900px; margin:0 auto;'><pre style='font-size:90%'>", paste(log_lines, collapse = "\n"), "</pre></div>", sep = "")
-}
+log_path <- list.files(file.path(exp_path), pattern = paste0(".*\\.log$"), full.names = TRUE, ignore.case = TRUE)[1]
+log_lines <- readLines(log_path, warn = FALSE)
+cat("<div style='max-width:900px; margin:0 auto;'><pre style='font-size:90%'>", paste(log_lines, collapse = "\n"), "</pre></div>", sep = "")
 
 # fix # log_path <- list.files(file.path(exp_path), pattern = paste0(".*\\.log$"), full.names = TRUE, ignore.case = TRUE)
 # fix # if (file.exists(log_path)) {
