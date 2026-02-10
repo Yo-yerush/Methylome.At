@@ -1,3 +1,54 @@
+if (!exists(".getMetaPlotScriptDir", mode = "function")) {
+  .getMetaPlotScriptDir <- function() {
+    frames <- sys.frames()
+    for (i in rev(seq_along(frames))) {
+      ofile <- frames[[i]]$ofile
+      if (!is.null(ofile)) {
+        return(dirname(normalizePath(ofile, winslash = "/", mustWork = FALSE)))
+      }
+    }
+    normalizePath(getwd(), winslash = "/", mustWork = FALSE)
+  }
+}
+
+if (!exists(".loadMetaPlotsCpp", mode = "function")) {
+  .loadMetaPlotsCpp <- local({
+    loaded <- FALSE
+    tried <- FALSE
+    function() {
+      if (loaded) {
+        return(invisible(TRUE))
+      }
+      if (tried) {
+        return(invisible(FALSE))
+      }
+      tried <<- TRUE
+
+      if (!requireNamespace("Rcpp", quietly = TRUE)) {
+        return(invisible(FALSE))
+      }
+
+      cppFile <- file.path(.getMetaPlotScriptDir(), "metaPlots_rcpp.cpp")
+      if (!file.exists(cppFile)) {
+        return(invisible(FALSE))
+      }
+
+      ok <- tryCatch({
+        Rcpp::sourceCpp(cppFile, env = parent.frame())
+        TRUE
+      }, error = function(e) {
+        message("metaPlots Rcpp acceleration disabled: ", conditionMessage(e))
+        FALSE
+      })
+
+      loaded <<- isTRUE(ok)
+      invisible(loaded)
+    }
+  })
+}
+
+.loadMetaPlotsCpp()
+
 Genes_features_metaPlot <- function(methylationPool_var1, methylationPool_var2, var1, var2, annotations_file, n.random, minReadsC, binSize, n.cores) {
   
   new_path.f = "Gene_features"
@@ -42,109 +93,127 @@ Genes_features_metaPlot <- function(methylationPool_var1, methylationPool_var2, 
 
   # Function to process methylation data for each region and context
   genes_metaPlot_fun <- function(methylationData, regions_list, group_name, n.cores.f = n.cores) {
-    # Filter positions below minReadsC
-    methylationData = methylationData[which(methylationData$readsN >= minReadsC)]
-    methylationData$Proportion = methylationData$readsM / methylationData$readsN
-    
-    # Filter methylationData by context before processing features
-    methylationData_contexts = list()
-    for (cntx in contexts) {
-      methylationData_contexts[[cntx]] = methylationData[which(methylationData$context == cntx)]
+    methylationData <- methylationData[which(methylationData$readsN >= minReadsC)]
+    methylationData$Proportion <- methylationData$readsM / methylationData$readsN
+
+    methylationData_contexts <- lapply(contexts, function(cntx) methylationData[methylationData$context == cntx])
+    names(methylationData_contexts) <- contexts
+
+    mean_bins <- function(mat) {
+      if (exists("meta_cpp_row_means_ignore_na", mode = "function")) {
+        return(meta_cpp_row_means_ignore_na(mat))
+      }
+      rowMeans(mat, na.rm = TRUE)
     }
-    
-    result_list = list()
-    
+
+    make_equal_bins <- function(minPos, maxPos, n_bins) {
+      brks <- seq(minPos, maxPos + 1, length.out = n_bins + 1)
+      starts <- as.integer(floor(brks[-(n_bins + 1)]))
+      ends <- as.integer(floor(brks[-1] - 1))
+      list(starts = starts, ends = ends)
+    }
+
+    result_list <- list()
+
     for (region_name in region_names) {
-      ann.obj = regions_list[[region_name]]
-      
-      gene_2_bins_run <- function(feature.num) {
-        tryCatch({
-          region = ann.obj[feature.num][,0]
-          seqname = seqnames(region)
-          minPos = start(region)
-          maxPos = end(region)
-          
-          context_results = list()
-          
-          # Create bins once
-          windowSize = width(region) / binSize
-          seqs = seq(minPos, maxPos, length.out = binSize+1)
-          ranges = GRanges(seqname, IRanges(seqs[-length(seqs)], seqs[-1] - 1))
-          
-          for (cntx in contexts) {
-            lMd_context = methylationData_contexts[[cntx]] %>% 
-              subset(seqnames == as.character(seqname) & start >= minPos & end <= maxPos)
-            
-            if (length(lMd_context) >= 15) { # at least 15 sites...
-              
-              ranges$Proportion = rep(NA, length(ranges))
-              
-              # VECTORIZED APPROACH - Single findOverlaps call
-              if (length(lMd_context) > 0) {
-                hits.l = findOverlaps(lMd_context, ranges)
-                
-                if (length(hits.l) > 0) {
-                  # Create data frame for aggregation
-                  hit_df = data.frame(
-                    subject_idx = subjectHits(hits.l),
-                    proportion = lMd_context[queryHits(hits.l)]$Proportion
-                  )
-                  
-                  # Calculate mean for each bin
-                  bin_means = aggregate(proportion ~ subject_idx, hit_df, mean, na.rm = TRUE)
-                  ranges$Proportion[bin_means$subject_idx] = bin_means$proportion
+      ann.obj <- regions_list[[region_name]]
+      n_features <- length(ann.obj)
+      region_result <- list()
+
+      if (n_features == 0) {
+        for (cntx in contexts) {
+          gr_obj <- GRanges(rep(region_name, binSize), IRanges(1:binSize, 1:binSize))
+          gr_obj$Proportion <- rep(NA_real_, binSize)
+          region_result[[cntx]] <- gr_obj
+        }
+        result_list[[region_name]] <- region_result
+        next
+      }
+
+      cat(paste0("\r", group_name, " >> preparing ", region_name, " bins...\t"))
+      total_bins <- n_features * as.integer(binSize)
+      bin_chr <- character(total_bins)
+      bin_start <- integer(total_bins)
+      bin_end <- integer(total_bins)
+      feature_idx <- integer(total_bins)
+      bin_idx <- integer(total_bins)
+
+      for (f in seq_len(n_features)) {
+        region <- ann.obj[f][, 0]
+        minPos <- as.integer(start(region))
+        maxPos <- as.integer(end(region))
+        chr_name <- as.character(seqnames(region))
+        strand_char <- as.character(strand(region))
+
+        bins <- make_equal_bins(minPos, maxPos, as.integer(binSize))
+        starts <- bins$starts
+        ends <- bins$ends
+        if (strand_char == "-") {
+          starts <- rev(starts)
+          ends <- rev(ends)
+        }
+
+        idx <- ((f - 1L) * as.integer(binSize) + 1L):(f * as.integer(binSize))
+        bin_chr[idx] <- chr_name
+        bin_start[idx] <- starts
+        bin_end[idx] <- ends
+        feature_idx[idx] <- f
+        bin_idx[idx] <- seq_len(binSize)
+      }
+      cat("done\n")
+
+      all_bins <- GRanges(seqnames = bin_chr, ranges = IRanges(bin_start, bin_end))
+
+      for (cntx in contexts) {
+        cat(paste0(group_name, " >> aggregating ", region_name, " (", cntx, ")...\t"))
+        gr_obj <- GRanges(rep(region_name, binSize), IRanges(1:binSize, 1:binSize))
+        gr_obj$Proportion <- rep(NaN, binSize)
+
+        ctx_data <- methylationData_contexts[[cntx]]
+        if (length(ctx_data) > 0) {
+          feature_hits <- findOverlaps(ctx_data, ann.obj[, 0])
+          valid_features <- rep(FALSE, n_features)
+          if (length(feature_hits) > 0) {
+            cnt <- tabulate(subjectHits(feature_hits), nbins = n_features)
+            valid_features <- cnt >= 15
+          }
+
+          if (any(valid_features)) {
+            hits <- findOverlaps(ctx_data, all_bins)
+            if (length(hits) > 0) {
+              subj <- subjectHits(hits)
+              qidx <- queryHits(hits)
+              keep <- valid_features[feature_idx[subj]]
+
+              if (any(keep)) {
+                means <- rep(NA_real_, length(all_bins))
+                subj_keep <- subj[keep]
+                qidx_keep <- qidx[keep]
+
+                if (exists("meta_cpp_mean_by_group", mode = "function")) {
+                  means <- meta_cpp_mean_by_group(subj_keep, ctx_data$Proportion[qidx_keep], length(all_bins))
+                } else {
+                  hit_df <- data.frame(subject_idx = subj_keep, proportion = ctx_data$Proportion[qidx_keep])
+                  bin_means <- aggregate(proportion ~ subject_idx, hit_df, mean, na.rm = TRUE)
+                  means[bin_means$subject_idx] <- bin_means$proportion
                 }
+
+                mat <- matrix(NA_real_, nrow = binSize, ncol = n_features)
+                mat[cbind(bin_idx, feature_idx)] <- means
+                gr_obj$Proportion <- mean_bins(mat)
               }
-              
-              # Handle reverse strand if necessary
-              if (as.character(strand(region)) == "-") {
-                ranges = rev(ranges)
-              }
-              
-              context_results[[cntx]] = ranges
-            } else {
-              context_results[[cntx]] = NULL
             }
           }
-          
-          # print percentage every 100 genes
-          if (feature.num %% 100 == 0) {
-            cat(paste0("\r", group_name, " >> processing average for each ", gsub("s","",region_name), "s region\t[", round((feature.num/length(ann.obj))*100, 0), "%]     "))
-          }
-
-          return(context_results)
-        }, error = function(cond) {
-          return(NULL)
-        })
-      }
-
-      cat(paste0("\r", group_name, " >> processing average for each ", gsub("s","",region_name), "s region\t[0%]     "))
-      #cat("\n\nPreparing", length(ann.obj), "bins for region:", region_name, "\n")
-      results = mclapply(1:length(ann.obj), gene_2_bins_run, mc.cores = n.cores.f)
-      results = results[!sapply(results, is.null)]
-      cat("\n")
-
-      # Average across features for each bin and context
-      region_result = list()
-      
-      for (cntx in contexts) {
-        gr_obj = GRanges(rep(region_name, binSize), IRanges(1:binSize,1:binSize))
-        gr_obj$Proportion = rep(NA,binSize)
-        
-        # For each bin, average the Proportion values
-        for (bin_num in 1:binSize) {
-          bin_values = sapply(results, function(x) x[[cntx]]$Proportion[bin_num])
-          gr_obj$Proportion[bin_num] = mean(unlist(bin_values), na.rm=TRUE)
         }
-        
-        region_result[[cntx]] = gr_obj
+
+        region_result[[cntx]] <- gr_obj
+        cat("done\n")
       }
-      
-      result_list[[region_name]] = region_result
-      
+
+      result_list[[region_name]] <- region_result
     }
-    
-    return(result_list)
+
+    result_list
   }
   
   ############################################

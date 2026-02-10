@@ -1,3 +1,54 @@
+if (!exists(".getMetaPlotScriptDir", mode = "function")) {
+  .getMetaPlotScriptDir <- function() {
+    frames <- sys.frames()
+    for (i in rev(seq_along(frames))) {
+      ofile <- frames[[i]]$ofile
+      if (!is.null(ofile)) {
+        return(dirname(normalizePath(ofile, winslash = "/", mustWork = FALSE)))
+      }
+    }
+    normalizePath(getwd(), winslash = "/", mustWork = FALSE)
+  }
+}
+
+if (!exists(".loadMetaPlotsCpp", mode = "function")) {
+  .loadMetaPlotsCpp <- local({
+    loaded <- FALSE
+    tried <- FALSE
+    function() {
+      if (loaded) {
+        return(invisible(TRUE))
+      }
+      if (tried) {
+        return(invisible(FALSE))
+      }
+      tried <<- TRUE
+
+      if (!requireNamespace("Rcpp", quietly = TRUE)) {
+        return(invisible(FALSE))
+      }
+
+      cppFile <- file.path(.getMetaPlotScriptDir(), "metaPlots_rcpp.cpp")
+      if (!file.exists(cppFile)) {
+        return(invisible(FALSE))
+      }
+
+      ok <- tryCatch({
+        Rcpp::sourceCpp(cppFile, env = parent.frame())
+        TRUE
+      }, error = function(e) {
+        message("metaPlots Rcpp acceleration disabled: ", conditionMessage(e))
+        FALSE
+      })
+
+      loaded <<- isTRUE(ok)
+      invisible(loaded)
+    }
+  })
+}
+
+.loadMetaPlotsCpp()
+
 Genes_metaPlot <- function(methylationPool_var1,methylationPool_var2,var1,var2,annotations_file,n.random,minReadsC,n.cores,is_TE=F) {
 
   if (is_TE) {
@@ -25,154 +76,139 @@ Genes_metaPlot <- function(methylationPool_var1,methylationPool_var2,var1,var2,a
   
   # make windowSize ranges with the average value
   genes_metaPlot_fun <- function(methylationData, ann.obj, group_name, n.cores.f = n.cores) {
-    
-    # filter CX position below 6 reads in total
-    methylationData = methylationData[which(methylationData$readsN >= minReadsC)]
-    
-    methylationData$Proportion = methylationData$readsM/methylationData$readsN
-    
-    gene_2_bins_run <- function(gene.num) {
-      tryCatch({
-        region = ann.obj[gene.num][,0]
-        seqname = seqnames(region)
-        minPos = start(region)
-        maxPos = end(region)
-        
-        # filter before the loop for faster running time
-        localMethylationData = methylationData %>% 
-          subset(seqnames == as.character(seqnames(region)) & start >= (minPos-2000) & end <= (maxPos+2000))
-        
-        gene_2_bins <- function(cntx.fun, stream_pos, lMd = localMethylationData) {
+    methylationData <- methylationData[which(methylationData$readsN >= minReadsC)]
+    methylationData$Proportion <- methylationData$readsM / methylationData$readsN
 
-          # Pre-filter by context first (moved up)
-          lMd = lMd[which(lMd$context == cntx.fun)]
-
-          # Early return if no data
-          if (length(lMd) == 0) {
-            ranges = GRanges(seqname, IRanges(1:20, 1:20))
-            ranges$Proportion = rep(NA, 20)
-            return(ranges)
-          }
-
-          if (stream_pos == "up.stream") {
-            lMd = lMd %>% filter(start >= (minPos-2000), end <= minPos)
-            windowSize = 100
-            seqs = seq((minPos-2000), minPos-windowSize, windowSize)
-
-          } else if (stream_pos == "gene.body") {
-            lMd = lMd %>% filter(start >= minPos, end <= maxPos)
-            windowSize = width(region)/20
-            seqs = seq(minPos, maxPos, windowSize)
-
-          } else if (stream_pos == "down.stream") {
-            lMd = lMd %>% filter(start >= maxPos, end <= (maxPos+2000))
-            windowSize = 100
-            seqs = seq(maxPos+1, (maxPos+2000-windowSize)+1, windowSize)
-          }
-
-          ranges = GRanges(seqname, IRanges(seqs, seqs+windowSize-1))
-          ranges$Proportion = rep(NA, 20)
-
-          # Vectorized findOverlaps approach
-          if (length(lMd) > 0) {
-            hits.l = findOverlaps(lMd, ranges)
-
-            if (length(hits.l) > 0) {
-              hit_df = data.frame(
-                subject_idx = subjectHits(hits.l),
-                proportion = lMd[queryHits(hits.l)]$Proportion
-              )
-
-              bin_means = aggregate(proportion ~ subject_idx, hit_df, mean, na.rm = TRUE)
-              ranges$Proportion[bin_means$subject_idx] = bin_means$proportion
-            }
-          }
-          return(ranges)
-        }
-
-        CG_list = GRangesList("up.stream"=GRanges(),"gene.body"=GRanges(), "down.stream"=GRanges())
-        CHG_list = GRangesList("up.stream"=GRanges(),"gene.body"=GRanges(), "down.stream"=GRanges())
-        CHH_list = GRangesList("up.stream"=GRanges(),"gene.body"=GRanges(), "down.stream"=GRanges())
-        
-        for (stream_pos in c("up.stream","gene.body","down.stream")) {
-          CG_list[[stream_pos]] = gene_2_bins(cntx.fun = "CG", stream_pos = stream_pos)
-          CHG_list[[stream_pos]] = gene_2_bins(cntx.fun = "CHG", stream_pos = stream_pos)
-          CHH_list[[stream_pos]] = gene_2_bins(cntx.fun = "CHH", stream_pos = stream_pos)
-        }
-        
-        # if strand is minus, change order of granges to reverse
-        if (region@strand@values == "-") {
-          strand_minus <- function(x) {
-            x[[1]] = rev(x[[1]])
-            x[[2]] = rev(x[[2]])
-            x[[3]] = rev(x[[3]])
-            x = rev(x)
-            return(x)
-          }
-          CG_list = strand_minus(CG_list)
-          CHG_list = strand_minus(CHG_list)
-          CHH_list = strand_minus(CHH_list)
-        }
-        
-        # print percentage every 100 genes
-        if (gene.num %% 100 == 0 | gene.num %% length(ann.obj) == 0) {
-          cat(paste0("\r", group_name, " >> processing average for each ", gsub("s","",new_path.f), "...\t[", round((gene.num/length(ann.obj)*100), 0), "%]     "))
-        }
-
-        return(list(CG_list=CG_list,
-                    CHG_list=CHG_list,
-                    CHH_list=CHH_list))
-        
-      }, error = function(cond) {
-        return(NULL)
-        })
-    }
-
-    cat(paste0("\r", group_name, " >> processing average for each ", gsub("s","",new_path.f), "...\t[0%]     "))
-    results = mclapply(1:length(ann.obj) , gene_2_bins_run, mc.cores = n.cores.f)
-    results = results[!sapply(results, is.null)]
-    cat("\n")
-    ###################################################
-    # prepare grange list for uptream, body and downstream
-    gr_obj_u = GRanges(rep("up.stream",20), IRanges(1:20,1:20))
-    gr_obj_g = GRanges(rep("gene.body",20), IRanges(1:20,1:20))
-    gr_obj_d = GRanges(rep("down.stream",20), IRanges(1:20,1:20))
-    gr_obj_u$Proportion = rep(NA,20)
-    gr_obj_g$Proportion = rep(NA,20)
-    gr_obj_d$Proportion = rep(NA,20)
-    gr_list_CG = GRangesList("up.stream"=gr_obj_u,"gene.body"=gr_obj_g, "down.stream"=gr_obj_d)
-    gr_list_CHG = GRangesList("up.stream"=gr_obj_u,"gene.body"=gr_obj_g, "down.stream"=gr_obj_d)
-    gr_list_CHH = GRangesList("up.stream"=gr_obj_u,"gene.body"=gr_obj_g, "down.stream"=gr_obj_d)
-    
-    # Define a function to apply for each row_num
-    process_row <- function(row_num,results,string_loc) {
-      
-        CG = mean(sapply(results, function(x) x$CG_list[[string_loc]][row_num]$Proportion), na.rm = TRUE)
-        CHG = mean(sapply(results, function(x) x$CHG_list[[string_loc]][row_num]$Proportion), na.rm = TRUE)
-        CHH = mean(sapply(results, function(x) x$CHH_list[[string_loc]][row_num]$Proportion), na.rm = TRUE)
-        
-      return(list(CG = CG,
-             CHG = CHG,
-             CHH = CHH))
-    }
-    
-    for (string_loc in 1:3) {
-      # Parallel processing using mclapply
-      cat(paste0(group_name, " >> processing average of ", gsub("\\.","-",names(gr_list_CG)[string_loc]), " bins...\t"))
-      results_parallel = mclapply(1:20, function(row_num) process_row(row_num, results,string_loc), mc.cores = ifelse(n.cores.f >= 20, 20, n.cores.f))
-
-      # Assigning results back to your lists
-      for (row_num_l in 1:20) {
-        gr_list_CG[[string_loc]][row_num_l]$Proportion <- results_parallel[[row_num_l]]$CG
-        gr_list_CHG[[string_loc]][row_num_l]$Proportion <- results_parallel[[row_num_l]]$CHG
-        gr_list_CHH[[string_loc]][row_num_l]$Proportion <- results_parallel[[row_num_l]]$CHH
+    n_genes <- length(ann.obj)
+    if (n_genes == 0) {
+      mk_empty <- function(nm) {
+        gr <- GRanges(rep(nm, 20), IRanges(1:20, 1:20))
+        gr$Proportion <- rep(NA_real_, 20)
+        gr
       }
-      cat("done\n")
+      empty_list <- GRangesList("up.stream" = mk_empty("up.stream"), "gene.body" = mk_empty("gene.body"), "down.stream" = mk_empty("down.stream"))
+      return(list(gr_list_CG = empty_list, gr_list_CHG = empty_list, gr_list_CHH = empty_list))
     }
-    return(list(gr_list_CG=gr_list_CG,
-                gr_list_CHG=gr_list_CHG,
-                gr_list_CHH=gr_list_CHH))
-    
+
+    total_bins <- n_genes * 60L
+    bin_chr <- character(total_bins)
+    bin_start <- integer(total_bins)
+    bin_end <- integer(total_bins)
+    bin_gene <- integer(total_bins)
+    bin_idx <- integer(total_bins)
+
+    make_equal_bins <- function(minPos, maxPos, n_bins) {
+      brks <- seq(minPos, maxPos + 1, length.out = n_bins + 1)
+      starts <- as.integer(floor(brks[-(n_bins + 1)]))
+      ends <- as.integer(floor(brks[-1] - 1))
+      list(starts = starts, ends = ends)
+    }
+
+    cat(paste0("\r", group_name, " >> preparing ", n_genes, " ", gsub("s","",new_path.f), " bin maps...\t[0%]     "))
+    for (g in seq_len(n_genes)) {
+      region <- ann.obj[g][, 0]
+      minPos <- as.integer(start(region))
+      maxPos <- as.integer(end(region))
+      chr_name <- as.character(seqnames(region))
+      strand_char <- as.character(strand(region))
+
+      up_starts <- as.integer(seq(minPos - 2000L, minPos - 100L, by = 100L))
+      up_ends <- up_starts + 99L
+      body_bins <- make_equal_bins(minPos, maxPos, 20L)
+      body_starts <- body_bins$starts
+      body_ends <- body_bins$ends
+      down_starts <- as.integer(seq(maxPos + 1L, maxPos + 1901L, by = 100L))
+      down_ends <- down_starts + 99L
+
+      starts60 <- c(up_starts, body_starts, down_starts)
+      ends60 <- c(up_ends, body_ends, down_ends)
+      if (strand_char == "-") {
+        starts60 <- c(rev(down_starts), rev(body_starts), rev(up_starts))
+        ends60 <- c(rev(down_ends), rev(body_ends), rev(up_ends))
+      }
+
+      idx <- ((g - 1L) * 60L + 1L):(g * 60L)
+      bin_chr[idx] <- chr_name
+      bin_start[idx] <- starts60
+      bin_end[idx] <- ends60
+      bin_gene[idx] <- g
+      bin_idx[idx] <- 1:60
+
+      if (g %% 100 == 0 || g == n_genes) {
+        cat(paste0("\r", group_name, " >> preparing ", n_genes, " ", gsub("s","",new_path.f), " bin maps...\t[", round(g / n_genes * 100, 0), "%]     "))
+      }
+    }
+    cat("\n")
+
+    all_bins <- GRanges(seqnames = bin_chr, ranges = IRanges(bin_start, bin_end))
+    mean_bins <- function(mat) {
+      if (exists("meta_cpp_row_means_ignore_na", mode = "function")) {
+        return(meta_cpp_row_means_ignore_na(mat))
+      }
+      rowMeans(mat, na.rm = TRUE)
+    }
+
+    summarize_context <- function(cntx) {
+      cat(paste0(group_name, " >> aggregating context ", cntx, "...\t"))
+      ctx_data <- methylationData[methylationData$context == cntx]
+      mat <- matrix(NA_real_, nrow = 60, ncol = n_genes)
+
+      if (length(ctx_data) > 0) {
+        hits <- findOverlaps(ctx_data, all_bins)
+        if (length(hits) > 0) {
+          subj <- subjectHits(hits)
+          qidx <- queryHits(hits)
+          means <- rep(NA_real_, length(all_bins))
+          if (exists("meta_cpp_mean_by_group", mode = "function")) {
+            means <- meta_cpp_mean_by_group(subj, ctx_data$Proportion[qidx], length(all_bins))
+          } else {
+            hit_df <- data.frame(subject_idx = subj, proportion = ctx_data$Proportion[qidx])
+            bin_means <- aggregate(proportion ~ subject_idx, hit_df, mean, na.rm = TRUE)
+            means[bin_means$subject_idx] <- bin_means$proportion
+          }
+          mat[cbind(bin_idx, bin_gene)] <- means
+        }
+      }
+
+      avg60 <- mean_bins(mat)
+      cat("done\n")
+      list(
+        up = avg60[1:20],
+        body = avg60[21:40],
+        down = avg60[41:60]
+      )
+    }
+
+    ctx_results <- lapply(c("CG", "CHG", "CHH"), summarize_context)
+    names(ctx_results) <- c("CG", "CHG", "CHH")
+
+    make_stream_gr <- function(name, vals) {
+      gr <- GRanges(rep(name, 20), IRanges(1:20, 1:20))
+      gr$Proportion <- vals
+      gr
+    }
+
+    gr_list_CG <- GRangesList(
+      "up.stream" = make_stream_gr("up.stream", ctx_results$CG$up),
+      "gene.body" = make_stream_gr("gene.body", ctx_results$CG$body),
+      "down.stream" = make_stream_gr("down.stream", ctx_results$CG$down)
+    )
+    gr_list_CHG <- GRangesList(
+      "up.stream" = make_stream_gr("up.stream", ctx_results$CHG$up),
+      "gene.body" = make_stream_gr("gene.body", ctx_results$CHG$body),
+      "down.stream" = make_stream_gr("down.stream", ctx_results$CHG$down)
+    )
+    gr_list_CHH <- GRangesList(
+      "up.stream" = make_stream_gr("up.stream", ctx_results$CHH$up),
+      "gene.body" = make_stream_gr("gene.body", ctx_results$CHH$body),
+      "down.stream" = make_stream_gr("down.stream", ctx_results$CHH$down)
+    )
+
+    list(
+      gr_list_CG = gr_list_CG,
+      gr_list_CHG = gr_list_CHG,
+      gr_list_CHH = gr_list_CHH
+    )
   }
   
   ############################################
