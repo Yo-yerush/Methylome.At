@@ -401,30 +401,38 @@ A typical output tree under `results/<treatment>_vs_<control>/`:
 ```text
 <contrast>/
   conversion_rate.csv
-  PCA_plots/                 (replicates only)
-  methylation_levels/
-  ChrPlot_CX/
-    subCX/                   (replicate-level tracks, if generated)
-  gain_OR_loss/
-  ChrPlot_DMRs/
-  DMRs_CG_<contrast>.csv
-  DMRs_CHG_<contrast>.csv
-  DMRs_CHH_<contrast>.csv
-  DMRs_Density_<contrast>.*   (circular density plot)
-  legends.*                   (circos legend)
-  genome_annotation/
-    CG/ CHG/ CHH/            (annotation tables + summary figures)
-    TEs_addiitionnal_results/
-      coding_genes_vs_TEs/
-      super_family_frequency/
-      TE_size_n_distance/
-        <CTX>_TE_size_delta_scatter.png
-        TE_centromere_distance_delta.png
-  DMRs_bigWig/
-  GO_analysis/                (optional)
-  KEGG_pathway/               (optional)
-  metaPlots/                  (optional)
-  deltaH/                     (optional)
+  <contrast>_report.html               (auto-generated HTML report)
+  *.log                                 (pipeline log)
+  total_methylation_analysis/
+    PCA_plots/                          (replicates only)
+    methylation_levels/
+    ChrPlot_CX/
+      subCX/                            (replicate-level tracks)
+    TE_size_n_distance/
+    total_methylation_annotations/      (per-annotation methylation tables)
+    TF_motifs/                          (transcription factor motif plots)
+  DMR_analysis/
+    DMRs_CG_<contrast>.csv
+    DMRs_CHG_<contrast>.csv
+    DMRs_CHH_<contrast>.csv
+    DMRs_Density_<contrast>.*           (circular density plot)
+    gain_OR_loss/
+    ChrPlot_DMRs/
+    genome_annotation/
+      CG/ CHG/ CHH/                    (annotation tables + summary figures)
+      TEs_addiotionnal_results/
+        super_family_frequency/
+      functional_groups/                (functional group overlap plots)
+    DMRs_bigWig/
+  Strand_Asymmetry_DMRs/                (optional)
+    CG/ CHG/ CHH/                       (symmetric, hemi, conflicting tables)
+  DMV_analysis/                         (optional, 1 kbp valleys)
+  MetaPlots/                            (optional)
+    Genes/ TEs/ Gene_features/
+  deltaH/                               (optional)
+    genome_annotation/
+  GO_analysis/                          (optional)
+  KEGG_pathway/                         (optional)
 ```
 
 ---
@@ -433,13 +441,14 @@ A typical output tree under `results/<treatment>_vs_<control>/`:
 
 - **log**: The pipeline writes log output during the run. See [example](https://raw.githubusercontent.com/Yo-yerush/Methylome.At/refs/heads/main/output_example/Methylome.At_log_file.log) `.log` file.
   
-- **HTML report**: *When the pipeline is done, it will produce a `.html` report file with the used configurations, results summary (including plots and tables) and statistics description.*
+- **HTML report**: *When the pipeline finishes, it automatically produces a `<contrast>_report.html` file with an analyses checklist, configurations, results summary (including plots and tables), colorized log, and session info.*
 Render it manually:
 ```r
 rmarkdown::render(
   "scripts/Methylome.At_report.Rmd",
-  params = list(cond1 = "wt", cond2 = "mt1"),
-  output_file = "Methylome.At_report.html"
+  params = list(var1 = "wt", var2 = "mt1",
+                Methylome.At_path = "."),
+  output_file = "mt1_vs_wt_report.html"
 )
 ```
 

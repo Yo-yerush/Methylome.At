@@ -1,4 +1,5 @@
 ---
+title: "&#32;"
 output:
   html_document:
     toc: false
@@ -786,23 +787,48 @@ log_path <- list.files(file.path(exp_path), pattern = paste0(".*\\.log$"), full.
 if (!is.na(log_path) && file.exists(log_path)) {
   log_lines <- readLines(log_path, warn = FALSE)
   colorize_log <- function(lines) {
+    # Use Unicode private-use placeholders so regex never touches generated HTML
+    O  <- "\U0091"   # stands for <
+    C  <- "\U0092"   # stands for >
+    wrap <- function(txt, css) paste0(O, "span style='", css, "'", C, txt, O, "/span", C)
+
     out <- vapply(lines, function(line) {
-      # Escape HTML entities first
+      # 1. Escape real HTML entities
       line <- gsub("&", "&amp;", line, fixed = TRUE)
-      line <- gsub("<", "&lt;", line, fixed = TRUE)
-      line <- gsub(">", "&gt;", line, fixed = TRUE)
-      # Color text inside []
-      line <- gsub("\\[(.*?)\\]", "<span style='color:#007acc;font-weight:bold;'>[\\1]</span>", line)
-      # Highlight "Error" / "Warning"
-      line <- gsub("Error", "<span style='color:#cb0a0a; font-weight:bold;'>Error</span>", line, perl = TRUE)
-      line <- gsub("Warning", "<span style='color:#e6a700; font-weight:bold;'>Warning</span>", line, perl = TRUE)
-      # Color numbers (not inside tags)
-      line <- gsub("(?<![&#;a-zA-Z])\\b([0-9]+\\.?[0-9]*)\\b", "<span style='color:#d32f2f;'>\\1</span>", line, perl = TRUE)
-      # Color punctuation
-      line <- gsub("([()'\"{}&lt;&gt;])", "<span style='color:#a259e6;'>\\1</span>", line, perl = TRUE)
+      line <- gsub("<", "&lt;",  line, fixed = TRUE)
+      line <- gsub(">", "&gt;",  line, fixed = TRUE)
+
+      # 2. Section dividers (---- ... ----) → dark bold
+      if (grepl("^-{4,}", line)) {
+        return(wrap(line, "color:#555; font-weight:bold;"))
+      }
+
+      # 3. Timestamps inside [] → blue bold
+      line <- gsub("\\[([0-9:]+)\\]",
+                    paste0("[", wrap("\\1", "color:#007acc; font-weight:bold;"), "]"),
+                    line)
+
+      # 4. "Error" / "Warning" keywords
+      line <- gsub("\\bError\\b",   wrap("Error",   "color:#cb0a0a; font-weight:bold;"), line)
+      line <- gsub("\\bWarning\\b", wrap("Warning", "color:#e6a700; font-weight:bold;"), line)
+
+      # 5. Percentages and plain numbers (not inside entities/tags)
+      line <- gsub("(?<![&#;a-zA-Z])\\b([0-9]+\\.?[0-9]*%)\\b",
+                    wrap("\\1", "color:#0b7d3e; font-weight:bold;"), line, perl = TRUE)
+      line <- gsub("(?<![&#;a-zA-Z])\\b([0-9]+\\.?[0-9]*)\\b",
+                    wrap("\\1", "color:#d32f2f;"), line, perl = TRUE)
+
+      # 6. "done" → green
+      line <- gsub("\\bdone\\b", wrap("done", "color:#0b7d3e;"), line)
+
       line
     }, character(1))
-    paste(out, collapse = "\n")
+
+    # Convert placeholders to real angle brackets at the very end
+    result <- paste(out, collapse = "\n")
+    result <- gsub(O, "<", result, fixed = TRUE)
+    result <- gsub(C, ">", result, fixed = TRUE)
+    result
   }
   cat("<div style='max-width:900px; margin:0 auto; background:#f9f9f9; border:1px solid #ddd; border-radius:6px; box-shadow:0 2px 8px #eee;'><pre style='font-size:90%; color:#222; padding:16px; line-height:1.5; overflow-x:auto;'>",
       colorize_log(log_lines),
@@ -816,5 +842,27 @@ if (!is.na(log_path) && file.exists(log_path)) {
 
 ```{r session-info, results='asis'}
 si <- capture.output(sessionInfo())
-cat("<div style='max-width:900px; margin:0 auto;'><pre style='font-size:90%'>", paste(si, collapse = "\n"), "</pre></div>", sep = "")
+colorize_si <- function(lines) {
+  O <- "\U0091"; C <- "\U0092"
+  wrap <- function(txt, css) paste0(O, "span style='", css, "'", C, txt, O, "/span", C)
+  out <- vapply(lines, function(line) {
+    line <- gsub("&", "&amp;", line, fixed = TRUE)
+    line <- gsub("<", "&lt;",  line, fixed = TRUE)
+    line <- gsub(">", "&gt;",  line, fixed = TRUE)
+    # Section headers (e.g. "R version ...", "attached base packages:", etc.)
+    if (grepl("^(R version|Platform|Running under|locale|time zone|attached base packages|other attached packages|loaded via a namespace)", line)) {
+      return(wrap(line, "color:#007acc; font-weight:bold;"))
+    }
+    # Package names with version: name_version
+    line <- gsub("\\b([a-zA-Z][a-zA-Z0-9.]*_[0-9][0-9.\\-]*)\\b", wrap("\\1", "color:#555;"), line)
+    line
+  }, character(1))
+  result <- paste(out, collapse = "\n")
+  result <- gsub(O, "<", result, fixed = TRUE)
+  result <- gsub(C, ">", result, fixed = TRUE)
+  result
+}
+cat("<div style='max-width:900px; margin:0 auto; background:#f9f9f9; border:1px solid #ddd; border-radius:6px; box-shadow:0 2px 8px #eee;'><pre style='font-size:90%; color:#222; padding:16px; line-height:1.5; overflow-x:auto;'>",
+    colorize_si(si),
+    "</pre></div>", sep = "")
 ```
