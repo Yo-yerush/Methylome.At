@@ -21,7 +21,7 @@ minCytosinesCount=4
 minReadsPerCytosine=6
 pValueThreshold=0.05
 methyl_files_type=CX_report
-img_type=pdf
+img_type=png
 n_cores=8
 
 DMR_analysis=TRUE
