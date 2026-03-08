@@ -16,6 +16,7 @@ Methylome.At_main <- function(var1, # control
                               n.cores = 8,
                               analyze_DMRs = TRUE,
                               run_PCA_plot = TRUE,
+                              run_QC = TRUE,
                               run_total_meth_plot = TRUE,
                               run_CX_Chrplot = TRUE,
                               run_TEs_distance_n_size = TRUE,
@@ -230,6 +231,29 @@ Methylome.At_main <- function(var1, # control
   )
 
   rm(load_vars)
+
+  ##### sample-level QC plots #####
+  if (run_QC) {
+    message(time_msg(), "generating sample-level QC plots")
+    cat("\nsample-level QC plots:")
+    dir.create(qc_dir_path, showWarnings = F)
+    setwd(qc_dir_path)
+    tryCatch(
+      {
+        run_QC_plots(
+          meth_var1, meth_var2,
+          meth_var1_replicates, meth_var2_replicates,
+          var1, var2, var1_path, var2_path,
+          annotation.gr, TE_gr
+        )
+      },
+      error = function(cond) {
+        cat("\n*\n sample-level QC plots:\n", as.character(cond), "*\n")
+        message("fail")
+      }
+    )
+    setwd(exp_path)
+  }
 
   ###########################################################################
 

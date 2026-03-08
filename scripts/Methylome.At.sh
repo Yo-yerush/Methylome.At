@@ -25,6 +25,7 @@ img_type=png
 n_cores=8
 
 DMR_analysis=TRUE
+QC_plots=TRUE
 pca=FALSE
 total_methylation=FALSE
 CX_ChrPlot=FALSE
@@ -69,6 +70,7 @@ usage() {
   echo "  --minCytosinesCount           Minimum cytosines count [default: $minCytosinesCount]"
   echo "  --pValueThreshold             P-value (padj) threshold [default: $pValueThreshold]"
   echo ""
+  echo "  --QC_off                      Disable sample-level QC plots (distributions, scatter, correlation, variance)"
   echo "  --pca                         Perform PCA for total methylation levels"
   echo "  --total_methylation           Total methylation bar-plot"
   echo "  --CX_ChrPlot                  total methylation chromosome plot"
@@ -128,6 +130,7 @@ while [[ "$#" -gt 0 ]]; do
     --TEs_file) TEs_file="$2"; shift ;;
     --Methylome_At_path) Methylome_At_path="$2"; shift ;;
     --DMRs_off) DMR_analysis=FALSE ;;
+    --QC_off) QC_plots=FALSE ;;
     --strand_DMRs) strand_DMRs=TRUE ;;
     --DMVs) DMV_analysis=TRUE ;;
     --dH) dH_scripts=TRUE ;;
@@ -234,6 +237,7 @@ echo "Number of Cores: $n_cores"
 echo "Post-alignment file type: $methyl_files_type"
 echo "Output images format: $img_type"
 echo ""
+echo "QC plots: $QC_plots"
 echo "PCA: $pca"
 echo "Total methylation bar-plot: $total_methylation"
 echo "Total methylation chromosome plot: $CX_ChrPlot"
@@ -293,6 +297,7 @@ Rscript ./scripts/Methylome.At_run.R \
 "$n_cores" \
 "$DMR_analysis" \
 "$pca" \
+"$QC_plots" \
 "$total_methylation" \
 "$CX_ChrPlot" \
 "$TEs_dis_n_size" \
@@ -327,6 +332,7 @@ echo "Number of Cores: $n_cores" >> "$log_file"
 echo "Min Reads Per Cytosine: $minReadsPerCytosine" >> "$log_file"
 echo "Post-alignment file type: $methyl_files_type" >> "$log_file"
 echo "Output images format: $img_type" >> "$log_file"
+echo "QC plots: $QC_plots" >> "$log_file"
 echo "PCA: $pca" >> "$log_file"
 echo "Total methylation bar-plot: $total_methylation" >> "$log_file"
 echo "Total methylation chromosome plot: $CX_ChrPlot" >> "$log_file"

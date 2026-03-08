@@ -35,6 +35,7 @@ SCRIPT1_DEFAULT_minReadsPerCytosine="6"
 SCRIPT1_DEFAULT_pValueThreshold="0.05"
 SCRIPT1_DEFAULT_n_cores="8"
 SCRIPT1_DEFAULT_pca="yes"
+SCRIPT1_DEFAULT_QC_plots="yes"
 SCRIPT1_DEFAULT_total_methylation="yes"
 SCRIPT1_DEFAULT_CX_ChrPlot="yes"
 SCRIPT1_DEFAULT_TEs_distance_n_size="yes"
@@ -150,6 +151,7 @@ edit_script1_parameters() {
             "Input file format"       "$(fmt "$SCRIPT1_file_type" 'Methylation input format (CX_report/bedMethyl/CGmap)')" \
             "Figure format"           "$(fmt "$SCRIPT1_img_type" 'Output image format for plots (pdf/svg/png/tiff/...)')" \
             "PCA"                     "$(fmt "$SCRIPT1_pca" 'Perform PCA analysis')" \
+            "QC plots"                "$(fmt "$SCRIPT1_QC_plots" 'Sample-level QC plots (distributions, scatter, correlation, variance)')" \
             "Total methylation bar-plots"  "$(fmt "$SCRIPT1_total_methylation" 'Produce total methylation bar-plots')" \
             "CX Chromosome Plot"      "$(fmt "$SCRIPT1_CX_ChrPlot" 'Generate chromosome-wide CX plots')" \
             "TEs distance and size"   "$(fmt "$SCRIPT1_TEs_distance_n_size" 'Analyze TEs total methylation by size and distance from centromere')" \
@@ -322,6 +324,14 @@ edit_script1_parameters() {
         fi
         ;;
 
+      "QC plots")
+        if whiptail --yesno "Generate sample-level QC plots (distributions, scatter, correlation, variance)?" 10 60; then
+          SCRIPT1_QC_plots="yes"
+        else
+          SCRIPT1_QC_plots="no"
+        fi
+        ;;
+
       "Total methylation bar-plots")
         if whiptail --yesno "Produce total methylation bar-plots?" 10 60; then
           SCRIPT1_total_methylation="yes"
@@ -436,6 +446,7 @@ if [[ " ${SELECTED_SCRIPTS[*]} " =~ "Methylome.At" ]]; then
     SCRIPT1_pValueThreshold="$SCRIPT1_DEFAULT_pValueThreshold"
     SCRIPT1_n_cores="$SCRIPT1_DEFAULT_n_cores"
     SCRIPT1_pca="$SCRIPT1_DEFAULT_pca"
+    SCRIPT1_QC_plots="$SCRIPT1_DEFAULT_QC_plots"
     SCRIPT1_total_methylation="$SCRIPT1_DEFAULT_total_methylation"
     SCRIPT1_CX_ChrPlot="$SCRIPT1_DEFAULT_CX_ChrPlot"
     SCRIPT1_TEs_distance_n_size="$SCRIPT1_DEFAULT_TEs_distance_n_size"
@@ -513,6 +524,7 @@ if (whiptail --title "All done!" --yesno "You have chosen to run: $chosen_messag
       --pValueThreshold "$SCRIPT1_pValueThreshold" \
       --n_cores "$SCRIPT1_n_cores" \
       $( [ "$SCRIPT1_pca" = "yes" ] && echo "--pca" ) \
+      $( [ "$SCRIPT1_QC_plots" = "no" ] && echo "--QC_off" ) \
       $( [ "$SCRIPT1_total_methylation" = "yes" ] && echo "--total_methylation" ) \
       $( [ "$SCRIPT1_CX_ChrPlot" = "yes" ] && echo "--CX_ChrPlot" ) \
       $( [ "$SCRIPT1_TEs_distance_n_size" = "yes" ] && echo "--TEs_distance_n_size" ) \
