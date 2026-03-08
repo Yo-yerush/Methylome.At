@@ -211,33 +211,34 @@ Methylome.At_main <- function(var1, # control
   message(sep_cat("QC"))
   cat(sep_cat("QC"))
 
-  ##### calculate the conversion rate by the chloroplast chromosome (ChrC)
-  message(time_msg(), "conversion rate (C->T) along the Chloroplast genome:", appendLF = F)
-  cat("\nconversion rate (C->T) along the Chloroplast genome:") # "\n"
-  tryCatch(
-    {
-      message("")
-      conR_var1 <- conversionRate(load_vars[[1]]$methylationDataReplicates, var1)
-      conR_var2 <- conversionRate(load_vars[[2]]$methylationDataReplicates, var2)
-      conR_b <- rbind(conR_var1, conR_var2)
-      write.csv(conR_b, paste0(exp_path, "/conversion_rate.csv"), row.names = F)
-      print(kable(conR_b))
-    },
-    error = function(cond) {
-      cat("\n*\n conversion rate:\n", as.character(cond), "*\n")
-      message("fail")
-      cat(" fail\n")
-    }
-  )
-
   rm(load_vars)
 
-  ##### sample-level QC plots #####
   if (run_QC) {
-    message(time_msg(), "generating sample-level QC plots")
-    cat("\nsample-level QC plots:")
     dir.create(qc_dir_path, showWarnings = F)
     setwd(qc_dir_path)
+  
+    ##### calculate the conversion rate by the chloroplast chromosome (ChrC)
+    message(time_msg(), "conversion rate (C->T) along the Chloroplast genome:", appendLF = F)
+    cat("\nconversion rate (C->T) along the Chloroplast genome:") # "\n"
+    tryCatch(
+      {
+        message("")
+        conR_var1 <- conversionRate(load_vars[[1]]$methylationDataReplicates, var1)
+        conR_var2 <- conversionRate(load_vars[[2]]$methylationDataReplicates, var2)
+        conR_b <- rbind(conR_var1, conR_var2)
+        write.csv(conR_b, paste0(exp_path, "/conversion_rate.csv"), row.names = F)
+        print(kable(conR_b))
+      },
+      error = function(cond) {
+        cat("\n*\n conversion rate:\n", as.character(cond), "*\n")
+        message("fail")
+        cat(" fail\n")
+      }
+    )
+    message("")
+
+    ##### sample-level QC plots #####
+    cat("\nsample-level QC plots:")
     tryCatch(
       {
         run_QC_plots(

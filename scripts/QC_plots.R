@@ -164,7 +164,7 @@ qc_meth_distribution <- function(meth_var1, meth_var2, annotation.gr, TE_gr,
   summary_df <- plot_df %>%
     group_by(feature, context, condition) %>%
     summarise(
-      n_regions = n(),
+      n_regions = dplyr::n(),
       median_meth = round(median(methylation, na.rm = TRUE), 2),
       mean_meth = round(mean(methylation, na.rm = TRUE), 2),
       sd_meth = round(sd(methylation, na.rm = TRUE), 2),
@@ -178,6 +178,7 @@ qc_meth_distribution <- function(meth_var1, meth_var2, annotation.gr, TE_gr,
 
 ###########################################################################
 # 2. Sample-vs-sample scatter plots (genomic tiles)
+#    Returns a list of ggplot objects (one per sample pair) for combined grid
 ###########################################################################
 qc_sample_scatter <- function(tile_data, var1, var2, context) {
 
@@ -185,10 +186,11 @@ qc_sample_scatter <- function(tile_data, var1, var2, context) {
   sample_names <- tile_data$sample_names
   n_samples <- length(sample_names)
 
-  if (n_samples < 2) return(invisible(NULL))
+  if (n_samples < 2) return(list())
 
   pairs <- combn(seq_len(n_samples), 2, simplify = FALSE)
 
+  plot_list <- list()
   for (pr in pairs) {
     s1 <- sample_names[pr[1]]
     s2 <- sample_names[pr[2]]
@@ -214,17 +216,20 @@ qc_sample_scatter <- function(tile_data, var1, var2, context) {
       coord_fixed() +
       theme_classic() +
       theme(
-        axis.title = element_text(size = 11),
-        axis.text = element_text(size = 9),
-        plot.title = element_text(size = 10, hjust = 0.5),
-        panel.border = element_rect(colour = "black", fill = NA, linewidth = 0.5)
+        axis.title = element_text(size = 10),
+        axis.text = element_text(size = 8),
+        plot.title = element_text(size = 9, hjust = 0.5),
+        panel.border = element_rect(colour = "black", fill = NA, linewidth = 0.5),
+        legend.key.width = unit(0.4, "cm"),
+        legend.key.height = unit(0.5, "cm"),
+        legend.title = element_text(size = 8),
+        legend.text = element_text(size = 7)
       )
 
-    fname <- paste0("QC_scatter_", context, "_", s2, "_vs_", s1)
-    img_device(fname, w = 4, h = 3.8)
-    print(p)
-    dev.off()
+    plot_list[[length(plot_list) + 1]] <- p
   }
+
+  return(plot_list)
 }
 
 
@@ -375,16 +380,29 @@ run_QC_plots <- function(meth_var1, meth_var2,
                          annotation.gr, TE_gr,
                          tile_width = 1500, minReadsPerTile = 10) {
 
+  # create subdirectories
+  qc_base <- getwd()
+  dist_dir <- file.path(qc_base, "distribution")
+  scatter_dir <- file.path(qc_base, "scatter")
+  corr_dir <- file.path(qc_base, "correlation")
+  var_dir <- file.path(qc_base, "variance")
+  for (d in c(dist_dir, scatter_dir, corr_dir, var_dir)) {
+    dir.create(d, showWarnings = FALSE, recursive = TRUE)
+  }
+
   ##### 1. methylation distribution plots #####
   cat("\nmethylation distribution (gene body / promoter / TE)...")
   message(time_msg(), "QC: methylation distribution plots: ", appendLF = FALSE)
   tryCatch(
     {
+      setwd(dist_dir)
       qc_meth_distribution(meth_var1, meth_var2, annotation.gr, TE_gr, var1, var2)
+      setwd(qc_base)
       message("done")
       cat(" done\n")
     },
     error = function(cond) {
+      setwd(qc_base)
       cat("\n*\n QC methylation distribution:\n", as.character(cond), "*\n")
       message("fail")
     }
@@ -392,6 +410,7 @@ run_QC_plots <- function(meth_var1, meth_var2,
 
   ##### 2-4. tile-based QC (scatter, correlation, variance) per context #####
   variance_results <- list()
+  all_scatter_plots <- list()
   for (cntx in c("CG", "CHG", "CHH")) {
     cat(paste0("\n", cntx, " tiled QC:"))
     message(time_msg(), cntx, " tiled QC (scatter / correlation / variance): ", appendLF = FALSE)
@@ -405,16 +424,21 @@ run_QC_plots <- function(meth_var1, meth_var2,
           context = cntx
         )
 
-        # scatter plots
-        qc_sample_scatter(tile_data, var1, var2, cntx)
+        # scatter plots (collect for combined figure)
+        scatter_plots <- qc_sample_scatter(tile_data, var1, var2, cntx)
+        if (length(scatter_plots) > 0) all_scatter_plots[[cntx]] <- scatter_plots
         cat(" scatter.")
 
         # correlation heatmap
+        setwd(corr_dir)
         qc_correlation_heatmap(tile_data, var1, var2, cntx)
+        setwd(qc_base)
         cat(" correlation.")
 
         # variance test
+        setwd(var_dir)
         var_result <- qc_variance_test(tile_data, var1, var2, cntx)
+        setwd(qc_base)
         if (!is.null(var_result)) variance_results[[cntx]] <- var_result
         cat(" variance.")
 
@@ -422,18 +446,58 @@ run_QC_plots <- function(meth_var1, meth_var2,
         cat(" done")
       },
       error = function(cond) {
+        setwd(qc_base)
         cat("\n*\n ", cntx, " tiled QC:\n", as.character(cond), "*\n")
         message("fail")
       }
     )
   }
 
+  # save combined scatter plot (all contexts in one figure)
+  if (length(all_scatter_plots) > 0) {
+    tryCatch({
+      setwd(scatter_dir)
+
+      # flatten and add context row labels
+      n_pairs <- max(sapply(all_scatter_plots, length))
+      n_contexts <- length(all_scatter_plots)
+
+      # pad shorter lists with NULL so grid is rectangular
+      padded <- lapply(all_scatter_plots, function(pl) {
+        c(pl, replicate(n_pairs - length(pl), NULL))
+      })
+
+      # interleave: row1 = CG plots, row2 = CHG plots, etc.
+      all_plots_flat <- unlist(padded, recursive = FALSE)
+
+      combined_scatter <- cowplot::plot_grid(
+        plotlist = all_plots_flat,
+        ncol = n_pairs,
+        nrow = n_contexts,
+        align = "hv"
+      )
+
+      pw <- min(max(4, n_pairs * 3.8), 18)
+      ph <- min(max(4, n_contexts * 3.5), 14)
+      img_device(paste0("QC_scatter_", var2, "_vs_", var1), w = pw, h = ph)
+      print(combined_scatter)
+      dev.off()
+      setwd(qc_base)
+    }, error = function(cond) {
+      setwd(qc_base)
+      cat("\n*\n sample-level QC plots:\n", as.character(cond), "*\n")
+      message("scatter combined plot: fail")
+    })
+  }
+
   # write combined variance test results
   if (length(variance_results) > 0) {
+    setwd(var_dir)
     var_results_df <- do.call(rbind, variance_results)
     write.csv(var_results_df,
               paste0("QC_variance_test_", var2, "_vs_", var1, ".csv"),
               row.names = FALSE)
+    setwd(qc_base)
   }
 
   cat("\n")

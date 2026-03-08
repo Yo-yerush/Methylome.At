@@ -30,6 +30,7 @@ params:
   n.cores: 8
 
   analyze_DMRs: true
+  run_QC: true
   run_PCA_plot: true
   run_total_meth_plot: true
   run_CX_Chrplot: true
@@ -91,6 +92,7 @@ if (!dir.exists(file.path(root, exp_path)) && !dir.exists(exp_path)) {
 }
 
 # Output folders (match Methylome.At_main.R)
+qc_dir_path <- file.path(exp_path, "QC")
 total_meth_path <- file.path(exp_path, "total_methylation_analysis")
 PCA_plots_path <- file.path(total_meth_path, "PCA_plots")
 meth_levels_path <- file.path(total_meth_path, "methylation_levels")
@@ -298,6 +300,10 @@ This report summarizes the results of the **Methylome.At** pipeline, an automate
 check <- function(flag) if (isTRUE(flag)) "[x]" else "[ ]"
 
 cat(sprintf("
+**QC**
+
+- %s Sample-level QC plots
+
 **Total methylation**
 
 - %s PCA (Principal Component Analysis)
@@ -326,6 +332,7 @@ cat(sprintf("
 - %s DMVs (Differentially Methylated Valleys)
 - %s ΔH / entropy (SurpDMRs)
 ",
+check(params$run_QC),
 check(params$run_PCA_plot),
 check(params$run_total_meth_plot),
 check(params$run_CX_Chrplot),
@@ -345,7 +352,7 @@ check(params$analyze_dH)
 ))
 ```
 
-### QC
+### QC {.tabset}
 
 **Comparison:** `r params$var2` vs `r params$var1`  
 **Results folder:** `r file.path(root, exp_path)`
@@ -364,6 +371,93 @@ if (!file.exists(conv_path)) {
   conv <- cbind(conv, data.frame(a=space_rep, b=space_rep, c=space_rep, d=space_rep, e=space_rep))
   colnames(conv) <- c("Sample", "Conversion (%)", "", "", "", "", "")
   kable(conv, align = c("l", "l"))
+}
+```
+
+```{r qc-plots-section, results='asis'}
+if (isTRUE(params$run_QC) && dir.exists(qc_dir_path)) {
+
+  qc_dist_path <- file.path(qc_dir_path, "distribution")
+  qc_scatter_path <- file.path(qc_dir_path, "scatter")
+  qc_corr_path <- file.path(qc_dir_path, "correlation")
+  qc_var_path <- file.path(qc_dir_path, "variance")
+
+  cat("#### Methylation distributions\n\n")
+  cat("Per-region CG/CHG/CHH methylation distributions for gene bodies, promoters and TEs (control vs treatment).\n\n")
+  if (dir.exists(qc_dist_path)) {
+    dist_files <- list_media_files(qc_dist_path, pattern = "QC_meth_distribution_")
+    if (length(dist_files) > 0) {
+      emit_grid(dist_files, cols = 1, max_height_px = params$plot_max_height_px * 1.5)
+    } else {
+      cat("_No distribution plots found._\n\n")
+    }
+
+    dist_csv <- list.files(qc_dist_path, pattern = "QC_meth_distribution_summary_.*\\.csv$", full.names = TRUE)
+    if (length(dist_csv) > 0) {
+      dist_summary <- read.csv(dist_csv[1], check.names = FALSE)
+      cat("\n")
+      print(kable(dist_summary))
+      cat("\n\n")
+    }
+  }
+
+  cat("#### Sample scatter plots\n\n")
+  cat("Pairwise sample-vs-sample scatter (hexbin) plots on genomic tiles. Pearson r is shown per pair. Rows = contexts (CG / CHG / CHH), columns = sample pairs.\n\n")
+  if (dir.exists(qc_scatter_path)) {
+    scatter_files <- list_media_files(qc_scatter_path, pattern = "QC_scatter_")
+    if (length(scatter_files) > 0) {
+      emit_grid(scatter_files, cols = 1, max_height_px = params$plot_max_height_px * 1.5)
+    } else {
+      cat("_No scatter plots found._\n\n")
+    }
+  }
+
+  cat("#### Sample correlation {.tabset}\n\n")
+  cat("Pearson correlation heatmap across all replicates per context.\n\n")
+  if (dir.exists(qc_corr_path)) {
+    corr_files <- list_media_files(qc_corr_path, pattern = "QC_correlation_heatmap_")
+    if (length(corr_files) > 0) {
+      for (cntx_c in c("CG", "CHG", "CHH")) {
+        cntx_corr <- corr_files[grepl(paste0("QC_correlation_heatmap_", cntx_c, "_"), basename(corr_files))]
+        if (length(cntx_corr) > 0) {
+          cat(paste0("##### ", cntx_c, "\n\n"))
+          emit_grid(cntx_corr, cols = 1, max_height_px = params$plot_max_height_px)
+        }
+      }
+    } else {
+      cat("_No correlation heatmaps found._\n\n")
+    }
+
+    corr_csvs <- list.files(qc_corr_path, pattern = "QC_correlation_matrix_.*\\.csv$", full.names = TRUE)
+    if (length(corr_csvs) > 0) {
+      for (cc in corr_csvs) {
+        cntx_label <- sub(".*QC_correlation_matrix_(CG|CHG|CHH)_.*", "\\1", basename(cc))
+        corr_mat <- read.csv(cc, check.names = FALSE, row.names = 1)
+        cat(paste0("\n**", cntx_label, " correlation matrix**\n\n"))
+        print(kable(round(corr_mat, 4)))
+        cat("\n\n")
+      }
+    }
+  }
+
+  cat("#### Variance / dispersion test\n\n")
+  cat("Per-tile variance comparison between conditions. Tests whether treatment variance is systematically higher than control (paired Wilcoxon).\n\n")
+  if (dir.exists(qc_var_path)) {
+    var_files <- list_media_files(qc_var_path, pattern = "QC_variance_")
+    if (length(var_files) > 0) {
+      emit_grid(var_files, cols = 3, max_height_px = params$plot_max_height_px)
+    } else {
+      cat("_No variance plots found (requires >= 2 replicates per condition)._\n\n")
+    }
+
+    var_csv <- list.files(qc_var_path, pattern = "QC_variance_test_.*\\.csv$", full.names = TRUE)
+    if (length(var_csv) > 0) {
+      var_table <- read.csv(var_csv[1], check.names = FALSE)
+      cat("\n")
+      print(kable(var_table))
+      cat("\n\n")
+    }
+  }
 }
 ```
 
@@ -746,6 +840,7 @@ decrip1 <- c(
   "Output images format",
   "Number of cores",
   "Perform the main DMRs analysis workflow",
+  "Sample-level QC plots (distribution, scatter, correlation, variance)",
   "Perform PCA for total methylation levels",
   "Total methylation bar-plot",
   "Total methylation chromosome plot",
