@@ -401,12 +401,18 @@ if (isTRUE(params$run_QC) && dir.exists(qc_dir_path)) {
     }
   }
 
-  cat("#### Sample scatter plots\n\n")
-  cat("Pairwise sample-vs-sample scatter (hexbin) plots on genomic tiles. Pearson r is shown per pair. Rows = contexts (CG / CHG / CHH), columns = sample pairs.\n\n")
+  cat("#### Sample scatter plots {.tabset}\n\n")
+  cat("Pairwise sample-vs-sample scatter (hexbin) plots on genomic tiles. Pearson r is shown per pair.\n\n")
   if (dir.exists(qc_scatter_path)) {
     scatter_files <- list_media_files(qc_scatter_path, pattern = "QC_scatter_")
     if (length(scatter_files) > 0) {
-      emit_grid(scatter_files, cols = 1, max_height_px = params$plot_max_height_px * 1.5)
+      for (cntx_s in c("CG", "CHG", "CHH")) {
+        cntx_scatter <- scatter_files[grepl(paste0("QC_scatter_", cntx_s, "_"), basename(scatter_files))]
+        if (length(cntx_scatter) > 0) {
+          cat(paste0("##### ", cntx_s, "\n\n"))
+          emit_grid(cntx_scatter, cols = 1, max_height_px = params$plot_max_height_px * 1.2)
+        }
+      }
     } else {
       cat("_No scatter plots found._\n\n")
     }

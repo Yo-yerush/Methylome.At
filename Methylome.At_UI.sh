@@ -138,8 +138,9 @@ edit_script1_parameters() {
   # Parameters are expected to be set before calling this function
   while true; do
         OPTION=$(whiptail --title "'Methylome.At' Parameters" \
-            --menu "Select a parameter to change or proceed with current settings." 40 50 32 \
+            --menu "Select a parameter to change or proceed with current settings." 40 50 33 \
             "Proceed."                "$(fmt '' 'Use current parameters')" \
+            "Set off"       "$(fmt '' 'Turn OFF all analyses')" \
             "Min diff (CG)"           "$(fmt "$SCRIPT1_minProportionDiff_CG" 'Min methylation proportion difference to call CG DMRs')" \
             "Min diff (CHG)"          "$(fmt "$SCRIPT1_minProportionDiff_CHG" 'Min methylation proportion difference to call CHG DMRs')" \
             "Min diff (CHH)"          "$(fmt "$SCRIPT1_minProportionDiff_CHH" 'Min methylation proportion difference to call CHH DMRs')" \
@@ -181,6 +182,28 @@ edit_script1_parameters() {
     case "$OPTION" in
       "Proceed.")
         break
+        ;;
+
+      "Set off")
+        if whiptail --yesno "Turn OFF all optional analyses?" 18 70; then
+          SCRIPT1_QC_plots="no"
+          SCRIPT1_pca="no"
+          SCRIPT1_total_methylation="no"
+          SCRIPT1_CX_ChrPlot="no"
+          SCRIPT1_TEs_distance_n_size="no"
+          SCRIPT1_total_meth_ann="no"
+          SCRIPT1_TF_motifs="no"
+          SCRIPT1_func_groups="no"
+          SCRIPT1_GO_analysis="no"
+          SCRIPT1_KEGG_pathways="no"
+          SCRIPT1_disable_DMRs="yes"
+          SCRIPT1_strand_DMRs="no"
+          SCRIPT1_DMVs="no"
+          SCRIPT1_delta_H="no"
+          SCRIPT1_TEs_metaplots="no"
+          SCRIPT1_Genes_metaplots="no"
+          SCRIPT1_Gene_features_metaplots="no"
+        fi
         ;;
 
       "Min diff (CG)")

@@ -93,10 +93,41 @@ qc_tile_methylation <- function(meth_var1_rep, meth_var2_rep,
 #    for coding-gene bodies, promoters and TEs
 ###########################################################################
 qc_meth_distribution <- function(meth_var1, meth_var2, annotation.gr, TE_gr,
-                                 var1, var2, minReads = 6) {
+                                 var1, var2, Methylome.At_path = ".", minReads = 6) {
 
   Genes <- annotation.gr[annotation.gr$type == "gene"]
   Promoters <- promoters(Genes, upstream = 2000, downstream = 0, use.names = TRUE)
+
+  # load stable/dynamic gbM gene lists (Williams et al. 2023)
+  stable_gbM_file <- file.path(Methylome.At_path, "annotation_files", "At_stable_gbM_Williams_23.txt")
+  dynamic_gbM_file <- file.path(Methylome.At_path, "annotation_files", "At_dynamic_gbM_Williams_23.txt")
+
+  features <- list(
+    list(name = "Gene body", gr = Genes),
+    list(name = "Promoter", gr = Promoters),
+    list(name = "TE", gr = TE_gr)
+  )
+  feature_levels <- c("Gene body", "Promoter", "TE")
+
+  if (file.exists(stable_gbM_file)) {
+    stable_ids <- readLines(stable_gbM_file)
+    stable_ids <- trimws(stable_ids[nchar(stable_ids) > 0])
+    stable_gr <- Genes[Genes$gene_id %in% stable_ids]
+    if (length(stable_gr) > 0) {
+      features[[length(features) + 1]] <- list(name = "Stable gbM", gr = stable_gr)
+      feature_levels <- c(feature_levels, "Stable gbM")
+    }
+  }
+
+  if (file.exists(dynamic_gbM_file)) {
+    dynamic_ids <- readLines(dynamic_gbM_file)
+    dynamic_ids <- trimws(dynamic_ids[nchar(dynamic_ids) > 0])
+    dynamic_gr <- Genes[Genes$gene_id %in% dynamic_ids]
+    if (length(dynamic_gr) > 0) {
+      features[[length(features) + 1]] <- list(name = "Dynamic gbM", gr = dynamic_gr)
+      feature_levels <- c(feature_levels, "Dynamic gbM")
+    }
+  }
 
   # weighted methylation per genomic region
   region_meth <- function(meth_data, regions, context) {
@@ -111,12 +142,6 @@ qc_meth_distribution <- function(meth_var1, meth_var2, annotation.gr, TE_gr,
     region_stats <- dt[, .(meth_pct = sum(readsM) / sum(readsN) * 100), by = region_idx]
     return(region_stats$meth_pct)
   }
-
-  features <- list(
-    list(name = "Gene body", gr = Genes),
-    list(name = "Promoter", gr = Promoters),
-    list(name = "TE", gr = TE_gr)
-  )
 
   plot_data_list <- list()
   for (cntx in c("CG", "CHG", "CHH")) {
@@ -138,8 +163,9 @@ qc_meth_distribution <- function(meth_var1, meth_var2, annotation.gr, TE_gr,
   plot_df <- do.call(rbind, plot_data_list)
   plot_df$condition <- factor(plot_df$condition, levels = c(var1, var2))
   plot_df$context <- factor(plot_df$context, levels = c("CG", "CHG", "CHH"))
-  plot_df$feature <- factor(plot_df$feature, levels = c("Gene body", "Promoter", "TE"))
+  plot_df$feature <- factor(plot_df$feature, levels = feature_levels)
 
+  n_feat <- length(feature_levels)
   p <- ggplot(plot_df, aes(x = condition, y = methylation, fill = condition)) +
     geom_violin(alpha = 0.6, scale = "width", trim = TRUE) +
     geom_boxplot(width = 0.15, outlier.size = 0.3, alpha = 0.8) +
@@ -156,7 +182,7 @@ qc_meth_distribution <- function(meth_var1, meth_var2, annotation.gr, TE_gr,
       panel.border = element_rect(colour = "black", fill = NA, linewidth = 0.5)
     )
 
-  img_device(paste0("QC_meth_distribution_", var2, "_vs_", var1), w = 7, h = 8)
+  img_device(paste0("QC_meth_distribution_", var2, "_vs_", var1), w = 7, h = max(8, n_feat * 2.5))
   print(p)
   dev.off()
 
@@ -184,9 +210,13 @@ qc_sample_scatter <- function(tile_data, var1, var2, context) {
 
   tiles_df <- tile_data$tiles_df
   sample_names <- tile_data$sample_names
+  condition_labels <- tile_data$condition_labels
   n_samples <- length(sample_names)
 
   if (n_samples < 2) return(list())
+
+  # condition colors (same as distribution plot)
+  cond_colors <- c(setNames("gray50", var1), setNames("#bb5e1b", var2))
 
   pairs <- combn(seq_len(n_samples), 2, simplify = FALSE)
 
@@ -194,6 +224,8 @@ qc_sample_scatter <- function(tile_data, var1, var2, context) {
   for (pr in pairs) {
     s1 <- sample_names[pr[1]]
     s2 <- sample_names[pr[2]]
+    col_x <- cond_colors[condition_labels[pr[1]]]
+    col_y <- cond_colors[condition_labels[pr[2]]]
 
     sub_df <- data.frame(
       x = tiles_df[[s1]],
@@ -211,19 +243,17 @@ qc_sample_scatter <- function(tile_data, var1, var2, context) {
       labs(
         x = paste0(gsub("_", " ", s1), " (5-mC%)"),
         y = paste0(gsub("_", " ", s2), " (5-mC%)"),
-        title = paste0(context, "   r = ", r_val)
+        title = paste0("r = ", r_val)
       ) +
       coord_fixed() +
       theme_classic() +
       theme(
-        axis.title = element_text(size = 10),
+        axis.title.x = element_text(size = 10, color = col_x, face = "bold"),
+        axis.title.y = element_text(size = 10, color = col_y, face = "bold"),
         axis.text = element_text(size = 8),
         plot.title = element_text(size = 9, hjust = 0.5),
         panel.border = element_rect(colour = "black", fill = NA, linewidth = 0.5),
-        legend.key.width = unit(0.4, "cm"),
-        legend.key.height = unit(0.5, "cm"),
-        legend.title = element_text(size = 8),
-        legend.text = element_text(size = 7)
+        legend.position = "none"
       )
 
     plot_list[[length(plot_list) + 1]] <- p
@@ -262,9 +292,8 @@ qc_correlation_heatmap <- function(tile_data, var1, var2, context) {
   p <- ggplot(cor_long, aes(x = Var1, y = Var2, fill = value)) +
     geom_tile(color = "white") +
     geom_text(aes(label = round(value, 3)), size = 3) +
-    scale_fill_gradient2(
-      low = "steelblue", mid = "white", high = "firebrick",
-      midpoint = median(cor_long$value),
+    scale_fill_gradient(
+      low = "#fafacd", high = "#5e0059",
       limits = c(min(cor_long$value), 1),
       name = "Pearson r"
     ) +
@@ -378,6 +407,7 @@ run_QC_plots <- function(meth_var1, meth_var2,
                          meth_var1_replicates, meth_var2_replicates,
                          var1, var2, var1_path, var2_path,
                          annotation.gr, TE_gr,
+                         Methylome.At_path = ".",
                          tile_width = 1500, minReadsPerTile = 10) {
 
   # create subdirectories
@@ -396,7 +426,8 @@ run_QC_plots <- function(meth_var1, meth_var2,
   tryCatch(
     {
       setwd(dist_dir)
-      qc_meth_distribution(meth_var1, meth_var2, annotation.gr, TE_gr, var1, var2)
+      qc_meth_distribution(meth_var1, meth_var2, annotation.gr, TE_gr, var1, var2,
+                            Methylome.At_path = Methylome.At_path)
       setwd(qc_base)
       message("done")
       cat(" done\n")
@@ -453,35 +484,53 @@ run_QC_plots <- function(meth_var1, meth_var2,
     )
   }
 
-  # save combined scatter plot (all contexts in one figure)
+  # save one scatter file per context, with shared legend on the right
   if (length(all_scatter_plots) > 0) {
     tryCatch({
       setwd(scatter_dir)
 
-      # flatten and add context row labels
-      n_pairs <- max(sapply(all_scatter_plots, length))
-      n_contexts <- length(all_scatter_plots)
+      for (cntx_name in names(all_scatter_plots)) {
+        cntx_plots <- all_scatter_plots[[cntx_name]]
+        if (length(cntx_plots) == 0) next
 
-      # pad shorter lists with NULL so grid is rectangular
-      padded <- lapply(all_scatter_plots, function(pl) {
-        c(pl, replicate(n_pairs - length(pl), NULL))
-      })
+        # build a dummy plot just to extract the shared legend
+        legend_plot <- cntx_plots[[1]] +
+          theme(
+            legend.position = "right",
+            legend.key.width = unit(0.4, "cm"),
+            legend.key.height = unit(0.6, "cm"),
+            legend.title = element_text(size = 9),
+            legend.text = element_text(size = 7)
+          )
+        shared_legend <- cowplot::get_legend(legend_plot)
 
-      # interleave: row1 = CG plots, row2 = CHG plots, etc.
-      all_plots_flat <- unlist(padded, recursive = FALSE)
+        # arrange all pairs in a single row + legend on the right
+        n_p <- length(cntx_plots)
+        plots_row <- cowplot::plot_grid(
+          plotlist = cntx_plots,
+          ncol = n_p,
+          nrow = 1,
+          align = "hv"
+        )
 
-      combined_scatter <- cowplot::plot_grid(
-        plotlist = all_plots_flat,
-        ncol = n_pairs,
-        nrow = n_contexts,
-        align = "hv"
-      )
+        combined <- cowplot::plot_grid(
+          plots_row, shared_legend,
+          ncol = 2,
+          rel_widths = c(1, 0.08)
+        )
 
-      pw <- min(max(4, n_pairs * 3.8), 18)
-      ph <- min(max(4, n_contexts * 3.5), 14)
-      img_device(paste0("QC_scatter_", var2, "_vs_", var1), w = pw, h = ph)
-      print(combined_scatter)
-      dev.off()
+        # add context title
+        title_gg <- cowplot::ggdraw() +
+          cowplot::draw_label(cntx_name, fontface = "bold", size = 12, hjust = 0.5)
+        final_plot <- cowplot::plot_grid(title_gg, combined, ncol = 1, rel_heights = c(0.05, 1))
+
+        pw <- min(max(4, n_p * 4.1 + 1), 20)
+        ph <- 5
+        img_device(paste0("QC_scatter_", cntx_name, "_", var2, "_vs_", var1), w = pw, h = ph)
+        print(final_plot)
+        dev.off()
+      }
+
       setwd(qc_base)
     }, error = function(cond) {
       setwd(qc_base)

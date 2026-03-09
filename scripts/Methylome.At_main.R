@@ -211,8 +211,6 @@ Methylome.At_main <- function(var1, # control
   message(sep_cat("QC"))
   cat(sep_cat("QC"))
 
-  rm(load_vars)
-
   if (run_QC) {
     dir.create(qc_dir_path, showWarnings = F)
     setwd(qc_dir_path)
@@ -245,7 +243,8 @@ Methylome.At_main <- function(var1, # control
           meth_var1, meth_var2,
           meth_var1_replicates, meth_var2_replicates,
           var1, var2, var1_path, var2_path,
-          annotation.gr, TE_gr
+          annotation.gr, TE_gr,
+          Methylome.At_path = Methylome.At_path
         )
       },
       error = function(cond) {
@@ -255,6 +254,8 @@ Methylome.At_main <- function(var1, # control
     )
     setwd(exp_path)
   }
+
+  rm(load_vars)
 
   ###########################################################################
 
