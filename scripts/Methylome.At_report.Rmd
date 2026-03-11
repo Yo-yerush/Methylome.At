@@ -26,7 +26,7 @@ params:
   minReadsPerCytosine: 4
   pValueThreshold: 0.05
   methyl_files_type: "CX_report"
-  img_type: "svg"
+  img_type: "png"
   n.cores: 8
 
   analyze_DMRs: true
@@ -73,6 +73,13 @@ params:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 suppressPackageStartupMessages({ library(knitr) })
+
+# Wrapper: run code block, catch any error and print a warning instead of stopping
+safe_section <- function(expr) {
+  tryCatch(expr, error = function(e) {
+    cat(sprintf("\n\n<div style='color:#cb0a0a; border:1px solid #cb0a0a; padding:8px; border-radius:4px;'>**Error rendering section:** %s</div>\n\n", conditionMessage(e)))
+  })
+}
 
 stop_if_missing <- function(x, name) {
   if (is.null(x) || length(x) == 0 || !nzchar(as.character(x)[1])) stop("Missing required param: ", name)
@@ -362,20 +369,22 @@ check(params$analyze_dH)
 Chloroplast DNA is expected to be largely unmethylated. High C→T conversion on ChrC is a practical estimate of bisulfite conversion efficiency.
 
 ```{r conversion-rate, results='asis'}
-conv_path <- file.path(exp_path, "conversion_rate.csv")
-if (!file.exists(conv_path)) {
-  cat(sprintf("_Missing file:_ `%s`_\n\n", conv_path))
-} else {
-  conv <- read.csv(conv_path, check.names = FALSE)
-  space_rep <- rep(" ", nrow(conv))
-  conv <- cbind(conv, data.frame(a=space_rep, b=space_rep, c=space_rep, d=space_rep, e=space_rep))
-  colnames(conv) <- c("Sample", "Conversion (%)", "", "", "", "", "")
-  kable(conv, align = c("l", "l"))
-}
+safe_section({
+  conv_path <- file.path(qc_dir_path, "conversion_rate.csv")
+  if (!file.exists(conv_path)) {
+    cat(sprintf("_Missing file:_ `%s`_\n\n", conv_path))
+  } else {
+    conv <- read.csv(conv_path, check.names = FALSE)
+    space_rep <- rep(" ", nrow(conv))
+    conv <- cbind(conv, data.frame(a=space_rep, b=space_rep, c=space_rep, d=space_rep, e=space_rep))
+    colnames(conv) <- c("Sample", "Conversion (%)", "", "", "", "", "")
+    kable(conv, align = c("l", "l"))
+  }
+})
 ```
 
 ```{r qc-plots-section, results='asis'}
-if (isTRUE(params$run_QC) && dir.exists(qc_dir_path)) {
+if (isTRUE(params$run_QC) && dir.exists(qc_dir_path)) { safe_section({
 
   qc_dist_path <- file.path(qc_dir_path, "distribution")
   qc_scatter_path <- file.path(qc_dir_path, "scatter")
@@ -410,7 +419,7 @@ if (isTRUE(params$run_QC) && dir.exists(qc_dir_path)) {
         cntx_scatter <- scatter_files[grepl(paste0("QC_scatter_", cntx_s, "_"), basename(scatter_files))]
         if (length(cntx_scatter) > 0) {
           cat(paste0("##### ", cntx_s, "\n\n"))
-          emit_grid(cntx_scatter, cols = 1, max_height_px = params$plot_max_height_px * 1.2)
+          emit_grid(cntx_scatter, cols = 5, max_height_px = params$plot_max_height_px)
         }
       }
     } else {
@@ -418,18 +427,12 @@ if (isTRUE(params$run_QC) && dir.exists(qc_dir_path)) {
     }
   }
 
-  cat("#### Sample correlation {.tabset}\n\n")
+  cat("#### Sample correlation\n\n")
   cat("Pearson correlation heatmap across all replicates per context.\n\n")
   if (dir.exists(qc_corr_path)) {
     corr_files <- list_media_files(qc_corr_path, pattern = "QC_correlation_heatmap_")
     if (length(corr_files) > 0) {
-      for (cntx_c in c("CG", "CHG", "CHH")) {
-        cntx_corr <- corr_files[grepl(paste0("QC_correlation_heatmap_", cntx_c, "_"), basename(corr_files))]
-        if (length(cntx_corr) > 0) {
-          cat(paste0("##### ", cntx_c, "\n\n"))
-          emit_grid(cntx_corr, cols = 1, max_height_px = params$plot_max_height_px)
-        }
-      }
+      emit_grid(order_files(corr_files), cols = 3, max_height_px = params$plot_max_height_px)
     } else {
       cat("_No correlation heatmaps found._\n\n")
     }
@@ -464,13 +467,17 @@ if (isTRUE(params$run_QC) && dir.exists(qc_dir_path)) {
       cat("\n\n")
     }
   }
-}
+})}
 ```
 
-### Total methylation {.tabset}
-
 ```{r total-meth-tabs, results='asis'}
-# Each enabled analysis becomes a sub-tab
+any_total_meth <- isTRUE(params$run_PCA_plot) || isTRUE(params$run_total_meth_plot) ||
+  isTRUE(params$run_CX_Chrplot) || isTRUE(params$run_TEs_distance_n_size) ||
+  isTRUE(params$total_meth_annotation) || isTRUE(params$run_TF_motifs)
+
+if (any_total_meth) { safe_section({
+  cat("### Total methylation {.tabset}\n\n")
+
 if (isTRUE(params$run_PCA_plot)) {
   cat("#### PCA (Principal Component Analysis)\n\n")
   cat("PCA compresses genome-wide methylation into a few axes. Replicates should cluster; separation between conditions suggests global methylation shifts.\n\n")
@@ -544,10 +551,11 @@ if (isTRUE(params$run_TF_motifs)) {
   cat("#### TF motif analysis\n\n")
   emit_dir(TF_motifs_path, recursive = TRUE, cols = params$default_plot_cols, max_height_px = params$plot_max_height_px)
 }
+})}
 ```
 
 ```{r metaplot-tes, results='asis'}
-if (isTRUE(params$run_TE_metaPlots) | isTRUE(params$run_TE_metaPlots) | isTRUE(params$run_TE_metaPlots)) {
+if (isTRUE(params$run_TE_metaPlots) || isTRUE(params$run_GeneBody_metaPlots) || isTRUE(params$run_GeneFeatures_metaPlots)) { safe_section({
   cat("### MetaPlots {.tabset}\n\n")
 
   if (isTRUE(params$run_TE_metaPlots)) {
@@ -564,14 +572,14 @@ if (isTRUE(params$run_TE_metaPlots) | isTRUE(params$run_TE_metaPlots) | isTRUE(p
     cat("#### Gene features\n\n")
     emit_dir(file.path(meta_dir, "Gene_features"), recursive = FALSE, cols = 3, max_height_px = params$plot_max_height_px)
   }
-}
+})}
 ```
 
-### DMRs {.tabset}
+```{r dmrs-section, results='asis'}
+if (isTRUE(params$analyze_DMRs)) { safe_section({
+  cat("### DMRs {.tabset}\n\n")
+  cat("#### Settings\n\n")
 
-#### Settings
-
-```{r dmrs-settings-table, results='asis'}
 settings <- data.frame(
   Setting = c("methyl_files_type","binSize (bp)","minCytosinesCount","minReadsPerCytosine","pValueThreshold","minProportionDiff (CG,CHG,CHH)"),
   Value = c(val1(params$methyl_files_type), val1(params$binSize), val1(params$minCytosinesCount), val1(params$minReadsPerCytosine),
@@ -588,10 +596,7 @@ settings <- data.frame(
   stringsAsFactors = FALSE
 )
 knitr::kable(settings)
-```
 
-```{r dmrs-tabs, results='asis'}
-if (isTRUE(params$analyze_DMRs)) {
     ## Density
     dens <- list.files(DMRs_analysis_path, pattern = "DMRs_Density.*\\.(png|svg|jpg|jpeg|tiff)$", full.names = TRUE, ignore.case = TRUE)
     if (length(dens) > 0) {
@@ -738,9 +743,7 @@ if (isTRUE(params$analyze_DMRs)) {
         cat("#### KEGG pathways\n\n")
         emit_dir(file.path(exp_path, "KEGG_pathway"), recursive = TRUE, cols = params$default_plot_cols, max_height_px = params$plot_max_height_px)
     }
-} else {
-    cat("_DMR analysis is disabled (analyze_DMRs=FALSE)._\\n\\n")
-}
+})}
 ```
 
 ```{r strand-asymmetry, results='asis'}
@@ -748,6 +751,7 @@ if (isTRUE(params$analyze_DMRs)) {
 capitalize <- function(x) { paste0(toupper(substring(x, 1, 1)), substring(x, 2)) }
 
 if (isTRUE(params$analyze_strand_asymmetry_DMRs)) {
+  safe_section({
   cat("### Strand-asymmetry DMRs {.tabset}\n\n")
 
   for (cntx in c("CG", "CHG", "CHH")) {
@@ -764,13 +768,16 @@ if (isTRUE(params$analyze_strand_asymmetry_DMRs)) {
       }
     }
   }
+  })
 }
 ```
 
-### Other analyses
-
 ```{r other, results='asis'}
-if (isTRUE(params$analyze_DMVs)) {
+if (isTRUE(params$analyze_DMVs) || isTRUE(params$analyze_dH)) {
+  cat("### Other analyses\n\n")
+}
+
+if (isTRUE(params$analyze_DMVs)) { safe_section({
   cat("#### DMVs (1kb) {.tabset}\n\n")
   cat("Below are the first 50 rows of each DMV table (if present). Full tables are available in the output directory.\n\n")
   if (dir.exists(DMV_analysis_path)) {
@@ -791,9 +798,9 @@ if (isTRUE(params$analyze_DMVs)) {
     }
     emit_dir(DMV_analysis_path, recursive = TRUE, cols = params$default_plot_cols)
   }
-}
+})}
 
-if (isTRUE(params$analyze_dH)) {
+if (isTRUE(params$analyze_dH)) { safe_section({
   cat("#### ΔH / entropy\n\n")
   cat("ΔH captures changes in methylation heterogeneity (stochasticity) rather than only mean methylation.\n\n")
   emit_dir(dH_path, recursive = TRUE, cols = params$default_plot_cols)
@@ -801,7 +808,7 @@ if (isTRUE(params$analyze_dH)) {
     cat("##### ΔH genome annotation\n\n")
     emit_dir(dH_ann_path, recursive = TRUE, cols = params$default_plot_cols)
   }
-}
+})}
 ```
 
 ### Session {.tabset}

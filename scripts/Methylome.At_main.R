@@ -224,7 +224,7 @@ Methylome.At_main <- function(var1, # control
         conR_var1 <- conversionRate(load_vars[[1]]$methylationDataReplicates, var1)
         conR_var2 <- conversionRate(load_vars[[2]]$methylationDataReplicates, var2)
         conR_b <- rbind(conR_var1, conR_var2)
-        write.csv(conR_b, paste0(exp_path, "/conversion_rate.csv"), row.names = F)
+        write.csv(conR_b, paste0(qc_dir_path, "/conversion_rate.csv"), row.names = F)
         print(kable(conR_b))
       },
       error = function(cond) {
